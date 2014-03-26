@@ -1,0 +1,147 @@
+div.center, p.center, img.center {
+    display: block;
+    float: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center;
+}
+
+
+div.dataTables_length label {
+    width: 460px;
+    float: left;
+    text-align: left;
+}
+
+div.dataTables_length select {
+    width: 75px;
+}
+
+div.dataTables_filter label {
+    float: right;
+    width: 460px;
+}
+
+div.dataTables_info {
+    padding-top: 8px;
+}
+
+div.dataTables_paginate {
+    float: right;
+    margin: 0;
+}
+
+
+.dataTables_wrapper {
+    clear: both;
+    overflow: hidden;
+    position: relative;
+}
+.dataTables_processing {
+    border: 1px solid #DDDDDD;
+    color: #999999;
+    left: 50%;
+    margin-left: -125px;
+    padding: 2px 0;
+    position: absolute;
+    text-align: center;
+    top: 0;
+    width: 250px;
+}
+.dataTables_length {
+    float: left;
+    width: 40%;
+}
+.dataTables_filter {
+    float: right;
+    text-align: right;
+    width: 50%;
+}
+.dataTables_filter input {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-color: #B8B8B8 #E2E2E2 #E2E2E2 #B8B8B8;
+    border-image: none;
+    border-style: solid;
+    border-width: 1px;
+    padding: 2px;
+}
+
+/* http://tympanus.net/codrops/2012/10/25/kick-start-your-project-a-collection-of-handy-css-snippets/ */
+
+
+.dashboardTable {
+    width: 100%
+    border: 1px solid #B0B0B0;
+    line-height: 5px;
+}
+.dashboardTable tbody {
+    /* Kind of irrelevant unless your .css is alreadt doing something else */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    font-size: 100%;
+    vertical-align: baseline;
+    background: transparent;
+}
+.dashboardTable thead {
+    text-align: left;
+}
+.dashboardTable thead th  {
+    background: -moz-linear-gradient(top, #F0F0F0 0, #DBDBDB 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #F0F0F0), color-stop(100%, #DBDBDB));
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#F0F0F0', endColorstr='#DBDBDB', GradientType=0);
+    border: 1px solid #B0B0B0;
+    color: #444;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 10px;
+    text-align: center;
+}
+.dashboardTable tfoot th  {
+    background: -moz-linear-gradient(top, #F0F0F0 0, #DBDBDB 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #F0F0F0), color-stop(100%, #DBDBDB));
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#F0F0F0', endColorstr='#DBDBDB', GradientType=0);
+    border: 1px solid #B0B0B0;
+    color: #444;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 10px;
+    text-align: center;
+}
+.dashboardTable td {
+    padding: 3px 10px;
+    text-align: center;
+}
+
+
+div.dataTables_paginate {
+    float: right;
+    color: #444444;
+    padding: 6px;
+    border-radius: 4px;
+}
+
+a.paginate_button,
+a.paginate_active {
+    display: inline-block;
+    color: #444444;
+    padding: 2px 6px;
+    margin-left: 2px;
+    cursor: pointer;
+    *cursor: hand;
+}
+
+a.paginate_active {
+    background-color: #F9F9F9;
+    border: 1px solid #DDDDDD;
+}
+
+
+.tooltip-inner {
+    max-width : 100%;
+
+}

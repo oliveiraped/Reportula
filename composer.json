@@ -1,0 +1,72 @@
+{
+	"name": "reportula/reportula",
+	"description": "Reportula - Bacula Backups Reporting Tool",
+	"keywords": ["framework", "laravel","bacula","reportula"],
+	"license": "MIT",
+	"require": {
+		"laravel/framework": "4.1.*",
+		"cartalyst/sentry": "2.0.*",
+		"way/generators": "dev-master",
+		"anahkiasen/former": "dev-master",
+		"bllim/datatables": "*",
+		"orchestra/asset": "2.0.*",
+		"jenssegers/date": "*",
+		"barryvdh/laravel-ide-helper": "1.*",
+		"adldap/adldap": "4.0.4",
+		"jasonlewis/expressive-date": "1.0.*",
+		"laracasts/utilities": "1.0",
+		"barryvdh/laravel-debugbar": "1.*"
+
+
+		
+	},
+	"repositories" : [
+        {
+            "type": "package",
+            "package": {
+            "name" : "adldap/adldap",
+                "version": "4.0.4",
+                "dist": {
+                    "url": "http://sourceforge.net/projects/adldap/files/adLDAP/adLDAP_4.0.4/adLDAP_4.0.4r2.zip/download",
+                    "type": "zip"
+                },
+                "source": {
+                "url":"https://svn.code.sf.net/p/adldap/code/",
+                    "type": "svn",
+                    "reference": "tags/v4.0.4/"
+                },
+                "autoload": {
+                    "classmap": ["src/"]
+                }
+            }
+        }
+
+    ],
+	"autoload": {
+		"classmap": [
+			"app/commands",
+			"app/controllers",
+			"app/models",
+			"app/database/migrations",
+			"app/database/seeds",
+			"app/tests/TestCase.php"
+		]
+	},
+	"scripts": {
+		"post-install-cmd": [
+			"php artisan optimize"
+		],
+		"post-update-cmd": [
+			"php artisan debugbar:publish",
+			"php artisan clear-compiled",
+			"php artisan optimize"
+		],
+		"post-create-project-cmd": [
+			"php artisan key:generate"
+		]
+	},
+	"config": {
+		"preferred-install": "dist"
+	},
+	"minimum-stability": "dev"
+}
