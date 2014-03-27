@@ -51,7 +51,8 @@ class UsersController extends BaseController
                                                ->with('clientsSelected', '' )
                                                ->with('jobsSelected',    '' )
                                                ->with('clients', Client::clientSelectBox()  )
-                                               ->with('jobs',    Job::jobSelectBox() );
+                                               ->with('jobs',    Job::jobSelectBox() )
+                                               ->with('email',    "" ) ;
     }
 
     /**
@@ -77,14 +78,26 @@ class UsersController extends BaseController
             $jobspermissions = unserialize ($permissions->jobs);
         }
 
-        Former::populate( User::find($id) );
+        
+        Former::populate($user);
+       
+
+
+
+
+        //LOG::info(User::find($id));
+
+
+
 
         return View::make('admin.usersnewedit')->with('groups',          $this->group_array)
                                                ->with('groupSelected',   $this->groupSelected )
                                                ->with('clients',         Client::clientSelectBox()  )
                                                ->with('clientsSelected', $clientspermissions )
                                                ->with('jobsSelected',    $jobspermissions )
-                                               ->with('jobs',            Job::jobSelectBox() )
+                                               ->with('jobs',            Job::jobSelectBox())
+                                               ->with('email',           $user->email ) 
+                                               
                                             ;
     }
 

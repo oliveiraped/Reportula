@@ -19,7 +19,7 @@
             </div>
             <div class="box-content">
                 {{Former::hidden('id')->id('id');}}
-                {{Former::text('name', 'Name')->prepend('<i class="icon-fam-user"></i>')->placeholder('Name')->required();}}
+                {{Former::text('name', 'Name')->prepend('<i class="icon-fam-user"></i>')->placeholder('Name')->required()->value($groupname);}}
             </div>
         </div>
 

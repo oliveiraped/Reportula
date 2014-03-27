@@ -16,7 +16,7 @@
             </a>
         </div>
     </div>
-</div>
+</div>  
 
 <div class="row-fluid">
    <div class="span12 box-content">
@@ -25,8 +25,9 @@
                 <h2><i class="icon-user"></i> User Data</h2>
             </div>
             <div class="box-content">
+
                 {{Former::hidden('id')->id('id');}}
-                {{Former::email('email', 'Email')->prepend('<i class="icon-fam-email-add"></i>')->placeholder('Email')->required()->autofocus();}}
+                {{Former::email('email', 'Email')->prepend('<i class="icon-fam-email-add"></i>')->placeholder('Email')->required()->autofocus()->value($email);}}
                 {{Former::password('password', 'Password' )->prepend('<i class="icon-fam-key-add"></i>')->placeholder( 'Password')->required()->min(6);}}
                 {{Former::text('first_name', 'Name')->prepend('<i class="icon-fam-user"></i>')->placeholder('Name');}}
                 {{Former::text('last_name', 'Surename')->prepend('<i class="icon-fam-user"></i>')->placeholder('Surename');}}

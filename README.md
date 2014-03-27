@@ -34,4 +34,4 @@ Documentation for the entire project  can be found on the [Reportula website](ht
 
 ### License
 
-The Reportula Project is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
+The Reportula Project is open-sourced software licensed under the [GPL license](http://opensource.org/licenses/GPL)

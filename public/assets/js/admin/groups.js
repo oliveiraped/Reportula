@@ -38,6 +38,10 @@ $(document).ready(function() {
         },
     });
 
+    $('#groupjobs').multiSelect();
+    $('#groupclients').multiSelect();
+
+
     $('#usergroups').multiSelect({
         /* afterSelect: function(value, text){
              $.ajax({

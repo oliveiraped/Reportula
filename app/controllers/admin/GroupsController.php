@@ -49,7 +49,8 @@ class GroupsController extends BaseController
                                                 ->with('clientsSelected', '' )
                                                 ->with('jobsSelected',    '' )
                                                 ->with('clients', Client::clientSelectBox()  )
-                                                ->with('jobs',    Job::jobSelectBox() );
+                                                ->with('jobs',    Job::jobSelectBox() )
+                                                ->with('groupname',     "");
     }
 
     /**
@@ -79,15 +80,18 @@ class GroupsController extends BaseController
             $jobspermissions = unserialize ($permissions->jobs);
         }
 
+        LOG::info( $group->name);
+
         //$this->group_array=array("0"=>"USER");
-        Former::populate( Group::find($id) );
+        Former::populate( $group->id );
 
         return View::make('admin.groupsnewedit')->with('users',$this->user_array)
                                                ->with('userSelected', $userSelected )
                                                ->with('clients',         Client::clientSelectBox()  )
                                                ->with('clientsSelected', $clientspermissions )
                                                ->with('jobsSelected',    $jobspermissions )
-                                               ->with('jobs',            Job::jobSelectBox() );
+                                               ->with('jobs',            Job::jobSelectBox() )
+                                                ->with('groupname',      $group->name);
 
     }
 
