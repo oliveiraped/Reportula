@@ -52,7 +52,8 @@ class UsersController extends BaseController
                                                ->with('jobsSelected',    '' )
                                                ->with('clients', Client::clientSelectBox()  )
                                                ->with('jobs',    Job::jobSelectBox() )
-                                               ->with('email',    "" ) ;
+                                               ->with('email',    "" ) 
+                                               ->with('id',       "");
     }
 
     /**
@@ -77,18 +78,10 @@ class UsersController extends BaseController
             $clientspermissions =unserialize ($permissions->clients);
             $jobspermissions = unserialize ($permissions->jobs);
         }
-
         
         Former::populate($user);
        
-
-
-
-
         //LOG::info(User::find($id));
-
-
-
 
         return View::make('admin.usersnewedit')->with('groups',          $this->group_array)
                                                ->with('groupSelected',   $this->groupSelected )
@@ -97,7 +90,7 @@ class UsersController extends BaseController
                                                ->with('jobsSelected',    $jobspermissions )
                                                ->with('jobs',            Job::jobSelectBox())
                                                ->with('email',           $user->email ) 
-                                               
+                                               ->with('id',              $user->id)
                                             ;
     }
 
@@ -190,7 +183,8 @@ class UsersController extends BaseController
                         'email'         => Input::get('email'),
                         'password'      => Input::get('password'),
                         'first_name'    => Input::get('first_name', ''),
-                        'last_name'     => Input::get('last_name', '')
+                        'last_name'     => Input::get('last_name', ''),
+                        'activated'     => '1'
 
                     ));
                     $id=$user->getId();

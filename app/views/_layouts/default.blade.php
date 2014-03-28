@@ -6,16 +6,11 @@
         <meta name="description" content="Reportula - Bareos & Bacula Backups Web Gui">
         <meta name="author" content="Pedro Oliveira">
         <title>Reportula - Bareos & Bacula Web Gui </title>
-       
-             <script type="text/javascript">
-                var myPath = '{{  URL::to("/") }}';
-            </script>
-
+        <script type="text/javascript">
+            var myPath = '{{  URL::to("/") }}';
+        </script>
          <?php echo Asset::styles(); ?>
          <?php echo Asset::scripts(); ?>
-            
-           
-
     </head>
     <body>
         <div class="container-fluid">
@@ -32,7 +27,8 @@
                 <div class="navbar navbar-fixed-top">
                     <div class="navbar-inner">
                         <div class="container">
-                            <a class="brand" href="{{ URL::route('dashboard', array('data'=>'day')) }}">Reportula2</a>
+                            <a class="brand" href="{{ URL::route('dashboard', array('data'=>'day')) }}"><img src={{asset('assets/img/logo.png')}} alt="Logo" > Reportula</a>
+
                                 <ul class="nav">
                                     <li><a href="{{ URL::route('dashboard', array('data'=>'day')) }}"><i class="icon-fam-application-view-list"></i> Dashboard</a>
                                     </li>
@@ -66,7 +62,7 @@
             <footer>
                 <?php echo Asset::container('footer')->scripts(); ?>
 
-                <p><center>Reportula V2.0.0 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 </center></p>
+                <p><center>Reportula V2.0.2 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 </center></p>
             </footer>
 
         </div>

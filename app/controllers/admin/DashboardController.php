@@ -1,25 +1,24 @@
 <?php
 
 namespace app\controllers\admin;
-use Auth, BaseController, Form, Input, Redirect, Sentry, View, Log;
+use Auth, BaseController, Form, Input, Redirect, Sentry, View, Log, FeedReader, Asset;
 
 class DashboardController extends BaseController
 {
     public function dashboard()
     {
-
-    /*    //Get Server Hardware Info
+    	//Get Server Hardware Info
     	// Get kernel info
 		list($system, $host, $kernel) = explode(" ", exec("uname -a"), 5);
 		// Grab uptime output
-		$uptime = (exec("uptime"));
+		
 		// Get the kernel info, and grab the cool stuff
 		$cpuinfo = file("/proc/cpuinfo");
 		$total_cpu=0;
 		
-
+	//	dd($cpuinfo);
 	
-
+/*
 		for ($i = 0; $i <= count($cpuinfo); $i++) {
 				
 				list($item, $data) = explode(":", $cpuinfo[$i], 2);
@@ -40,11 +39,12 @@ class DashboardController extends BaseController
 				if ($item == "bogomips") { $bogomips = $data;}
 
 		}
-		
+		/*
 		if($found_cpu != "yes") { $cpu_info .= " <b>unknown</b>"; } 
 		$cpu_info .= " MHz Processor(s)\n";
 
 		//Get the memory info, and grab the cool stuf
+		*/
 		$meminfo = file("/proc/meminfo");
 		for ($i = 0; $i < count($meminfo); $i++) {
 				list($item, $data) = explode(":", $meminfo[$i], 2);
@@ -66,23 +66,29 @@ class DashboardController extends BaseController
 		$percent_swap_free = round( $free_swap / $total_swap * 100 );
 		$percent_buff = round( $buffer_mem / $total_mem * 100 );
 		$percent_cach = round( $cache_mem / $total_mem * 100 );
-		$percent_shar = round( $shared_mem / $total_mem * 100 );
+		
+		//$percent_shar = round( $shared_mem / $total_mem * 100 );
 		//Now it's time to grab the cool stuff from the hard drive
 		//This one is not quite as straight forward.....
 		exec ("df", $x);
 		$count = 1;
-		while ($count < sizeof($x)) {
+		/*while ($count < sizeof($x)) {
 				list($drive[$count], $size[$count], $used[$count], $avail[$count], $percent[$count], $mount[$count]) = explode(" +", $x[$count]);
 				$percent_part[$count] = str_replace( "%", "", $percent[$count] );	
 		$count++;
-		}
-
-		*/
-
-
-
-
-        return View::make('admin.dashboard');
-    }
+		}*/
+		
+		$rss=FeedReader::read('http://www.reportula.org/reportula/category/News/feed/');
+  		return View::make('admin.dashboard', array (
+        										'rss'               => $rss,
+        										'uptime'            => (exec("uptime")),
+        										'system'	        => $system,
+        										'host'	            => $host,
+        										'kernel'	        => $kernel,
+        										'used_mem'          => ( $total_mem - $free_mem ),
+												'used_swap'    		=> ( $total_swap - $free_swap ),
+												'free_mem' 		    => $free_mem,
+											));
+    									}
 
 }

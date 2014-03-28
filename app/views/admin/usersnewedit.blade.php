@@ -26,7 +26,7 @@
             </div>
             <div class="box-content">
 
-                {{Former::hidden('id')->id('id');}}
+                {{Former::hidden('id')->id('id')->value($id);}}
                 {{Former::email('email', 'Email')->prepend('<i class="icon-fam-email-add"></i>')->placeholder('Email')->required()->autofocus()->value($email);}}
                 {{Former::password('password', 'Password' )->prepend('<i class="icon-fam-key-add"></i>')->placeholder( 'Password')->required()->min(6);}}
                 {{Former::text('first_name', 'Name')->prepend('<i class="icon-fam-user"></i>')->placeholder('Name');}}

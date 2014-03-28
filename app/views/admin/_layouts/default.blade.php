@@ -26,7 +26,7 @@
                 <div class="navbar navbar-fixed-top">
                     <div class="navbar-inner">
                         <div class="container">
-                            <a class="brand" href="{{ URL::route('admin.dashboard') }}">Reportula2</a>
+                            <a class="brand" href="{{ URL::route('admin.dashboard') }}"><img src={{asset('assets/img/logo.png')}} alt="Logo" > Reportula</a>
                                 <ul class="nav">
                                     <li><a href="{{ URL::route('admin.dashboard') }}"><i class="icon-fam-application-view-list"></i> Dashboard</a>
                                     </li>

@@ -18,7 +18,7 @@
                 <h2><i class="icon-user"></i> Group Data</h2>
             </div>
             <div class="box-content">
-                {{Former::hidden('id')->id('id');}}
+                {{Former::hidden('id')->id('id')->value($id);}}
                 {{Former::text('name', 'Name')->prepend('<i class="icon-fam-user"></i>')->placeholder('Name')->required()->value($groupname);}}
             </div>
         </div>

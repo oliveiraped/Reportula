@@ -15,7 +15,8 @@
 		"adldap/adldap": "4.0.4",
 		"jasonlewis/expressive-date": "1.0.*",
 		"laracasts/utilities": "1.0",
-		"barryvdh/laravel-debugbar": "1.*"
+		"barryvdh/laravel-debugbar": "1.*",
+		"awjudd/feed-reader": "1.0.*"
 
 
 		

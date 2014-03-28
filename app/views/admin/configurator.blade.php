@@ -6,7 +6,7 @@
             <a href="{{ URL::route('admin.readbacula') }}"> 1. Read Bacula Config </a><br>
             2. Write Bacula Config <br>
             3. Add/Edit Configurations<br>
-            CONFIGURATOR !!!!!!! HAHAHAH !!!!!!
+                !!!!! THIS IS BETA !!!!! NO YET DEVELOPED 
         </div>
         <div class="span6 box-content breadcrumb">
 

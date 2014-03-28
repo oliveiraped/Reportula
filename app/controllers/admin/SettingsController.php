@@ -203,7 +203,9 @@ class SettingsController extends BaseController
                     $userInsert['first_name']="";
                     $userInsert['last_name']="";
                     $userInsert['password']="reportula";
-                    $userInsert['activated']="reportula";
+                    $userInsert['activated']="1";
+                    
+
                     if (!empty($u->displayname)) {
                       $displayname = explode(" ", $u->displayname);
                       $userInsert['first_name']=$displayname[0];

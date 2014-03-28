@@ -50,7 +50,8 @@ class GroupsController extends BaseController
                                                 ->with('jobsSelected',    '' )
                                                 ->with('clients', Client::clientSelectBox()  )
                                                 ->with('jobs',    Job::jobSelectBox() )
-                                                ->with('groupname',     "");
+                                                ->with('groupname',     "")
+                                                ->with('id',       "");
     }
 
     /**
@@ -59,9 +60,7 @@ class GroupsController extends BaseController
     */
     public function editgroup($id)
     {
-
         // Find the user using the user id
-
         $group = Sentry::getGroupProvider()->findById($id);
         $users = Sentry::getUserProvider()->findAllInGroup($group);
 
@@ -80,9 +79,8 @@ class GroupsController extends BaseController
             $jobspermissions = unserialize ($permissions->jobs);
         }
 
-        LOG::info( $group->name);
+        // LOG::info( $group->name);
 
-        //$this->group_array=array("0"=>"USER");
         Former::populate( $group->id );
 
         return View::make('admin.groupsnewedit')->with('users',$this->user_array)
@@ -91,8 +89,8 @@ class GroupsController extends BaseController
                                                ->with('clientsSelected', $clientspermissions )
                                                ->with('jobsSelected',    $jobspermissions )
                                                ->with('jobs',            Job::jobSelectBox() )
-                                                ->with('groupname',      $group->name);
-
+                                               ->with('groupname',      $group->name)
+                                               ->with('id',             $group->id);
     }
 
     /**
@@ -104,7 +102,6 @@ class GroupsController extends BaseController
         $group = Sentry::getGroupProvider()->findById(intval($id));
         // Delete the user
         $group->delete();
-
         return Response::json($id);
     }
 

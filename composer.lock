@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "3c30f6cf61a834a06b4b1a00efc8a1a3",
+    "hash": "3445ccbc8a16efa2de882298a34e2cd1",
     "packages": [
         {
             "name": "adldap/adldap",
@@ -123,6 +123,45 @@
             "time": "2014-01-27 22:41:20"
         },
         {
+            "name": "awjudd/feed-reader",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/awjudd/l4-feed-reader.git",
+                "reference": "94be0ea4532bac64d3ff4466618eb0d3b93f6b19"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/awjudd/l4-feed-reader/zipball/94be0ea4532bac64d3ff4466618eb0d3b93f6b19",
+                "reference": "94be0ea4532bac64d3ff4466618eb0d3b93f6b19",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "4.1.x",
+                "php": ">=5.3.0",
+                "simplepie/simplepie": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Awjudd\\FeedReader": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Andrew Judd",
+                    "email": "contact@andrewjudd.ca",
+                    "homepage": "http://www.andrewjudd.ca"
+                }
+            ],
+            "description": "A simple RSS feed reader for Laravel 4.1",
+            "time": "2014-03-18 10:41:03"
+        },
+        {
             "name": "barryvdh/laravel-debugbar",
             "version": "v1.5.5",
             "source": {
@@ -226,12 +265,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/bllim/laravel4-datatables-package.git",
-                "reference": "31ecafc9cf27a0f90d32f5aec5d3afe80bddadc6"
+                "reference": "2c8aedae4ce9815bafd6b861719fdcef62fbf507"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bllim/laravel4-datatables-package/zipball/31ecafc9cf27a0f90d32f5aec5d3afe80bddadc6",
-                "reference": "31ecafc9cf27a0f90d32f5aec5d3afe80bddadc6",
+                "url": "https://api.github.com/repos/bllim/laravel4-datatables-package/zipball/2c8aedae4ce9815bafd6b861719fdcef62fbf507",
+                "reference": "2c8aedae4ce9815bafd6b861719fdcef62fbf507",
                 "shasum": ""
             },
             "require": {
@@ -273,7 +312,7 @@
                 "laravel",
                 "laravel4"
             ],
-            "time": "2014-03-25 14:55:48"
+            "time": "2014-03-28 08:02:35"
         },
         {
             "name": "cartalyst/sentry",
@@ -593,12 +632,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/cache.git",
-                "reference": "36c4eee5051629524389da376ba270f15765e49f"
+                "reference": "bb9b55b17bed5923c9446c8158a92623d39480c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/cache/zipball/36c4eee5051629524389da376ba270f15765e49f",
-                "reference": "36c4eee5051629524389da376ba270f15765e49f",
+                "url": "https://api.github.com/repos/doctrine/cache/zipball/bb9b55b17bed5923c9446c8158a92623d39480c6",
+                "reference": "bb9b55b17bed5923c9446c8158a92623d39480c6",
                 "shasum": ""
             },
             "require": {
@@ -659,7 +698,7 @@
                 "cache",
                 "caching"
             ],
-            "time": "2013-12-18 17:21:03"
+            "time": "2014-03-27 11:06:41"
         },
         {
             "name": "doctrine/collections",
@@ -1271,12 +1310,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "70d94d57d76fac29f6e2f7136cb42a442059f83e"
+                "reference": "568861eb110cd1b6abbbdb355a4ca7b64ad20a09"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/70d94d57d76fac29f6e2f7136cb42a442059f83e",
-                "reference": "70d94d57d76fac29f6e2f7136cb42a442059f83e",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/568861eb110cd1b6abbbdb355a4ca7b64ad20a09",
+                "reference": "568861eb110cd1b6abbbdb355a4ca7b64ad20a09",
                 "shasum": ""
             },
             "require": {
@@ -1335,7 +1374,7 @@
                 "illuminate/workbench": "self.version"
             },
             "require-dev": {
-                "aws/aws-sdk-php": "2.5.*",
+                "aws/aws-sdk-php": "2.6.*",
                 "iron-io/iron_mq": "1.5.*",
                 "mockery/mockery": "0.9.*",
                 "pda/pheanstalk": "2.1.*",
@@ -1380,7 +1419,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2014-03-24 04:09:48"
+            "time": "2014-03-27 01:25:24"
         },
         {
             "name": "maximebf/debugbar",
@@ -1553,12 +1592,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "118f28344daf154e47e73e79779a60bc7430a40f"
+                "reference": "8429157ab5478408606ee29e118c5f7db74c8afe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/118f28344daf154e47e73e79779a60bc7430a40f",
-                "reference": "118f28344daf154e47e73e79779a60bc7430a40f",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/8429157ab5478408606ee29e118c5f7db74c8afe",
+                "reference": "8429157ab5478408606ee29e118c5f7db74c8afe",
                 "shasum": ""
             },
             "require": {
@@ -1590,7 +1629,7 @@
                 "parser",
                 "php"
             ],
-            "time": "2014-02-12 19:19:48"
+            "time": "2014-03-27 11:51:13"
         },
         {
             "name": "orchestra/asset",
@@ -2036,6 +2075,60 @@
             "time": "2013-08-12 22:46:16"
         },
         {
+            "name": "simplepie/simplepie",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/simplepie/simplepie.git",
+                "reference": "5f00e77b5feb96605cbcea4dcfb555e87c2fed24"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/simplepie/simplepie/zipball/5f00e77b5feb96605cbcea4dcfb555e87c2fed24",
+                "reference": "5f00e77b5feb96605cbcea4dcfb555e87c2fed24",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "SimplePie": "library"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Ryan Parman",
+                    "homepage": "http://ryanparman.com/",
+                    "role": "Creator, alumnus developer"
+                },
+                {
+                    "name": "Geoffrey Sneddon",
+                    "homepage": "http://gsnedders.com/",
+                    "role": "Alumnus developer"
+                },
+                {
+                    "name": "Ryan McCue",
+                    "email": "me@ryanmccue.info",
+                    "homepage": "http://ryanmccue.info/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A simple Atom/RSS parsing library for PHP",
+            "homepage": "http://simplepie.org/",
+            "keywords": [
+                "atom",
+                "feeds",
+                "rss"
+            ],
+            "time": "2013-10-24 06:37:55"
+        },
+        {
             "name": "stack/builder",
             "version": "dev-master",
             "source": {
@@ -2141,12 +2234,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/BrowserKit.git",
-                "reference": "a2b2aff53640fd2fa34b7c176f46d8ff392a785d"
+                "reference": "1f5e42db799e05e85d03fe8504c5b1c92c46968d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/BrowserKit/zipball/a2b2aff53640fd2fa34b7c176f46d8ff392a785d",
-                "reference": "a2b2aff53640fd2fa34b7c176f46d8ff392a785d",
+                "url": "https://api.github.com/repos/symfony/BrowserKit/zipball/1f5e42db799e05e85d03fe8504c5b1c92c46968d",
+                "reference": "1f5e42db799e05e85d03fe8504c5b1c92c46968d",
                 "shasum": ""
             },
             "require": {
@@ -2189,7 +2282,7 @@
             ],
             "description": "Symfony BrowserKit Component",
             "homepage": "http://symfony.com",
-            "time": "2014-03-12 18:29:58"
+            "time": "2014-03-27 14:53:17"
         },
         {
             "name": "symfony/class-loader",
@@ -2358,12 +2451,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Debug.git",
-                "reference": "412b76458b60a645a9daacdd49f57d704c84c4d4"
+                "reference": "cf012d37f7e0d059fd6b35607e99761b33ccf4ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Debug/zipball/412b76458b60a645a9daacdd49f57d704c84c4d4",
-                "reference": "412b76458b60a645a9daacdd49f57d704c84c4d4",
+                "url": "https://api.github.com/repos/symfony/Debug/zipball/cf012d37f7e0d059fd6b35607e99761b33ccf4ed",
+                "reference": "cf012d37f7e0d059fd6b35607e99761b33ccf4ed",
                 "shasum": ""
             },
             "require": {
@@ -2406,7 +2499,7 @@
             ],
             "description": "Symfony Debug Component",
             "homepage": "http://symfony.com",
-            "time": "2014-03-01 17:35:04"
+            "time": "2014-03-26 18:07:42"
         },
         {
             "name": "symfony/dom-crawler",
@@ -2681,12 +2774,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/HttpKernel.git",
-                "reference": "635e262ce02bf3e562163328ba674aef632a286e"
+                "reference": "7cfb85005383ba5b0a11154b1de5d4b5e8a8e40b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/HttpKernel/zipball/635e262ce02bf3e562163328ba674aef632a286e",
-                "reference": "635e262ce02bf3e562163328ba674aef632a286e",
+                "url": "https://api.github.com/repos/symfony/HttpKernel/zipball/7cfb85005383ba5b0a11154b1de5d4b5e8a8e40b",
+                "reference": "7cfb85005383ba5b0a11154b1de5d4b5e8a8e40b",
                 "shasum": ""
             },
             "require": {
@@ -2745,7 +2838,7 @@
             ],
             "description": "Symfony HttpKernel Component",
             "homepage": "http://symfony.com",
-            "time": "2014-03-12 18:29:58"
+            "time": "2014-03-27 14:53:17"
         },
         {
             "name": "symfony/process",

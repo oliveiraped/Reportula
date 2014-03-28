@@ -13,7 +13,7 @@ return array(
 	|
 	*/
 
-	'debug' => true,
+	'debug' => false,
 
 	/*
 	|--------------------------------------------------------------------------
@@ -117,6 +117,8 @@ return array(
 		
 		'Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider',
 		'Barryvdh\Debugbar\ServiceProvider',
+		/* RSS READER */
+		 'Awjudd\FeedReader\FeedReaderServiceProvider',
 		
 		
 
@@ -192,6 +194,7 @@ return array(
 		'Asset' 		  => 'Orchestra\Support\Facades\Asset',
 		'Date'            => 'Jenssegers\Date\Date',
 		'Debugbar'        => 'Barryvdh\Debugbar\Facade',
+		'FeedReader'      => 'Awjudd\FeedReader\Facades\FeedReader',
 
 
 	),
