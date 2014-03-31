@@ -79,21 +79,20 @@ class ClientsController extends BaseController
             /* Calculate the Retension Period */
             $to =Date::now();
             $text=" Days";
-            $fileretension = Date::now()->sub( $client->fileretention.' seconds').$text;
+            
+            /* 86400  -> equal to seconds in i day*/ 
+            $fileretension = ($client->fileretention/86400).$text;
 
-            if ($fileretension > 365) {
+            if ($fileretension >= 365) {
                 $type = ' Year';
-                $fileretension=intval($fileretension/365).$type;
+                $fileretension=intval($fileretension/31536000).$type;
             }
 
-            $jobretension =Date::now()->sub( $client->jobretention.' seconds').$text; 
-
-
-            #= Time::diff(Date::forge(Date::now()->sub( $client->jobretention.' seconds'))->format('short'), $to, $type = 'days').$text;
-
-            if ($jobretension > 365) {
+            /* 86400  -> equal to seconds in i day*/ 
+            $jobretension  = ($client->jobretention/86400).$text; 
+            if ($jobretension >= 365) {
                 $type = ' Year';
-                $jobretension=intval($jobretension/365).$type;
+                $jobretension=intval($jobretension/31536000).$type;
             }
 
             /* Get Terminated Jobs */

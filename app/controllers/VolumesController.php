@@ -62,13 +62,15 @@ class VolumesController extends BaseController
 
             $to =Date::now();
             $text=" Days";
-            $volretention = Date::forge( Date::now()->sub( $media->volretention. ' seconds'))->format('short').$text;
+            
+            /* 86400  -> equal to seconds in i day*/ 
+             $volretention = ($media->volretention/86400).$text;
 
-            if ($volretention > 365) {
+            if ($volretention >= 365) {
                 $type = ' Year';
-                $volretention=intval($volretention/365).$type;
+                $volretention =intval($volretention/31536000).$type;
             }
-
+            
             $volbytes=$this->byte_format($media->VolBytes);
             $volstatus=$media->volstatus;
         }

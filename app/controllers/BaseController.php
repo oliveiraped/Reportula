@@ -16,18 +16,16 @@ class BaseController extends Controller
         Asset::add('famfam', 'assets/css/famfam.css');
         Asset::add('jqueryloadermin', 'assets/css/jquery.loader-min.css');
         Asset::add('reportula', 'assets/css/reportula.css');
-        Asset::add('TableTools.css', 'assets/css/TableTools.css');
+        //Asset::add('TableTools.css', 'assets/css/TableTools.css');
 
         Asset::add('jquery', 'assets/js/jquery-2.0.3.min.js');
         Asset::add('datatables', 'assets/js/jquery.dataTables.min.js','jquery');
-        Asset::add('TableTools', 'assets/js/TableTools.min.js','datatables');
         Asset::add('jqueryloader', 'assets/js/jquery.loader-min.js', 'jquery');
         Asset::add('main', 'assets/js/main.js', 'TableTools');
         Asset::add('modal', 'assets/js/bootstrap-modal.js', 'jquery');
         
-        //<script type="text/javascript" charset="utf-8" src="media/js/ZeroClipboard.js"></script>
-        //<script type="text/javascript" charset="utf-8" src="media/js/TableTools.js"></script>
-
+        //Asset::add('TableTools', 'assets/js/TableTools.min.js','datatables');
+        
         /* Get Monolog instance from Laravel */
         $monolog = Log::getMonolog();
         /* Add the FirePHP handler */

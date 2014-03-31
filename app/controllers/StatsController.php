@@ -42,24 +42,6 @@ class StatsController extends BaseController
             $i++;
         }
 
-       /* $vd= new VD;
-        $vd->dump(json_encode((array) $graphBytes));*/
-
-        /*$statsModel = new Stats;
-
-        $statsModel->setConnection('pgsql2');
-
-        $something = $statsModel->find(1);*/
-
-       /* $graphFiles = DB::table('job')->where('name','=', $jobselected)
-                  ->where('starttime','>=', $start )
-                  ->where('endtime','<=',   $end  )
-                  ->orderby('starttime', 'asc')
-                  ->get(array(DB::raw('date(job.starttime) as date'), DB::raw('jobfiles as files')));
-        $graphFiles = json_encode((array) $graphFiles);*/
-
-        /*"[{"date":"2013-09-02","files":190},{"date":"2013-09-02","files":121},{"date":"2013-09-03","files":138},{"date":"2013-09-04","files":295},{"date":"2013-09-05","files":686},{"date":"2013-09-06","files":249},{"date":"2013-09-08","files":598534},{"date":"2013-09-09","files":195},{"date":"2013-09-09","files":643},{"date":"2013-09-10","files":127},{"date":"2013-09-11","files":127},{"date":"2013-09-12","files":121},{"date":"2013-09-13","files":193},{"date":"2013-09-15","files":598613},{"date":"2013-09-16","files":221},{"date":"2013-09-16","files":116},{"date":"2013-09-17","files":123},{"date":"2013-09-18","files":140},{"date":"2013-09-20","files":125},{"date":"2013-09-20","files":122},{"date":"2013-09-22","files":598641},{"date":"2013-09-23","files":185},{"date":"2013-09-23","files":31530},{"date":"2013-09-25","files":0},{"date":"2013-09-26","files":128},{"date":"2013-09-28","files":163},{"date":"2013-09-29","files":164},{"date":"2013-09-30","files":630069}]" */
-
         return View::make('stats',array( 'graph' => json_encode((array) $graph)));
 
     }

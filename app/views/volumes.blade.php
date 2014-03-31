@@ -56,7 +56,7 @@
                         <td>{{ $lastwritten }}</td>
                     </tr>
                     <tr>
-                        <td><i class="fam-cd-delete"></i> Status </td>
+                        <td><i class="icon-fam-cd"></i> Status </td>
                         <td>@if ($volstatus == "Error")
                                         {{ $volstatus }}
                                     @else

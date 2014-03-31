@@ -42,9 +42,8 @@ $(document).ajaxStart(function(){
 
 // Data Tables Config
 $.extend( $.fn.dataTable.defaults, {
-        /*"oTableTools": {
-            "sSwfPath": "assets/swf/copy_csv_xls_pdf.swf"
-        },*/
+        
+
         "bJquery": true,
         "bStateSave": true,
         "bPaginate": true,
@@ -57,13 +56,15 @@ $.extend( $.fn.dataTable.defaults, {
         'iDisplayLength' : 15,
         "bDeferRender"   : true,
         "bInfo": false,
-
-        "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+        "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span12 center'p>>",
         "sPaginationType": "bootstrap",
+        "oTableTools": {
+          "aButtons": [ "copy", "print" ]
+        }
+
     } );
  
-  
-
+ 
 //additional functions for data table
 $.fn.dataTableExt.oApi.fnPagingInfo = function ( oSettings )
 {

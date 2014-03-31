@@ -47,14 +47,12 @@ class PoolsController extends BaseController
             $text=" Days";
            
 
-            #$volretension = Time::diff(Date::forge( Date::now()->sub( $pool->volretention. ' seconds'))->format('short'), $to, $type = 'days').$text;
+            /* 86400  -> equal to seconds in i day*/ 
+            $volretension = ($pool->volretention/86400).$text;
 
-            $volretension = Date::forge( Date::now()->sub( $pool->volretention. ' seconds'))->format('short').$text;
-
-
-            if ($volretension > 365) {
+            if ($volretension >= 365) {
                 $type = ' Year';
-                $volretension=intval($volretension/365).$type;
+                $volretension =intval($pool->volretention/31536000).$type;
             }
 
             $recycle= $pool->recycle;
