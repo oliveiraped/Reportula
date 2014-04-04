@@ -37,7 +37,7 @@ class DashboardController extends BaseController
                                 WHERE table_schema = "'.Config::get('database.connections.mysql.database').'"
                                 GROUP BY table_schema ;');
             } else {
-                 $dbsize= DB::select('SELECT pg_database_size("'.Config::get('database.connections.pgsql.database').'") as dbsize');
+                 $dbsize= DB::select("SELECT pg_database_size('".Config::get('database.connections.pgsql.database')."') as dbsize");
             }
             return $dbsize[0]->dbsize;
         },15);
