@@ -84,12 +84,12 @@ class BaculaStatsCommand extends Command {
                     ->where('endtime','<=', $dataFim)
                     ->get();
 
-        $hoursdiff    = DB::table('job')->select(DB::raw("date_part('hour',  (max(starttime) - min(starttime))) AS hoursdiff"))
+        $hoursdiff    = DB::table('job')->select(DB::raw("(date_part('hour',  (max(starttime) - min(starttime))) + (date_part('minutes',  (max(starttime) - min(starttime))) / 60.0)) AS hoursdiff"))
                     ->where('starttime','>=', $dataInicio )
                     ->where('endtime','<=', $dataFim)
                     ->get();
 
-        $hoursbytes  = DB::table('job')->select(DB::raw("(sum(jobbytes)/date_part('hour',  (max(starttime) - min(starttime)))) AS hoursbytes"))
+        $hoursbytes  = DB::table('job')->select(DB::raw("(sum(jobbytes)/(date_part('hour',  (max(starttime) - min(starttime))) + (date_part('minutes',  (max(starttime) - min(starttime))) / 60.0))) AS hoursbytes"))
                     ->where('starttime','>=', $dataInicio )
                     ->where('endtime','<=', $dataFim)
                     ->get();
