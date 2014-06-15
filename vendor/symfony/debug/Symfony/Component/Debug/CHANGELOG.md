@@ -1,11 +1,6 @@
 CHANGELOG
 =========
 
-2.5.0
------
-
-* added UndefinedMethodFatalErrorHandler
-
 2.4.0
 -----
 

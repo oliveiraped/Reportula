@@ -59,12 +59,15 @@ Route::group(array('prefix' => 'admin', 'before' => 'auth.admin'), function () {
     Route::get('settings',         array('as' => 'admin.settings',     'uses' => 'app\controllers\admin\SettingsController@settings'));
     Route::post('savesettings',    array('as' => 'admin.savesettings', 'uses' => 'app\controllers\admin\SettingsController@savesettings'));
     Route::get('settings/ldap',    array('as' => 'admin.settings.ldap',     'uses' => 'app\controllers\admin\SettingsController@ldap'));
+    
     Route::resource('settings/testLdap',     'app\controllers\admin\SettingsController@testLdap');
     Route::resource('settings/syncLdap',    'app\controllers\admin\SettingsController@syncLdap');
 
     //Configurator Controllers
-    Route::get('configurator',     array('as' => 'admin.configurator',  'uses' => 'app\controllers\admin\ConfiguratorController@configurator'));
-    Route::get('readbacula',       array('as' => 'admin.readbacula',    'uses' => 'app\controllers\admin\ConfiguratorController@readbacula'));
+    Route::get('configurator',  array('as' => 'admin.configurator',  'uses' => 'app\controllers\admin\ConfiguratorController@configurator'));
+    Route::get('readbacula',    array('as' => 'admin.readbacula',    'uses' => 'app\controllers\admin\ConfiguratorController@readbacula'));
+    Route::get('gettreedata',   array('as' => 'admin.gettreedata',   'uses' => 'app\controllers\admin\ConfiguratorController@gettreedata'));
+    Route::post('getnode',       array('as' => 'admin.getnode',       'uses' => 'app\controllers\admin\ConfiguratorController@getnode'));
 
 });
 

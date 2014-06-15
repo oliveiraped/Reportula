@@ -1,6 +1,7 @@
 <?php namespace app\controllers\admin;
 
-use BaseController, Datatables, View, Sentry, URL, Input, Validator, Response, Former, Log, Asset, Vd\Vd, File;
+use BaseController, Datatables, View, Sentry, URL, Input, Validator, Response, Former, Log, Asset, Vd\Vd, File, Request;
+use Debugbar, Cache;
 //use DB;
 
 // Models
@@ -23,13 +24,20 @@ class ConfiguratorController extends BaseController
    public function __construct()
     {
         parent::__construct();
-        Asset::add('jquery2', 'assets/js/jquery-2.0.3.min.js');
+        
         Asset::add('multi-select', 'assets/css/multi-select.css');
+        Asset::add('fancytreecss', 'assets/css/fancytree.css');
+
+        Asset::add('jquery2', 'assets/js/jquery-2.0.3.min.js');
+        Asset::add('jqueryui', 'assets/js/jquery.ui.js', 'jquery2');
         Asset::add('jquerymultiselect', 'assets/js/jquery.multi-select.js', 'jquery');
         Asset::add('eldarionform', 'assets/js/eldarion-ajax.min.js', 'jquery');
         Asset::add('bootbox.js', 'assets/js/bootbox.min.js', 'jquery');
+        Asset::add('tab', 'assets/js/bootstrap-tab.js', 'jquery2');
+        Asset::add('fancytree', 'assets/js/jquery.fancytree-all.min.js', 'jquery');
+        Asset::add('fancytreefilter', 'assets/js/jquery.fancytree.filter.js', 'fancytree');
         Asset::add('configurator.js', 'assets/js/configurator.js', 'jquery');
-
+        
     }
 
     /**
@@ -38,17 +46,233 @@ class ConfiguratorController extends BaseController
      */
     public function configurator()
     {
-
       /*  $vd= new VD;
         $vd->dump(Settings::find(1));*/
+
+
+         
 
         return View::make('admin.configurator');
     }
 
+    /**
+     * Get Selected Node Data 
+     * @return Json
+     */
+    public function getnode()
+    {
+        $node = Input::get('node','');
+        $parent = Input::get('parent','');
+        
+        if ( $parent=="Director") {
+            $viewvalues = CfgDirector::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            Former::populate(  $viewvalues );    
+            $view = 'admin.configurator.director';
+        }
+
+        if ( $parent=="Storage") {
+            $viewvalues = CfgStorage::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            Former::populate( $viewvalues );    
+            $view = 'admin.configurator.storage';
+        }
+
+        if ( $parent=="Clients") {
+            $viewvalues = CfgClient::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            Former::populate( $viewvalues );    
+            $view = 'admin.configurator.clients';
+        }
+
+        if ( $parent=="Jobs") {
+            $viewvalues = CfgJob::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            Former::populate( $viewvalues );    
+            $view = 'admin.configurator.jobs';
+        }
+
+       
+         if ( $parent=="Filesets") {
+            $viewvalues = CfgFileset::with('Cfgfilesetinclude')
+                                    ->with('Cfgfilesetexclude')
+                                    ->with('Cfgfilesetincludeoptions')
+                                    ->with('Cfgfilesetexcludeoptions')
+                                    ->orderBy('Name')->where('Name',$node)
+                                    ->remember(10)->first()->toArray();
+            
+            Debugbar::info($viewvalues);
+           
+            //Debugbar::info($viewvalues-> )
+        
+           
+           
+            
+            //$cfgFileSetIncludeOptions = Cfgfilesetincludeoptions::orderBy('Name')->where('Name',$node)->first()->toArray();
+            //$cfgfilesetexcludeoptions = Cfgfilesetexcludeoptions::orderBy('Name')->where('Name',$node)->first()->toArray();
+            
+
+            Former::populate( $viewvalues );    
+            $view = 'admin.configurator.filesets';
+        }
+
+        if ( $parent=="Catalogs") {
+            $viewvalues = CfgCatalog::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            Former::populate( $viewvalues );    
+            $view = 'admin.configurator.catalog';
+        }
+
+        if ( $parent=="Pools") {
+            $viewvalues = Cfgpool::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            Former::populate( $viewvalues );    
+            $view = 'admin.configurator.pools';
+        }
+
+        if ( $parent=="Schedules") {
+            $viewvalues = Cfgschedule::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            Former::populate( $viewvalues );    
+            $view = 'admin.configurator.schedules';
+        }
+
+        return View::make($view,  $viewvalues)->render();
+
+        
+    }
+
+     /**
+     * Get Tree Data 
+     * @return Json
+     */
+    public function gettreedata()
+    {
+        $tree=array();
+        $key=2;
+
+
+        /* Fill Up Directors Name on Tree */
+        $dir = CfgDirector::orderBy('Name')->remember(10)->get();
+        foreach ($dir as $director)
+        {
+             $dirarray[]=array('key'=> $key++, 'title' => $director->Name, 'parent' => $director->id);
+        }
+
+        $tree[]=array('key'         => 1, 
+                      'title'       => 'Director', 
+                      'folder'      => 'true',
+                      'children'    => $dirarray
+                      );  
+        $lastkey=$key;
+
+        /* Fill Up Storage Name on Tree */
+        $stor = CfgStorage::orderBy('Name')->remember(10)->get();
+        foreach ($stor as $storage)
+        {
+             $storarray[]=array('key'=> $key++, 'title' => $storage->Name , 'id' => $storage->id);
+        }
+
+        $tree[]=array('key'         => $lastkey, 
+                      'title'       => 'Storage', 
+                      'folder'      => 'true',
+                      'children'    => $storarray
+                      );          
+
+        $lastkey=$key;
+
+        /* Fill Up Clients Name on Tree */
+        $clt = CfgClient::orderBy('Name')->remember(10)->get(); 
+        foreach ($clt as $client)
+        {
+             $cltarray[]=array('key'=> $key++, 'title' => $client->Name ,'id' =>  $client->id);
+        }
+        $tree[]=array('key'         => $lastkey, 
+                      'title'       => 'Clients', 
+                      'folder'      => 'true',
+                      'children'    => $cltarray
+                      );          
+
+        $lastkey=$key;
+
+
+        /* Fill Up Jobs Name on Tree */
+        $job = CfgJob::orderBy('Name')->remember(10)->get(); 
+        foreach ($job as $jobs)
+        {
+             $jobarray[]=array('key'=> $key++, 'title' => $jobs->Name );
+        }
+        $tree[]=array('key'         => $lastkey, 
+                      'title'       => 'Jobs', 
+                      'folder'      => 'true',
+                      'children'    => $jobarray
+                      );          
+        $lastkey=$key;
+
+        /* Fill Up Filesets Name on Tree */
+        $fileset = CfgFileset::orderBy('Name')->remember(10)->get(); 
+        foreach ($fileset as $filesets)
+        {
+             $filesetarray[]=array('key'=> $key++, 'title' => $filesets->Name );
+        }
+        $tree[]=array('key'         => $lastkey, 
+                      'title'       => 'Filesets', 
+                      'folder'      => 'true',
+                      'children'    => $filesetarray
+                      );          
+        
+        $lastkey=$key;
+
+
+        /* Fill Up Filesets Name on Tree */
+        $schedule = CfgSchedule::orderBy('Name')->remember(10)->get(); 
+        foreach ($schedule as $schedules)
+        {
+             $schedulearray[]=array('key'=> $key++, 'title' => $schedules->Name );
+        }
+        $tree[]=array('key'         => $lastkey, 
+                      'title'       => 'Schedules', 
+                      'folder'      => 'true',
+                      'children'    => $schedulearray
+                      );          
+        
+        $lastkey=$key;
+
+
+        /* Fill Up Pools Name on Tree */
+        $pool = CfgPool::orderBy('Name')->remember(10)->get(); 
+        foreach ($pool as $pools)
+        {
+             $poolarray[]=array('key'=> $key++, 'title' => $pools->Name );
+        }
+        $tree[]=array('key'         => $lastkey, 
+                      'title'       => 'Pools', 
+                      'folder'      => 'true',
+                      'children'    => $poolarray
+                      );          
+        
+        $lastkey=$key;
+            
+        /* Fill Up Catalogs Name on Tree */
+        $catalog = CfgCatalog::orderBy('Name')->remember(10)->get(); 
+        foreach ($catalog as $catalogs)
+        {
+             $catalogarray[]=array('key'=> $key++, 'title' => $catalogs->Name );
+        }
+        $tree[]=array('key'         => $lastkey, 
+                      'title'       => 'Catalogs', 
+                      'folder'      => 'true',
+                      'children'    => $catalogarray
+                      );          
+        
+        $lastkey=$key;
+        return Response::json ($tree);
+
+    }
   
 
+        
+
+
+
+
+
+
     /**
-     * Read Bacula Configuartion Files
+     * Read Bacula Configuration Files
      * @return View
      */
     public function readbacula()
@@ -59,13 +283,14 @@ class ConfiguratorController extends BaseController
 
          // Read All Files all Directorys
         $files = File::allFiles($path);
+
         foreach ($files as $file)
         {
             if (File::extension($file)=="conf" ) {
                 $conffiles[]=$file;
             }
         }
-
+        $nfiles=count($conffiles);
 
         ////////////////////////////////////////////////////////////////////////////
         
@@ -80,7 +305,7 @@ class ConfiguratorController extends BaseController
 
             if ( $filename!='bacula-fd.conf' || $filename!='bacula-sd.conf' || $filename!='mtx-changer.conf') {
                 
-                LOG::info($filename);           
+             //   LOG::info($filename);           
 
                           
                 
@@ -325,7 +550,8 @@ class ConfiguratorController extends BaseController
 
                             
                             $result = preg_split ('[=]', $config[$key]);
-                            log::info($result);    
+                           // log::info($result);    
+
                             if ((substr(trim($result[0]), 0, 1) != '#') && (substr(trim($result[0]), 0, 1) != '}')) 
                                 $fileset[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
 
@@ -376,9 +602,9 @@ class ConfiguratorController extends BaseController
             }
 
         }
+        return "$nfiles Configuration Files Readed!" ;
 
-            return View::make('admin.configurator');
-        }
+    }
 
     public function action_index($date=null)
     {
@@ -401,7 +627,7 @@ class ConfiguratorController extends BaseController
 
     foreach ($files as $file) {
         $config = file($file);
-        Log::write('info',  $file);
+      //  Log::write('info',  $file);
        // Log::write('info',  explode($path, $file));
 
         if (($file!="bacula\bacula-fd.conf") || ($file!="bacula\bacula-sd.conf") ) {

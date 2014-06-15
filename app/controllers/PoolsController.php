@@ -23,7 +23,7 @@ class PoolsController extends BaseController
         Asset::container('footer')->add('pools.js', 'assets/js/pools.js');
 
         /* Fill Up the Select Box */
-        $poolall = Pool::select(array('poolid','name'))->orderBy('name', 'asc')->get()->toArray();
+        $poolall = Pool::select(array('poolid','name'))->orderBy('name', 'asc')->remember(10)->get()->toArray();
         $poolName = array_fetch ($poolall, 'name') ;
         $poolId   = array_fetch ($poolall, 'poolid') ;
         $this->poolSelectBox  = array_combine ($poolId, $poolName);
@@ -61,7 +61,7 @@ class PoolsController extends BaseController
         }
 
         /* Get Stored bytes pool */
-        $tjobs = Media::where('poolid','=', $poolselected)->sum('volbytes');
+        $tjobs = Media::where('poolid','=', $poolselected)->remember(10)->sum('volbytes');
 
         return View::make('pools',array(
                                     'name'          => $name,

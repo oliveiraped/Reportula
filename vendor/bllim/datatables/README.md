@@ -40,7 +40,7 @@ Composer will download the package. After package downloaded, open "app/config/a
 Finally you need to publish a configuration file by running the following Artisan command.
 
 ```php
-$ php artisan config:publish bllim/laravel4-datatables-package
+$ php artisan config:publish bllim/datatables
 ```
 
 ### Usage
@@ -56,6 +56,7 @@ It is better, you know these:
 - You can use Blade Template Engine in your $content values
 - The name of columns is set by returned array.
     - That means, for 'posts.id' it is 'id' and also for 'owner.name as ownername' it is 'ownername'
+- You can set the "index" column (http://datatables.net/reference/api/row%28%29.index%28%29) using set_index_column($name)
 
 
 ### Examples

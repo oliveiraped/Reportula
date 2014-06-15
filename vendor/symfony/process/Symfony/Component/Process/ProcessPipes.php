@@ -26,20 +26,17 @@ class ProcessPipes
     private $fileHandles = array();
     /** @var array */
     private $readBytes = array();
-    /** @var Boolean */
+    /** @var bool    */
     private $useFiles;
-    /** @var Boolean */
+    /** @var bool    */
     private $ttyMode;
-    /** @var Boolean */
-    private $ptyMode;
 
     const CHUNK_SIZE = 16384;
 
-    public function __construct($useFiles, $ttyMode, $ptyMode = false)
+    public function __construct($useFiles, $ttyMode)
     {
-        $this->useFiles = (Boolean) $useFiles;
-        $this->ttyMode = (Boolean) $ttyMode;
-        $this->ptyMode = (Boolean) $ptyMode;
+        $this->useFiles = (bool) $useFiles;
+        $this->ttyMode = (bool) $ttyMode;
 
         // Fix for PHP bug #51800: reading from STDOUT pipe hangs forever on Windows if the output is too big.
         // Workaround for this problem is to use temporary files instead of pipes on Windows platform.
@@ -107,22 +104,10 @@ class ProcessPipes
     /**
      * Returns an array of descriptors for the use of proc_open.
      *
-     * @param Boolean $disableOutput Whether to redirect STDOUT and STDERR to /dev/null or not.
-     *
      * @return array
      */
-    public function getDescriptors($disableOutput)
+    public function getDescriptors()
     {
-        if ($disableOutput) {
-            $nullstream = fopen(defined('PHP_WINDOWS_VERSION_BUILD') ? 'NUL' : '/dev/null', 'c');
-
-            return array(
-                array('pipe', 'r'),
-                $nullstream,
-                $nullstream,
-            );
-        }
-
         if ($this->useFiles) {
             // We're not using pipe on Windows platform as it hangs (https://bugs.php.net/bug.php?id=51800)
             // We're not using file handles as it can produce corrupted output https://bugs.php.net/bug.php?id=65650
@@ -139,12 +124,6 @@ class ProcessPipes
                 array('file', '/dev/tty', 'r'),
                 array('file', '/dev/tty', 'w'),
                 array('file', '/dev/tty', 'w'),
-            );
-        } elseif ($this->ptyMode && Process::isPtySupported()) {
-            return array(
-                array('pty'),
-                array('pty'),
-                array('pty'),
             );
         }
 
@@ -172,7 +151,7 @@ class ProcessPipes
     /**
      * Reads data in file handles and pipes.
      *
-     * @param Boolean $blocking Whether to use blocking calls or not.
+     * @param bool    $blocking Whether to use blocking calls or not.
      *
      * @return array An array of read data indexed by their fd.
      */
@@ -184,7 +163,7 @@ class ProcessPipes
     /**
      * Reads data in file handles and pipes, closes them if EOF is reached.
      *
-     * @param Boolean $blocking Whether to use blocking calls or not.
+     * @param bool    $blocking Whether to use blocking calls or not.
      *
      * @return array An array of read data indexed by their fd.
      */
@@ -196,21 +175,21 @@ class ProcessPipes
     /**
      * Returns if the current state has open file handles or pipes.
      *
-     * @return Boolean
+     * @return bool
      */
     public function hasOpenHandles()
     {
         if (!$this->useFiles) {
-            return (Boolean) $this->pipes;
+            return (bool) $this->pipes;
         }
 
-        return (Boolean) $this->pipes && (Boolean) $this->fileHandles;
+        return (bool) $this->pipes && (bool) $this->fileHandles;
     }
 
     /**
      * Writes stdin data.
      *
-     * @param Boolean     $blocking Whether to use blocking calls or not.
+     * @param bool        $blocking Whether to use blocking calls or not.
      * @param string|null $stdin    The data to write.
      */
     public function write($blocking, $stdin)
@@ -261,7 +240,7 @@ class ProcessPipes
     /**
      * Reads data in file handles.
      *
-     * @param Boolean $close Whether to close file handles or not.
+     * @param bool    $close Whether to close file handles or not.
      *
      * @return array An array of read data indexed by their fd.
      */
@@ -297,8 +276,8 @@ class ProcessPipes
     /**
      * Reads data in file pipes streams.
      *
-     * @param Boolean $blocking Whether to use blocking calls or not.
-     * @param Boolean $close    Whether to close file handles or not.
+     * @param bool    $blocking Whether to use blocking calls or not.
+     * @param bool    $close    Whether to close file handles or not.
      *
      * @return array An array of read data indexed by their fd.
      */
@@ -354,7 +333,7 @@ class ProcessPipes
     /**
      * Returns true if a system call has been interrupted.
      *
-     * @return Boolean
+     * @return bool
      */
     private function hasSystemCallBeenInterrupted()
     {

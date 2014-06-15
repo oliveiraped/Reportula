@@ -66,6 +66,8 @@ class GroupsController extends BaseController
 
         // Get the user groups
         $userSelected="";
+
+
         foreach ($users as $user) {
             $userSelected[$user->id]=$user->id;
         }

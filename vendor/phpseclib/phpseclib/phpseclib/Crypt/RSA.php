@@ -8,7 +8,7 @@
  * Here's an example of how to encrypt and decrypt text with this library:
  * <code>
  * <?php
- *    include('Crypt/RSA.php');
+ *    include 'Crypt/RSA.php';
  *
  *    $rsa = new Crypt_RSA();
  *    extract($rsa->createKey());
@@ -26,7 +26,7 @@
  * Here's an example of how to create signatures and verify signatures with this library:
  * <code>
  * <?php
- *    include('Crypt/RSA.php');
+ *    include 'Crypt/RSA.php';
  *
  *    $rsa = new Crypt_RSA();
  *    extract($rsa->createKey());
@@ -216,6 +216,12 @@ define('CRYPT_RSA_PUBLIC_FORMAT_RAW', 3);
  * PKCS#1 formatted public key (raw)
  *
  * Used by File/X509.php
+ *
+ * Has the following header:
+ *
+ * -----BEGIN RSA PUBLIC KEY-----
+ *
+ * Analogous to ssh-keygen's pem format (as specified by -m)
  */
 define('CRYPT_RSA_PUBLIC_FORMAT_PKCS1_RAW', 4);
 /**
@@ -232,6 +238,14 @@ define('CRYPT_RSA_PUBLIC_FORMAT_OPENSSH', 6);
  * PKCS#1 formatted public key (encapsulated)
  *
  * Used by PHP's openssl_public_encrypt() and openssl's rsautl (when -pubin is set)
+ *
+ * Has the following header:
+ *
+ * -----BEGIN PUBLIC KEY-----
+ *
+ * Analogous to ssh-keygen's pkcs8 format (as specified by -m)
+ * (the applicability of PKCS8 is dubious since PKCS8 is talking about
+ *  private keys but whatever)
  */
 define('CRYPT_RSA_PUBLIC_FORMAT_PKCS1', 7);
 /**#@-*/
@@ -474,6 +488,10 @@ class Crypt_RSA
             }
 
             switch ( !defined('CRYPT_RSA_MODE') ) { // ie. only run this if the above didn't set CRYPT_RSA_MODE already
+                // openssl_pkey_get_details - which is used in the only place Crypt/RSA.php uses OpenSSL - was introduced in PHP 5.2.0
+                case !function_exists('openssl_pkey_get_details'):
+                    define('CRYPT_RSA_MODE', CRYPT_RSA_MODE_INTERNAL);
+                    break;
                 case extension_loaded('openssl') && version_compare(PHP_VERSION, '4.2.0', '>=') && file_exists($this->configFile):
                     // some versions of XAMPP have mismatched versions of OpenSSL which causes it not to work
                     ob_start();
@@ -755,8 +773,8 @@ class Crypt_RSA
                     strlen('ssh-rsa'), 'ssh-rsa', strlen($raw['publicExponent']), $raw['publicExponent'], strlen($raw['modulus']), $raw['modulus']
                 );
                 $source = pack('Na*Na*Na*Na*',
-                              strlen('ssh-rsa'), 'ssh-rsa', strlen($encryption), $encryption,
-                              strlen($this->comment), $this->comment, strlen($public), $public
+                    strlen('ssh-rsa'), 'ssh-rsa', strlen($encryption), $encryption,
+                    strlen($this->comment), $this->comment, strlen($public), $public
                 );
                 $public = base64_encode($public);
                 $key.= "Public-Lines: " . ((strlen($public) + 63) >> 6) . "\r\n";
@@ -902,7 +920,11 @@ class Crypt_RSA
                     $components['modulus'], $components['publicExponent']
                 );
 
-                if ($this->publicKeyFormat == CRYPT_RSA_PUBLIC_FORMAT_PKCS1) {
+                if ($this->publicKeyFormat == CRYPT_RSA_PUBLIC_FORMAT_PKCS1_RAW) {
+                    $RSAPublicKey = "-----BEGIN RSA PUBLIC KEY-----\r\n" .
+                                    chunk_split(base64_encode($RSAPublicKey), 64) .
+                                    '-----END RSA PUBLIC KEY-----';
+                } else {
                     // sequence(oid(1.2.840.113549.1.1.1), null)) = rsaEncryption.
                     $rsaOID = pack('H*', '300d06092a864886f70d0101010500'); // hex version of MA0GCSqGSIb3DQEBAQUA
                     $RSAPublicKey = chr(0) . $RSAPublicKey;
@@ -911,11 +933,11 @@ class Crypt_RSA
                     $RSAPublicKey = pack('Ca*a*',
                         CRYPT_RSA_ASN1_SEQUENCE, $this->_encodeLength(strlen($rsaOID . $RSAPublicKey)), $rsaOID . $RSAPublicKey
                     );
-                }
 
-                $RSAPublicKey = "-----BEGIN PUBLIC KEY-----\r\n" .
-                                 chunk_split(base64_encode($RSAPublicKey), 64) .
-                                 '-----END PUBLIC KEY-----';
+                    $RSAPublicKey = "-----BEGIN PUBLIC KEY-----\r\n" .
+                                     chunk_split(base64_encode($RSAPublicKey), 64) .
+                                     '-----END PUBLIC KEY-----';
+                }
 
                 return $RSAPublicKey;
         }
@@ -1478,6 +1500,19 @@ class Crypt_RSA
             $this->publicExponent = false;
         }
 
+        switch ($type) {
+            case CRYPT_RSA_PUBLIC_FORMAT_OPENSSH:
+            case CRYPT_RSA_PUBLIC_FORMAT_RAW:
+                $this->setPublicKey();
+                break;
+            case CRYPT_RSA_PRIVATE_FORMAT_PKCS1:
+                switch (true) {
+                    case strpos($key, '-BEGIN PUBLIC KEY-') !== false:
+                    case strpos($key, '-BEGIN RSA PUBLIC KEY-') !== false:
+                        $this->setPublicKey();
+                }
+        }
+
         return true;
     }
 
@@ -1504,7 +1539,9 @@ class Crypt_RSA
      * used in certain contexts.  For example, in SSH-2, RSA authentication works by sending the public key along with a
      * message signed by the private key to the server.  The SSH-2 server looks the public key up in an index of public keys
      * and if it's present then proceeds to verify the signature.  Problem is, if your private key doesn't include the public
-     * exponent this won't work unless you manually add the public exponent.
+     * exponent this won't work unless you manually add the public exponent. phpseclib tries to guess if the key being used
+     * is the public key but in the event that it guesses incorrectly you might still want to explicitly set the key as being
+     * public.
      *
      * Do note that when a new key is loaded the index will be cleared.
      *
@@ -1557,6 +1594,40 @@ class Crypt_RSA
 
         $this->publicExponent = $components['publicExponent'];
 
+        return true;
+    }
+
+    /**
+     * Defines the private key
+     *
+     * If phpseclib guessed a private key was a public key and loaded it as such it might be desirable to force
+     * phpseclib to treat the key as a private key. This function will do that.
+     *
+     * Do note that when a new key is loaded the index will be cleared.
+     *
+     * Returns true on success, false on failure
+     *
+     * @see getPublicKey()
+     * @access public
+     * @param String $key optional
+     * @param Integer $type optional
+     * @return Boolean
+     */
+    function setPrivateKey($key = false, $type = false)
+    {
+        if ($key === false && !empty($this->publicExponent)) {
+            unset($this->publicExponent);
+            return true;
+        }
+
+        $rsa = new Crypt_RSA();
+        if (!$rsa->loadKey($key, $type)) {
+            return false;
+        }
+        unset($rsa->publicExponent);
+
+        // don't overwrite the old key if the new key is invalid
+        $this->loadKey($rsa);
         return true;
     }
 

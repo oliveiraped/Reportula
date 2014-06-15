@@ -2,6 +2,7 @@
 
 
 
+
 class BaseController extends Controller
 {
     public function __construct()
@@ -139,5 +140,9 @@ function MakeMenu($items, $level = 0)
 
     return($ret);
 }
+
+
+  
+
 
 }

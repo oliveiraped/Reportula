@@ -54,25 +54,21 @@ class Bootup
             if ('utf-8' !== strtolower(mb_internal_encoding()))
             {
                 mb_internal_encoding('UTF-8');
-                ini_set('mbstring.internal_encoding', 'UTF-8');
             }
 
             if ('none' !== strtolower(mb_substitute_character()))
             {
                 mb_substitute_character('none');
-                ini_set('mbstring.substitute_character', 'none');
             }
 
             if (!in_array(strtolower(mb_http_output()), array('pass', '8bit')))
             {
                 mb_http_output('pass');
-                ini_set('mbstring.http_output', 'pass');
             }
 
             if (!in_array(strtolower(mb_language()), array('uni', 'neutral')))
             {
                 mb_language('uni');
-                ini_set('mbstring.language', 'uni');
             }
         }
         else if (!defined('MB_OVERLOAD_MAIL'))
@@ -90,19 +86,16 @@ class Bootup
             if ('UTF-8' !== iconv_get_encoding('input_encoding'))
             {
                 iconv_set_encoding('input_encoding', 'UTF-8');
-                ini_set('iconv.input_encoding', 'UTF-8');
             }
 
             if ('UTF-8' !== iconv_get_encoding('internal_encoding'))
             {
                 iconv_set_encoding('internal_encoding', 'UTF-8');
-                ini_set('iconv.internal_encoding', 'UTF-8');
             }
 
             if ('UTF-8' !== iconv_get_encoding('output_encoding'))
             {
                 iconv_set_encoding('output_encoding' , 'UTF-8');
-                ini_set('iconv.output_encoding', 'UTF-8');
             }
         }
         else if (!defined('ICONV_IMPL'))
@@ -239,15 +232,15 @@ class Bootup
 
         if (preg_match('/[\x80-\xFF]/', $s))
         {
-            if (n::isNormalized($s, $normalization_form)) $n = '';
+            if (n::isNormalized($s, $normalization_form)) $n = '-';
             else
             {
                 $n = n::normalize($s, $normalization_form);
-                if (false === $n) $s = u::utf8_encode($s);
-                else $s = $n;
+                if (isset($n[0])) $s = $n;
+                else $s = u::utf8_encode($s);
             }
 
-            if ($s[0] >= "\x80" && false !== $n && isset($leading_combining[0]) && preg_match('/^\p{Mn}/u', $s))
+            if ($s[0] >= "\x80" && isset($n[0], $leading_combining[0]) && preg_match('/^\p{Mn}/u', $s))
             {
                 // Prevent leading combining chars
                 // for NFC-safe concatenations.

@@ -25,24 +25,7 @@ use Symfony\Component\Translation\MessageCatalogue;
 abstract class FileDumper implements DumperInterface
 {
     /**
-     * A template for the relative paths to files.
-     *
-     * @var string
-     */
-    protected $relativePathTemplate = '%domain%.%locale%.%extension%';
-
-    /**
-     * Sets the template for the relative paths to files.
-     *
-     * @param string $relativePathTemplate A template for the relative paths to files
-     */
-    public function setRelativePathTemplate($relativePathTemplate)
-    {
-        $this->relativePathTemplate = $relativePathTemplate;
-    }
-
-    /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function dump(MessageCatalogue $messages, $options = array())
     {
@@ -52,15 +35,11 @@ abstract class FileDumper implements DumperInterface
 
         // save a file for each domain
         foreach ($messages->getDomains() as $domain) {
+            $file = $domain.'.'.$messages->getLocale().'.'.$this->getExtension();
             // backup
-            $fullpath = $options['path'].'/'.$this->getRelativePath($domain, $messages->getLocale());
+            $fullpath = $options['path'].'/'.$file;
             if (file_exists($fullpath)) {
                 copy($fullpath, $fullpath.'~');
-            } else {
-                $directory = dirname($fullpath);
-                if (!file_exists($directory) && !@mkdir($directory, 0777, true)) {
-                    throw new \RuntimeException(sprintf('Unable to create directory "%s".', $directory));
-                }
             }
             // save file
             file_put_contents($fullpath, $this->format($messages, $domain));
@@ -83,21 +62,4 @@ abstract class FileDumper implements DumperInterface
      * @return string file extension
      */
     abstract protected function getExtension();
-
-    /**
-     * Gets the relative file path using the template.
-     *
-     * @param string $domain The domain
-     * @param string $locale The locale
-     *
-     * @return string The relative file path
-     */
-    private function getRelativePath($domain, $locale)
-    {
-        return strtr($this->relativePathTemplate, array(
-            '%domain%' => $domain,
-            '%locale%' => $locale,
-            '%extension%' => $this->getExtension()
-        ));
-    }
 }

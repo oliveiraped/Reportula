@@ -34,6 +34,8 @@ class ClientsController extends BaseController
     public function clients($client=null)
     {
 
+        
+
         $start = Input::get('start', Date::forge('last day')->format('date'));
         
         $end   = Input::get('end',   Date::forge('today')->format('date'));
@@ -44,10 +46,10 @@ class ClientsController extends BaseController
         $user=Sentry::getUser();
 
         // Get Clients to fill the Client Select Box And Select Values From Permissions
-        $permissions = Userspermissions::where('id', '=', $user->id)->first();
+        $permissions = Userspermissions::where('id', '=', $user->id)->remember(10)->first();
         if ($permissions<>null) {
             $permissions=unserialize($permissions->clients);
-            $clients = Client::wherein('clientid', $permissions)->get();
+            $clients = Client::wherein('clientid', $permissions)->remember(10)->get();
             $clientSelectBox=Client::clientSelectBox($clients->toArray());
          } else { 
             $clientSelectBox=Client::clientSelectBox();
@@ -100,6 +102,7 @@ class ClientsController extends BaseController
                       ->where('starttime',  '>=',  $start)
                       ->where('endtime',    '<=',    $end)
                       ->where('clientid','=',$client->clientid)
+                      ->remember(10)
                       ->get();
 
             // Number Terminate Jobs
@@ -110,6 +113,7 @@ class ClientsController extends BaseController
                     ->where('starttime','>=',$start)
                     ->where('endtime','<=',$end)
                     ->where('clientid','=',$client->ClientId)
+                    ->remember(10)
                     ->get();
 
             // Number Terminate Jobs
@@ -120,6 +124,7 @@ class ClientsController extends BaseController
                     ->where('starttime','>=',$start)
                     ->where('endtime','<=',$end)
                     ->where('clientid','=',$client->ClientId)
+                    ->remember(10)
                     ->get();
 
             // Number Terminate Jobs
@@ -130,6 +135,7 @@ class ClientsController extends BaseController
                     ->where('starttime','>=',$start)
                     ->where('endtime','<=',$end)
                     ->where('clientid','=',$client->ClientId)
+                    ->remember(10)
                     ->get();
 
             // Number Running Jobs
@@ -140,6 +146,7 @@ class ClientsController extends BaseController
                     ->where('endtime','<=',$end)
                     ->where('starttime','>=',$start)
                     ->where('clientid','=',$client->ClientId)
+                    ->remember(10)
                     ->get();
 
             // Number Watting Jobs
@@ -150,6 +157,7 @@ class ClientsController extends BaseController
                     ->where('starttime','>=',$start)
                     ->where('endtime','<=',$end)
                     ->where('clientid','=',$client->ClientId)
+                    ->remember(10)
                     ->get();
 
             // Number Error Jobs
@@ -178,6 +186,7 @@ class ClientsController extends BaseController
                   ->where('starttime','>=',  $start)
                   ->where('endtime','<=',    $end)
                   ->orderby('starttime', 'asc')
+                  ->remember(10)
                   ->get(array( DB::raw('date(job.starttime) as date'), DB::raw('jobfiles as files') ));
         $graphFiles= json_encode((array) $graphFiles);
 
@@ -186,6 +195,7 @@ class ClientsController extends BaseController
                   ->where('starttime','>=',  $start)
                   ->where('endtime','<=',$end)
                   ->orderby('starttime', 'asc')
+                  ->remember(10)
                   ->get(array(DB::raw('date(job.starttime) as date'),DB::raw('jobbytes as bytes')));
 
         $graphBytes = json_encode((array) $graphBytes);

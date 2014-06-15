@@ -57,8 +57,12 @@ class DateRangeFilterIteratorTest extends RealIteratorTestCase
         );
 
         $untilLastMonth = array(
+            '.git',
+            'foo',
             'foo/bar.tmp',
             'test.php',
+            'toto',
+            '.foo',
         );
 
         return array(

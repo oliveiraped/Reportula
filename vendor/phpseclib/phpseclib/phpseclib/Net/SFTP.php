@@ -14,7 +14,7 @@
  * Here's a short example of how to use this library:
  * <code>
  * <?php
- *    include('Net/SFTP.php');
+ *    include 'Net/SFTP.php';
  *
  *    $sftp = new Net_SFTP('www.domain.tld');
  *    if (!$sftp->login('username', 'password')) {
@@ -229,18 +229,18 @@ class Net_SFTP extends Net_SSH2
     var $sftp_errors = array();
 
     /**
-     * Directory Cache
+     * Stat Cache
      *
-     * Rather than always having to open a directory and close it immediately there after to see if a file is a directory or
-     * rather than always
+     * Rather than always having to open a directory and close it immediately there after to see if a file is a directory
+     * we'll cache the results.
      *
-     * @see Net_SFTP::_save_dir()
-     * @see Net_SFTP::_remove_dir()
-     * @see Net_SFTP::_is_dir()
+     * @see Net_SFTP::_update_stat_cache()
+     * @see Net_SFTP::_remove_from_stat_cache()
+     * @see Net_SFTP::_query_stat_cache()
      * @var Array
      * @access private
      */
-    var $dirs = array();
+    var $stat_cache = array();
 
     /**
      * Max SFTP Packet Size
@@ -251,6 +251,26 @@ class Net_SFTP extends Net_SSH2
      * @access private
      */
     var $max_sftp_packet;
+
+    /**
+     * Stat Cache Flag
+     *
+     * @see Net_SFTP::disableStatCache()
+     * @see Net_SFTP::enableStatCache()
+     * @var Boolean
+     * @access private
+     */
+    var $use_stat_cache = true;
+
+    /**
+     * Sort Options
+     *
+     * @see Net_SFTP::_comparator()
+     * @see Net_SFTP::setListOrder()
+     * @var Array
+     * @access private
+     */
+    var $sortOptions = array();
 
     /**
      * Default Constructor.
@@ -522,9 +542,39 @@ class Net_SFTP extends Net_SSH2
 
         $this->pwd = $this->_realpath('.');
 
-        $this->_save_dir($this->pwd);
+        $this->_update_stat_cache($this->pwd, array());
 
         return true;
+    }
+
+    /**
+     * Disable the stat cache
+     *
+     * @access public
+     */
+    function disableStatCache()
+    {
+        $this->use_stat_cache = false;
+    }
+
+    /**
+     * Enable the stat cache
+     *
+     * @access public
+     */
+    function enableStatCache()
+    {
+        $this->use_stat_cache = true;
+    }
+
+    /**
+     * Clear the stat cache
+     *
+     * @access public
+     */
+    function clearStatCache()
+    {
+        $this->stat_cache = array();
     }
 
     /**
@@ -645,7 +695,7 @@ class Net_SFTP extends Net_SSH2
         $dir = $this->_realpath($dir);
 
         // confirm that $dir is, in fact, a valid directory
-        if ($this->_is_dir($dir)) {
+        if ($this->use_stat_cache && is_array($this->_query_stat_cache($dir))) {
             $this->pwd = $dir;
             return true;
         }
@@ -677,7 +727,7 @@ class Net_SFTP extends Net_SSH2
             return false;
         }
 
-        $this->_save_dir($dir);
+        $this->_update_stat_cache($dir, array());
 
         $this->pwd = $dir;
         return true;
@@ -687,39 +737,94 @@ class Net_SFTP extends Net_SSH2
      * Returns a list of files in the given directory
      *
      * @param optional String $dir
+     * @param optional Boolean $recursive
      * @return Mixed
      * @access public
      */
-    function nlist($dir = '.')
+    function nlist($dir = '.', $recursive = false)
     {
-        return $this->_list($dir, false);
+        return $this->_nlist_helper($dir, $recursive, '');
+    }
+
+    /**
+     * Helper method for nlist
+     *
+     * @param String $dir
+     * @param Boolean $recursive
+     * @param String $relativeDir
+     * @return Mixed
+     * @access private
+     */
+    function _nlist_helper($dir, $recursive, $relativeDir)
+    {
+        $files = $this->_list($dir, false);
+
+        if (!$recursive) {
+            return $files;
+        }
+
+        $result = array();
+        foreach ($files as $value) {
+            if ($value == '.' || $value == '..') {
+                if ($relativeDir == '') {
+                    $result[] = $value;
+                }
+                continue;
+            }
+            if (is_array($this->_query_stat_cache($this->_realpath($dir . '/' . $value)))) {
+                $temp = $this->_nlist_helper($dir . '/' . $value, true, $relativeDir . $value . '/');
+                $result = array_merge($result, $temp);
+            } else {
+                $result[] = $relativeDir . $value;
+            }
+        }
+
+        return $result;
     }
 
     /**
      * Returns a detailed list of files in the given directory
      *
      * @param optional String $dir
+     * @param optional Boolean $recursive
      * @return Mixed
      * @access public
      */
-    function rawlist($dir = '.')
+    function rawlist($dir = '.', $recursive = false)
     {
-        return $this->_list($dir, true);
+        $files = $this->_list($dir, true);
+        if (!$recursive || $files === false) {
+            return $files;
+        }
+
+        static $depth = 0;
+
+        foreach ($files as $key=>$value) {
+            if ($depth != 0 && $key == '..') {
+                unset($files[$key]);
+                continue;
+            }
+            if ($key != '.' && $key != '..' && is_array($this->_query_stat_cache($this->_realpath($dir . '/' . $key)))) {
+                $depth++;
+                $files[$key] = $this->rawlist($dir . '/' . $key, true);
+                $depth--;
+            } else {
+                $files[$key] = (object) $value;
+            }
+        }
+
+        return $files;
     }
 
     /**
      * Reads a list, be it detailed or not, of files in the given directory
      *
-     * $realpath exists because, in the case of the recursive deletes and recursive chmod's $realpath has already
-     * been calculated.
-     *
      * @param String $dir
      * @param optional Boolean $raw
-     * @param optional Boolean $realpath
      * @return Mixed
      * @access private
      */
-    function _list($dir, $raw = true, $realpath = true)
+    function _list($dir, $raw = true)
     {
         if (!($this->bitmap & NET_SSH2_MASK_LOGIN)) {
             return false;
@@ -752,7 +857,7 @@ class Net_SFTP extends Net_SSH2
                 return false;
         }
 
-        $this->_save_dir($dir);
+        $this->_update_stat_cache($dir, array());
 
         $contents = array();
         while (true) {
@@ -779,14 +884,17 @@ class Net_SFTP extends Net_SSH2
                                 $attributes['type'] = $fileType;
                             }
                         }
-                        if (!$raw) {
-                            $contents[] = $shortname;
-                        } else {
-                            $contents[$shortname] = $attributes;
-                        }
+                        $contents[$shortname] = $attributes + array('filename' => $shortname);
 
                         if (isset($attributes['type']) && $attributes['type'] == NET_SFTP_TYPE_DIRECTORY && ($shortname != '.' && $shortname != '..')) {
-                            $this->_save_dir($dir . '/' . $shortname);
+                            $this->_update_stat_cache($dir . '/' . $shortname, array());
+                        } else {
+                            if ($shortname == '..') {
+                                $temp = $this->_realpath($dir . '/..') . '/.';
+                            } else {
+                                $temp = $dir . '/' . $shortname;
+                            }
+                            $this->_update_stat_cache($temp, (object) $attributes);
                         }
                         // SFTPv6 has an optional boolean end-of-list field, but we'll ignore that, since the
                         // final SSH_FXP_STATUS packet should tell us that, already.
@@ -809,7 +917,111 @@ class Net_SFTP extends Net_SSH2
             return false;
         }
 
-        return $contents;
+        if (count($this->sortOptions)) {
+            uasort($contents, array(&$this, '_comparator'));
+        }
+
+        return $raw ? $contents : array_keys($contents);
+    }
+
+    /**
+     * Compares two rawlist entries using parameters set by setListOrder()
+     *
+     * Intended for use with uasort()
+     *
+     * @param Array $a
+     * @param Array $b
+     * @return Integer
+     * @access private
+     */
+    function _comparator($a, $b)
+    {
+        switch (true) {
+            case $a['filename'] === '.' || $b['filename'] === '.':
+                if ($a['filename'] === $b['filename']) {
+                    return 0;
+                }
+                return $a['filename'] === '.' ? -1 : 1;
+            case $a['filename'] === '..' || $b['filename'] === '..':
+                if ($a['filename'] === $b['filename']) {
+                    return 0;
+                }
+                return $a['filename'] === '..' ? -1 : 1;
+            case isset($a['type']) && $a['type'] === NET_SFTP_TYPE_DIRECTORY:
+                if (!isset($b['type'])) {
+                    return 1;
+                }
+                if ($b['type'] !== $a['type']) {
+                    return -1;
+                }
+                break;
+            case isset($b['type']) && $b['type'] === NET_SFTP_TYPE_DIRECTORY:
+                return 1;
+        }
+        foreach ($this->sortOptions as $sort => $order) {
+            if (!isset($a[$sort]) || !isset($b[$sort])) {
+                if (isset($a[$sort])) {
+                    return -1;
+                }
+                if (isset($b[$sort])) {
+                    return 1;
+                }
+                return 0;
+            }
+            switch ($sort) {
+                case 'filename':
+                    $result = strcasecmp($a['filename'], $b['filename']);
+                    if ($result) {
+                        return $order === SORT_DESC ? -$result : $result;
+                    }
+                    break;
+                case 'permissions':
+                case 'mode':
+                    $a[$sort]&= 07777;
+                    $b[$sort]&= 07777;
+                default:
+                    if ($a[$sort] === $b[$sort]) {
+                        break;
+                    }
+                    return $order === SORT_ASC ? $a[$sort] - $b[$sort] : $b[$sort] - $a[$sort];
+            }
+        }
+    }
+
+    /**
+     * Defines how nlist() and rawlist() will be sorted - if at all.
+     *
+     * If sorting is enabled directories and files will be sorted independently with
+     * directories appearing before files in the resultant array that is returned.
+     *
+     * Any parameter returned by stat is a valid sort parameter for this function.
+     * Filename comparisons are case insensitive.
+     *
+     * Examples:
+     *
+     * $sftp->setListOrder('filename', SORT_ASC);
+     * $sftp->setListOrder('size', SORT_DESC, 'filename', SORT_ASC);
+     * $sftp->setListOrder(true);
+     *    Separates directories from files but doesn't do any sorting beyond that
+     * $sftp->setListOrder();
+     *    Don't do any sort of sorting
+     *
+     * @access public
+     */
+    function setListOrder()
+    {
+        $this->sortOptions = array();
+        $args = func_get_args();
+        if (empty($args)) {
+            return;
+        }
+        $len = count($args) & 0x7FFFFFFE;
+        for ($i = 0; $i < $len; $i+=2) {
+            $this->sortOptions[$args[$i]] = $args[$i + 1];
+        }
+        if (!count($this->sortOptions)) {
+            $this->sortOptions = array('bogus' => true);
+        }
     }
 
     /**
@@ -827,45 +1039,49 @@ class Net_SFTP extends Net_SSH2
             return false;
         }
 
-        $filename = $this->_realpath($filename);
-        if ($filename === false) {
+        $result = $this->stat($filename);
+        if ($result === false) {
             return false;
         }
-
-        return $this->_size($filename);
+        return isset($result['size']) ? $result['size'] : -1;
     }
 
     /**
-     * Save directories to cache
+     * Save files / directories to cache
      *
-     * @param String $dir
+     * @param String $path
+     * @param Mixed $value
      * @access private
      */
-    function _save_dir($dir)
+    function _update_stat_cache($path, $value)
     {
-        // preg_replace('#^/|/(?=/)|/$#', '', $dir) == str_replace('//', '/', trim($dir, '/'))
-        $dirs = explode('/', preg_replace('#^/|/(?=/)|/$#', '', $dir));
+        // preg_replace('#^/|/(?=/)|/$#', '', $dir) == str_replace('//', '/', trim($path, '/'))
+        $dirs = explode('/', preg_replace('#^/|/(?=/)|/$#', '', $path));
 
-        $temp = &$this->dirs;
+        $temp = &$this->stat_cache;
         foreach ($dirs as $dir) {
             if (!isset($temp[$dir])) {
                 $temp[$dir] = array();
+            }
+            if ($dir == end($dirs)) {
+                $temp[$dir] = $value;
             }
             $temp = &$temp[$dir];
         }
     }
 
     /**
-     * Remove directories from cache
+     * Remove files / directories from cache
      *
-     * @param String $dir
+     * @param String $path
+     * @return Boolean
      * @access private
      */
-    function _remove_dir($dir)
+    function _remove_from_stat_cache($path)
     {
-        $dirs = explode('/', preg_replace('#^/|/(?=/)|/$#', '', $dir));
+        $dirs = explode('/', preg_replace('#^/|/(?=/)|/$#', '', $path));
 
-        $temp = &$this->dirs;
+        $temp = &$this->stat_cache;
         foreach ($dirs as $dir) {
             if ($dir == end($dirs)) {
                 unset($temp[$dir]);
@@ -879,26 +1095,26 @@ class Net_SFTP extends Net_SSH2
     }
 
     /**
-     * Checks cache for directory
+     * Checks cache for path
      *
-     * Mainly used by chdir, which is, in turn, also used for determining whether or not an individual
-     * file is a directory or not by stat() and lstat()
+     * Mainly used by file_exists
      *
      * @param String $dir
+     * @return Mixed
      * @access private
      */
-    function _is_dir($dir)
+    function _query_stat_cache($path)
     {
-        $dirs = explode('/', preg_replace('#^/|/(?=/)|/$#', '', $dir));
+        $dirs = explode('/', preg_replace('#^/|/(?=/)|/$#', '', $path));
 
-        $temp = &$this->dirs;
+        $temp = &$this->stat_cache;
         foreach ($dirs as $dir) {
             if (!isset($temp[$dir])) {
-                return false;
+                return null;
             }
             $temp = &$temp[$dir];
         }
-        return true;
+        return $temp;
     }
 
     /**
@@ -921,11 +1137,26 @@ class Net_SFTP extends Net_SSH2
             return false;
         }
 
+        if ($this->use_stat_cache) {
+            $result = $this->_query_stat_cache($filename);
+            if (is_array($result) && isset($result['.'])) {
+                return (array) $result['.'];
+            }
+            if (is_object($result)) {
+                return (array) $result;
+            }
+        }
+
         $stat = $this->_stat($filename, NET_SFTP_STAT);
         if ($stat === false) {
+            $this->_remove_from_stat_cache($filename);
             return false;
         }
         if (isset($stat['type'])) {
+            if ($stat['type'] == NET_SFTP_TYPE_DIRECTORY) {
+                $filename.= '/.';
+            }
+            $this->_update_stat_cache($filename, (object) $stat);
             return $stat;
         }
 
@@ -934,6 +1165,11 @@ class Net_SFTP extends Net_SSH2
             NET_SFTP_TYPE_DIRECTORY :
             NET_SFTP_TYPE_REGULAR;
         $this->pwd = $pwd;
+
+        if ($stat['type'] == NET_SFTP_TYPE_DIRECTORY) {
+            $filename.= '/.';
+        }
+        $this->_update_stat_cache($filename, (object) $stat);
 
         return $stat;
     }
@@ -958,18 +1194,35 @@ class Net_SFTP extends Net_SSH2
             return false;
         }
 
+        if ($this->use_stat_cache) {
+            $result = $this->_query_stat_cache($filename);
+            if (is_array($result) && isset($result['.'])) {
+                return (array) $result['.'];
+            }
+            if (is_object($result)) {
+                return (array) $result;
+            }
+        }
+
         $lstat = $this->_stat($filename, NET_SFTP_LSTAT);
         if ($lstat === false) {
+            $this->_remove_from_stat_cache($filename);
             return false;
         }
         if (isset($lstat['type'])) {
+            if ($lstat['type'] == NET_SFTP_TYPE_DIRECTORY) {
+                $filename.= '/.';
+            }
+            $this->_update_stat_cache($filename, (object) $lstat);
             return $lstat;
         }
 
         $stat = $this->_stat($filename, NET_SFTP_STAT);
 
         if ($lstat != $stat) {
-            return array_merge($lstat, array('type' => NET_SFTP_TYPE_SYMLINK));
+            $lstat = array_merge($lstat, array('type' => NET_SFTP_TYPE_SYMLINK));
+            $this->_update_stat_cache($filename, (object) $lstat);
+            return $stat;
         }
 
         $pwd = $this->pwd;
@@ -977,6 +1230,11 @@ class Net_SFTP extends Net_SSH2
             NET_SFTP_TYPE_DIRECTORY :
             NET_SFTP_TYPE_REGULAR;
         $this->pwd = $pwd;
+
+        if ($lstat['type'] == NET_SFTP_TYPE_DIRECTORY) {
+            $filename.= '/.';
+        }
+        $this->_update_stat_cache($filename, (object) $lstat);
 
         return $lstat;
     }
@@ -1011,24 +1269,6 @@ class Net_SFTP extends Net_SSH2
 
         user_error('Expected SSH_FXP_ATTRS or SSH_FXP_STATUS');
         return false;
-    }
-
-    /**
-     * Returns the file size, in bytes, or false, on failure
-     *
-     * Determines the size without calling Net_SFTP::_realpath()
-     *
-     * @param String $filename
-     * @return Mixed
-     * @access private
-     */
-    function _size($filename)
-    {
-        $result = $this->_stat($filename, NET_SFTP_STAT);
-        if ($result === false) {
-            return false;
-        }
-        return isset($result['size']) ? $result['size'] : -1;
     }
 
     /**
@@ -1205,6 +1445,8 @@ class Net_SFTP extends Net_SSH2
             return false;
         }
 
+        $this->_remove_from_stat_cache($filename);
+
         if ($recursive) {
             $i = 0;
             $result = $this->_setstat_recursive($filename, $attr, $i);
@@ -1375,8 +1617,6 @@ class Net_SFTP extends Net_SSH2
             return false;
         }
 
-        $this->_save_dir($dir);
-
         return true;
     }
 
@@ -1415,7 +1655,11 @@ class Net_SFTP extends Net_SSH2
             return false;
         }
 
-        $this->_remove_dir($dir);
+        $this->_remove_from_stat_cache($dir);
+        // the following will do a soft delete, which would be useful if you deleted a file
+        // and then tried to do a stat on the deleted file. the above, in contrast, does
+        // a hard delete
+        //$this->_update_stat_cache($dir, false);
 
         return true;
     }
@@ -1471,6 +1715,8 @@ class Net_SFTP extends Net_SSH2
             return false;
         }
 
+        $this->_remove_from_stat_cache($remote_file);
+
         $flags = NET_SFTP_OPEN_WRITE | NET_SFTP_OPEN_CREATE;
         // according to the SFTP specs, NET_SFTP_OPEN_APPEND should "force all writes to append data at the end of the file."
         // in practice, it doesn't seem to do that.
@@ -1480,7 +1726,7 @@ class Net_SFTP extends Net_SSH2
             $offset = $start;
         } elseif ($mode & NET_SFTP_RESUME) {
             // if NET_SFTP_OPEN_APPEND worked as it should _size() wouldn't need to be called
-            $size = $this->_size($remote_file);
+            $size = $this->size($remote_file);
             $offset = $size !== false ? $size : 0;
         } else {
             $offset = 0;
@@ -1786,6 +2032,8 @@ class Net_SFTP extends Net_SSH2
             return $result;
         }
 
+        $this->_remove_from_stat_cache($path);
+
         return true;
     }
 
@@ -1841,12 +2089,12 @@ class Net_SFTP extends Net_SSH2
                     $i = 0;
                 }
             }
+            $this->_remove_from_stat_cache($path);
         }
 
         if (!$this->_send_sftp_packet(NET_SFTP_RMDIR, pack('Na*', strlen($path), $path))) {
             return false;
         }
-        $this->_remove_dir($path);
 
         $i++;
 
@@ -1858,6 +2106,205 @@ class Net_SFTP extends Net_SSH2
         }
 
         return true;
+    }
+
+    /**
+     * Checks whether a file or directory exists
+     *
+     * @param String $path
+     * @return Boolean
+     * @access public
+     */
+    function file_exists($path)
+    {
+        if ($this->use_stat_cache) {
+            $path = $this->_realpath($path);
+
+            $result = $this->_query_stat_cache($path);
+
+            if (isset($result)) {
+                // return true if $result is an array or if it's int(1)
+                return $result !== false;
+            }
+        }
+
+        return $this->stat($path) !== false;
+    }
+
+    /**
+     * Tells whether the filename is a directory
+     *
+     * @param String $path
+     * @return Boolean
+     * @access public
+     */
+    function is_dir($path)
+    {
+        $result = $this->_get_stat_cache_prop($path, 'type');
+        if ($result === false) {
+            return false;
+        }
+        return $result === NET_SFTP_TYPE_DIRECTORY;
+    }
+
+    /**
+     * Tells whether the filename is a regular file
+     *
+     * @param String $path
+     * @return Boolean
+     * @access public
+     */
+    function is_file($path)
+    {
+        $result = $this->_get_stat_cache_prop($path, 'type');
+        if ($result === false) {
+            return false;
+        }
+        return $result === NET_SFTP_TYPE_REGULAR;
+    }
+
+    /**
+     * Tells whether the filename is a symbolic link
+     *
+     * @param String $path
+     * @return Boolean
+     * @access public
+     */
+    function is_link($path)
+    {
+        $result = $this->_get_stat_cache_prop($path, 'type');
+        if ($result === false) {
+            return false;
+        }
+        return $result === NET_SFTP_TYPE_SYMLINK;
+    }
+
+    /**
+     * Gets last access time of file
+     *
+     * @param String $path
+     * @return Mixed
+     * @access public
+     */
+    function fileatime($path)
+    {
+        return $this->_get_stat_cache_prop($path, 'atime');
+    }
+
+    /**
+     * Gets file modification time
+     *
+     * @param String $path
+     * @return Mixed
+     * @access public
+     */
+    function filemtime($path)
+    {
+        return $this->_get_stat_cache_prop($path, 'mtime');
+    }
+
+    /**
+     * Gets file permissions
+     *
+     * @param String $path
+     * @return Mixed
+     * @access public
+     */
+    function fileperms($path)
+    {
+        return $this->_get_stat_cache_prop($path, 'permissions');
+    }
+
+    /**
+     * Gets file owner
+     *
+     * @param String $path
+     * @return Mixed
+     * @access public
+     */
+    function fileowner($path)
+    {
+        return $this->_get_stat_cache_prop($path, 'uid');
+    }
+
+    /**
+     * Gets file group
+     *
+     * @param String $path
+     * @return Mixed
+     * @access public
+     */
+    function filegroup($path)
+    {
+        return $this->_get_stat_cache_prop($path, 'gid');
+    }
+
+    /**
+     * Gets file size
+     *
+     * @param String $path
+     * @return Mixed
+     * @access public
+     */
+    function filesize($path)
+    {
+        return $this->_get_stat_cache_prop($path, 'size');
+    }
+
+    /**
+     * Gets file type
+     *
+     * @param String $path
+     * @return Mixed
+     * @access public
+     */
+    function filetype($path)
+    {
+        $type = $this->_get_stat_cache_prop($path, 'type');
+        if ($type === false) {
+            return false;
+        }
+
+        switch ($type) {
+            case NET_SFTP_BLOCK_DEVICE: return 'block';
+            case NET_SFTP_TYPE_CHAR_DEVICE: return 'char';
+            case NET_SFTP_TYPE_DIRECTORY: return 'dir';
+            case NET_SFTP_TYPE_FIFO: return 'fifo';
+            case NET_SFTP_TYPE_REGULAR: return 'file';
+            case NET_SFTP_TYPE_SYMLINK: return 'link';
+            default: return false;
+        }
+    }
+
+    /**
+     * Return a stat properity
+     *
+     * Uses cache if appropriate.
+     *
+     * @param String $path
+     * @param String $prop
+     * @return Mixed
+     * @access private
+     */
+    function _get_stat_cache_prop($path, $prop)
+    {
+        if ($this->use_stat_cache) {
+            $path = $this->_realpath($path);
+
+            $result = $this->_query_stat_cache($path);
+
+            if (is_object($result) && isset($result->$prop)) {
+                return $result->$prop;
+            }
+        }
+
+        $result = $this->stat($path);
+
+        if ($result === false || !isset($result[$prop])) {
+            return false;
+        }
+
+        return $result[$prop];
     }
 
     /**
@@ -1898,6 +2345,12 @@ class Net_SFTP extends Net_SSH2
             $this->_logError($response, $status);
             return false;
         }
+
+        // don't move the stat cache entry over since this operation could very well change the
+        // atime and mtime attributes
+        //$this->_update_stat_cache($newname, $this->_query_stat_cache($oldname));
+        $this->_remove_from_stat_cache($oldname);
+        $this->_remove_from_stat_cache($newname);
 
         return true;
     }

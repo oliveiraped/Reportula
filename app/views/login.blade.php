@@ -20,7 +20,7 @@
                      @endif
                      <div class="response-login"></div>
                     {{ Former::horizontal_open('login','post',array('class'=>'ajax', 'data-replace' => '.response-login')) }}
-                    {{Former::text('username', 'Username')->prepend('<i class="icon-fam-user"></i>')->placeholder(('Username'))->autofocus()->required(); }}
+                    {{ Former::text('username', 'Username')->prepend('<i class="icon-fam-user"></i>')->placeholder(('Username'))->autofocus()->required(); }}
                     {{Former::text('password', 'Password')->prepend('<i class="icon-fam-key"></i>')->placeholder(('Password'))->type('password')->required();}}
                     {{Form::submit(('Login'), array('class' => 'btn btn-primary'));}}
                     {{Former::close();}}

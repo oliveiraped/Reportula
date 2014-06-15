@@ -17,7 +17,7 @@ use Barryvdh\Debugbar\DataCollector\ViewCollector;
 use Barryvdh\Debugbar\DataCollector\SymfonyRequestCollector;
 use Barryvdh\Debugbar\DataCollector\FilesCollector;
 use Barryvdh\Debugbar\DataCollector\LogsCollector;
-use Barryvdh\Debugbar\DataCollector\IlluminateAuthCollector;
+use Barryvdh\Debugbar\DataCollector\AuthCollector;
 use Barryvdh\Debugbar\DataCollector\QueryCollector;
 use Barryvdh\Debugbar\Storage\FilesystemStorage;
 
@@ -118,50 +118,56 @@ class LaravelDebugbar extends DebugBar
             $this->addCollector(new TimeDataCollector());
 
             $this->app->booted(function() use($debugbar)
-                {
-                    if(defined('LARAVEL_START')){
-                        $debugbar['time']->addMeasure('Booting', LARAVEL_START, microtime(true));
-                    }
-                });
+            {
+                if(defined('LARAVEL_START')){
+                    $debugbar['time']->addMeasure('Booting', LARAVEL_START, microtime(true));
+                }
+            });
 
             //Check if App::before is already called..
             if(version_compare($app::VERSION, '4.1', '>=') && $this->app->isBooted()){
                 $debugbar->startMeasure('application', 'Application');
             }else{
                 $this->app->before(function() use($debugbar)
-                    {
-                        $debugbar->startMeasure('application', 'Application');
-                    });
+                {
+                    $debugbar->startMeasure('application', 'Application');
+                });
             }
 
             $this->app->after(function() use($debugbar)
-                {
-                    $debugbar->stopMeasure('application');
-                    $debugbar->startMeasure('after', 'After application');
-                });
+            {
+                $debugbar->stopMeasure('application');
+                $debugbar->startMeasure('after', 'After application');
+            });
 
         }
         if($this->shouldCollect('memory', true)){
             $this->addCollector(new MemoryCollector());
         }
         if($this->shouldCollect('exceptions', true)){
-            $exceptionCollector = new ExceptionsCollector();
-            $this->addCollector($exceptionCollector);
-            $this->app->error(function(Exception $exception) use($exceptionCollector){
-                $exceptionCollector->addException($exception);
-            });
+            try{
+                $exceptionCollector = new ExceptionsCollector();
+                if(method_exists($exceptionCollector, 'setChainExceptions')){
+                    $exceptionCollector->setChainExceptions($this->app['config']->get('laravel-debugbar::config.options.exceptions.chain', true));
+                }
+                $this->addCollector($exceptionCollector);
+                $this->app->error(function(Exception $exception) use($exceptionCollector){
+                    $exceptionCollector->addException($exception);
+                });
+            }catch(\Exception $e){}
         }
         if($this->shouldCollect('laravel', false)){
-            $this->addCollector(new LaravelCollector());
+            $this->addCollector(new LaravelCollector($this->app));
         }
         if($this->shouldCollect('default_request', false)){
             $this->addCollector(new RequestDataCollector());
         }
 
         if($this->shouldCollect('events', false) and isset($this->app['events'])){
-            $this->addCollector(new MessagesCollector('events'));
-            $dispatcher = $this->app['events'];
-            $dispatcher->listen('*', function() use($debugbar, $dispatcher){
+            try{
+                $this->addCollector(new MessagesCollector('events'));
+                $dispatcher = $this->app['events'];
+                $dispatcher->listen('*', function() use($debugbar, $dispatcher){
                     if(method_exists($dispatcher, 'firing')){
                         $event = $dispatcher->firing();
                     }else{
@@ -170,38 +176,59 @@ class LaravelDebugbar extends DebugBar
                     }
                     $debugbar['events']->info("Received event: ". $event);
                 });
+            }catch(\Exception $e){
+                $this->addException(new Exception('Cannot add EventCollector to Laravel Debugbar: '. $e->getMessage(), $e->getCode(), $e));
+            }
         }
 
         if($this->shouldCollect('views', true) and isset($this->app['events'])){
-            $collectData = $this->app['config']->get('laravel-debugbar::config.options.views.data', true);
-            $this->addCollector(new ViewCollector($collectData));
-            $this->app['events']->listen('composing:*', function($view) use($debugbar){
+            try{
+                $collectData = $this->app['config']->get('laravel-debugbar::config.options.views.data', true);
+                $this->addCollector(new ViewCollector($collectData));
+                $this->app['events']->listen('composing:*', function($view) use($debugbar){
                     $debugbar['views']->addView($view);
                 });
+            }catch(\Exception $e){
+                $this->addException(new Exception('Cannot add ViewCollector to Laravel Debugbar: '. $e->getMessage(), $e->getCode(), $e));
+            }
         }
 
         if($this->shouldCollect('route')){
-            if(version_compare($app::VERSION, '4.1', '>=')){
-                $this->addCollector($this->app->make('Barryvdh\Debugbar\DataCollector\IlluminateRouteCollector'));
-            }else{
-                $this->addCollector($this->app->make('Barryvdh\Debugbar\DataCollector\SymfonyRouteCollector'));
+            try{
+                if(version_compare($app::VERSION, '4.1', '>=')){
+                    $this->addCollector($this->app->make('Barryvdh\Debugbar\DataCollector\IlluminateRouteCollector'));
+                }else{
+                    $this->addCollector($this->app->make('Barryvdh\Debugbar\DataCollector\SymfonyRouteCollector'));
+                }
+            }catch(\Exception $e){
+                $this->addException(new Exception('Cannot add RouteCollector to Laravel Debugbar: '. $e->getMessage(), $e->getCode(), $e));
             }
         }
 
         if( $this->shouldCollect('log', true) ){
-            if($this->hasCollector('messages') ){
-                $logger = new MessagesCollector('log');
-                $this['messages']->aggregate($logger);
-                $this->app['log']->listen(function($level, $message, $context) use($logger)
+            try{
+                if($this->hasCollector('messages') ){
+                    $logger = new MessagesCollector('log');
+                    $this['messages']->aggregate($logger);
+                    $this->app['log']->listen(function($level, $message, $context) use($logger)
                     {
-                        if(is_array($message) or is_object($message)){
-                            $message = json_encode($message);
+                        try{
+                            $logMessage = (string) $message;
+                            if(mb_check_encoding($logMessage, 'UTF-8')){
+                                $logMessage .= (!empty($context) ? ' '.json_encode($context) : '');
+                            }else{
+                                $logMessage = "[INVALID UTF-8 DATA]";
+                            }
+                        }catch(\Exception $e){
+                            $logMessage = "[Exception: ".$e->getMessage() ."]";
                         }
-                        $log = '['.date('H:i:s').'] '. "LOG.$level: " . $message . (!empty($context) ? ' '.json_encode($context) : '');
-                        $logger->addMessage($log, $level, false);
+                        $logger->addMessage('['.date('H:i:s').'] '. "LOG.$level: ". $logMessage, $level, false);
                     });
-            }else{
-                $this->addCollector(new MonologCollector( $this->app['log']->getMonolog() ));
+                }else{
+                    $this->addCollector(new MonologCollector( $this->app['log']->getMonolog() ));
+                }
+            }catch(\Exception $e){
+                $this->addException(new Exception('Cannot add LogsCollector to Laravel Debugbar: '. $e->getMessage(), $e->getCode(), $e));
             }
         }
 
@@ -219,36 +246,52 @@ class LaravelDebugbar extends DebugBar
             }
 
             $this->addCollector($queryCollector);
-            
+
             try{
                 $db->listen(function($query, $bindings, $time, $connectionName) use ($db, $queryCollector)
                 {
                     $connection = $db->connection($connectionName);
                     if( !method_exists($connection, 'logging') || $connection->logging() ){
-                        $queryCollector->addQuery($query, $bindings, $time, $connection);
+                        $queryCollector->addQuery((string) $query, $bindings, $time, $connection);
                     }
                 });
-            }catch(\Exception $e){}
+            }catch(\Exception $e){
+                $this->addException(new Exception('Cannot add listen to Queries for Laravel Debugbar: '. $e->getMessage(), $e->getCode(), $e));
+            }
         }
 
         if($this->shouldCollect('mail', true)){
-            $mailer = $this->app['mailer']->getSwiftMailer();
-            $this->addCollector(new SwiftMailCollector($mailer));
-            if($this->app['config']->get('laravel-debugbar::config.options.mail.full_log') and $this->hasCollector('messages')){
-                $this['messages']->aggregate(new SwiftLogCollector($mailer));
+            try{
+                $mailer = $this->app['mailer']->getSwiftMailer();
+                $this->addCollector(new SwiftMailCollector($mailer));
+                if($this->app['config']->get('laravel-debugbar::config.options.mail.full_log') and $this->hasCollector('messages')){
+                    $this['messages']->aggregate(new SwiftLogCollector($mailer));
+                }
+            }catch(\Exception $e){
+                $this->addException(new Exception('Cannot add MailCollector to Laravel Debugbar: '. $e->getMessage(), $e->getCode(), $e));
             }
         }
 
         if($this->shouldCollect('logs', false)){
-            $file = $this->app['config']->get('laravel-debugbar::config.options.logs.file');
-            $this->addCollector(new LogsCollector($file));
+            try{
+                $file = $this->app['config']->get('laravel-debugbar::config.options.logs.file');
+                $this->addCollector(new LogsCollector($file));
+            }catch(\Exception $e){
+                $this->addException(new Exception('Cannot add LogsCollector to Laravel Debugbar: '. $e->getMessage(), $e->getCode(), $e));
+            }
         }
         if($this->shouldCollect('files', false)){
             $this->addCollector(new FilesCollector());
         }
 
         if ($this->shouldCollect('auth', false)) {
-            $this->addCollector(new IlluminateAuthCollector($this->app['auth']));
+            try{
+                $authCollector = new AuthCollector($app['auth']);
+                $authCollector->setShowName($this->app['config']->get('laravel-debugbar::config.options.auth.show_name'));
+                $this->addCollector($authCollector);
+            }catch(\Exception $e){
+                $this->addException(new Exception('Cannot add AuthCollector to Laravel Debugbar: '. $e->getMessage(), $e->getCode(), $e));
+            }
         }
 
         $renderer = $this->getJavascriptRenderer();
@@ -259,20 +302,36 @@ class LaravelDebugbar extends DebugBar
 
     }
 
+    /**
+     * Check if this is a request to the Debugbar OpenHandler
+     * 
+     * @return bool
+     */
     protected function isDebugbarRequest(){
         return $this->app['request']->segment(1) == '_debugbar';
     }
-
+    
+    /**
+     * Modify the response and inject the debugbar (or data in headers)
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Symfony\Component\HttpFoundation\Response  $response
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function modifyResponse($request, $response){
         $app = $this->app;
         if( $app->runningInConsole() or !$this->isEnabled() || $this->isDebugbarRequest()){
             return $response;
         }
-        
+
         if($this->shouldCollect('config', false)){
-            $configCollector = new ConfigCollector;
-            $configCollector->setData($app['config']->getItems());
-            $this->addCollector($configCollector);
+            try{
+                $configCollector = new ConfigCollector;
+                $configCollector->setData($app['config']->getItems());
+                $this->addCollector($configCollector);
+            }catch(\Exception $e){
+                $this->addException(new Exception('Cannot add ConfigCollector to Laravel Debugbar: '. $e->getMessage(), $e->getCode(), $e));
+            }
         }
 
         /** @var \Illuminate\Session\SessionManager $sessionManager */
@@ -281,7 +340,11 @@ class LaravelDebugbar extends DebugBar
         $this->setHttpDriver($httpDriver);
 
         if($this->shouldCollect('symfony_request', true) and !$this->hasCollector('request')){
-            $this->addCollector(new SymfonyRequestCollector($request, $response, $sessionManager, $app['auth']));
+            try{
+                $this->addCollector(new SymfonyRequestCollector($request, $response, $sessionManager));
+            }catch(\Exception $e){
+                $this->addException(new Exception('Cannot add SymfonyRequestCollector to Laravel Debugbar: '. $e->getMessage(), $e->getCode(), $e));
+            }
         }
 
         if($response->isRedirection()){
@@ -290,7 +353,7 @@ class LaravelDebugbar extends DebugBar
             $this->sendDataInHeaders(true);
         }elseif(
             ($response->headers->has('Content-Type') && false === strpos($response->headers->get('Content-Type'), 'html'))
-            || 'html' !== $request->getRequestFormat()
+            || 'html' !== $request->format()
         ){
             //Do nothing
         }elseif($app['config']->get('laravel-debugbar::config.inject', true)){
@@ -408,7 +471,7 @@ class LaravelDebugbar extends DebugBar
     public function injectDebugbar(Response $response)
     {
         $content = $response->getContent();
-        
+
         $renderer = $this->getJavascriptRenderer();
         if($this->getStorage()){
             $openHandlerUrl = $this->app['url']->route('debugbar.openhandler');
@@ -430,6 +493,9 @@ class LaravelDebugbar extends DebugBar
         }
 
         $response->setContent($content);
+        
+        // Stop further rendering (on subrequests etc)
+        $this->disable();
     }
 
     /**

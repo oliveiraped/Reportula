@@ -43,7 +43,6 @@
                                     </li>
                                 </ul>
                                 <ul class="pull-right nav">
-                                    <li><a href="http://localhost/laravel/public/index.php/en/profile"><i class="icon-fam-user"></i> Welcome admin</a>
                                     </li>
                                     <li><a href="{{ URL::route('admin.logout') }}"><i class="icon-fam-house-link"></i> Logout</a>
                                     </li>
@@ -57,7 +56,7 @@
                  @yield('main')
             <hr>
             <footer>
-                <p><center>Reportula V2.0.0 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 </center></p>
+                <p><center>Reportula V2.0.4 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 - 2014 </center></p>
             </footer>
 
         </div>

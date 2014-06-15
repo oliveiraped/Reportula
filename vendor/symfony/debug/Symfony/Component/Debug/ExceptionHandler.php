@@ -29,7 +29,7 @@ if (!defined('ENT_SUBSTITUTE')) {
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class ExceptionHandler implements ExceptionHandlerInterface
+class ExceptionHandler
 {
     private $debug;
     private $charset;
@@ -43,7 +43,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
     /**
      * Registers the exception handler.
      *
-     * @param Boolean $debug
+     * @param bool    $debug
      *
      * @return ExceptionHandler The registered exception handler
      */
@@ -57,13 +57,13 @@ class ExceptionHandler implements ExceptionHandlerInterface
     }
 
     /**
-     * {@inheritDoc}
-     *
      * Sends a response for the given Exception.
      *
      * If you have the Symfony HttpFoundation component installed,
      * this method will use it to create and send the response. If not,
      * it will fallback to plain PHP functions.
+     *
+     * @param \Exception $exception An \Exception instance
      *
      * @see sendPhpResponse
      * @see createResponse

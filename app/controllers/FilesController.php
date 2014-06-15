@@ -59,7 +59,7 @@ class FilesController extends BaseController
             $files = Files::select(array('path.path','filename.name as filename','jobid'))
                   ->join('filename','file.filenameid', '=', 'filename.filenameid')
                   ->join('path','file.pathid', '=', 'path.pathid')
-                  ->where('jobid','=', $job)->get();
+                  ->where('jobid','=', $job)->remember(10)->get();
             $files = $files->toArray();
            $t= Filessearch::insert($files);
         }

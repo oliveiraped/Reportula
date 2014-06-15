@@ -44,6 +44,65 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         error_reporting($this->errorReporting);
     }
 
+    public function testCompileTimeError()
+    {
+        // the ContextErrorException must not be loaded to test the workaround
+        // for https://bugs.php.net/bug.php?id=65322.
+        if (class_exists('Symfony\Component\Debug\Exception\ContextErrorException', false)) {
+            $this->markTestSkipped('The ContextErrorException class is already loaded.');
+        }
+
+        $exceptionHandler = $this->getMock('Symfony\Component\Debug\ExceptionHandler', array('handle'));
+
+        // the following code forces some PHPUnit classes to be loaded
+        // so that they will be available in the exception handler
+        // as they won't be autoloaded by PHP
+        class_exists('PHPUnit_Framework_MockObject_Invocation_Object');
+        $this->assertInstanceOf('stdClass', new \stdClass());
+        $this->assertEquals(1, 1);
+        $this->assertStringStartsWith('foo', 'foobar');
+        $this->assertArrayHasKey('bar', array('bar' => 'foo'));
+
+        $that = $this;
+        $exceptionCheck = function ($exception) use ($that) {
+            $that->assertInstanceOf('Symfony\Component\Debug\Exception\ContextErrorException', $exception);
+            $that->assertEquals(E_STRICT, $exception->getSeverity());
+            $that->assertEquals(2, $exception->getLine());
+            $that->assertStringStartsWith('Runtime Notice: Declaration of _CompileTimeError::foo() should be compatible with', $exception->getMessage());
+            $that->assertArrayHasKey('bar', $exception->getContext());
+        };
+
+        $exceptionHandler->expects($this->once())
+            ->method('handle')
+            ->will($this->returnCallback($exceptionCheck))
+        ;
+
+        ErrorHandler::register();
+        set_exception_handler(array($exceptionHandler, 'handle'));
+
+        // dummy variable to check for in error handler.
+        $bar = 123;
+
+        // trigger compile time error
+        try {
+            eval(<<<'PHP'
+class _BaseCompileTimeError { function foo() {} }
+class _CompileTimeError extends _BaseCompileTimeError { function foo($invalid) {} }
+PHP
+            );
+        } catch (DummyException $e) {
+            // if an exception is thrown, the test passed
+        } catch (\Exception $e) {
+            restore_error_handler();
+            restore_exception_handler();
+
+            throw $e;
+        }
+
+        restore_error_handler();
+        restore_exception_handler();
+    }
+
     public function testNotice()
     {
         $exceptionHandler = $this->getMock('Symfony\Component\Debug\ExceptionHandler', array('handle'));
@@ -53,6 +112,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         $exceptionCheck = function ($exception) use ($that) {
             $that->assertInstanceOf('Symfony\Component\Debug\Exception\ContextErrorException', $exception);
             $that->assertEquals(E_NOTICE, $exception->getSeverity());
+            $that->assertEquals(__LINE__ + 44, $exception->getLine());
             $that->assertEquals(__FILE__, $exception->getFile());
             $that->assertRegexp('/^Notice: Undefined variable: (foo|bar)/', $exception->getMessage());
             $that->assertArrayHasKey('foobar', $exception->getContext());
@@ -121,18 +181,18 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         try {
             $handler = ErrorHandler::register(0);
-            $this->assertFalse($handler->handle(0, 'foo', 'foo.php', 12, 'foo'));
+            $this->assertFalse($handler->handle(0, 'foo', 'foo.php', 12, array()));
 
             restore_error_handler();
 
             $handler = ErrorHandler::register(3);
-            $this->assertFalse($handler->handle(4, 'foo', 'foo.php', 12, 'foo'));
+            $this->assertFalse($handler->handle(4, 'foo', 'foo.php', 12, array()));
 
             restore_error_handler();
 
             $handler = ErrorHandler::register(3);
             try {
-                $handler->handle(111, 'foo', 'foo.php', 12, 'foo');
+                $handler->handle(111, 'foo', 'foo.php', 12, array());
             } catch (\ErrorException $e) {
                 $this->assertSame('111: foo in foo.php line 12', $e->getMessage());
                 $this->assertSame(111, $e->getSeverity());
@@ -143,12 +203,12 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             restore_error_handler();
 
             $handler = ErrorHandler::register(E_USER_DEPRECATED);
-            $this->assertTrue($handler->handle(E_USER_DEPRECATED, 'foo', 'foo.php', 12, 'foo'));
+            $this->assertTrue($handler->handle(E_USER_DEPRECATED, 'foo', 'foo.php', 12, array()));
 
             restore_error_handler();
 
             $handler = ErrorHandler::register(E_DEPRECATED);
-            $this->assertTrue($handler->handle(E_DEPRECATED, 'foo', 'foo.php', 12, 'foo'));
+            $this->assertTrue($handler->handle(E_DEPRECATED, 'foo', 'foo.php', 12, array()));
 
             restore_error_handler();
 
@@ -171,29 +231,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
             $handler = ErrorHandler::register(E_USER_DEPRECATED);
             $handler->setLogger($logger);
-            $handler->handle(E_USER_DEPRECATED, 'foo', 'foo.php', 12, 'foo');
-
-            restore_error_handler();
-
-            $logger = $this->getMock('Psr\Log\LoggerInterface');
-
-            $that = $this;
-            $logArgCheck = function ($level, $message, $context) use ($that) {
-                $that->assertEquals('Undefined variable: undefVar', $message);
-                $that->assertArrayHasKey('type', $context);
-                $that->assertEquals($context['type'], E_NOTICE);
-            };
-
-            $logger
-                ->expects($this->once())
-                ->method('log')
-                ->will($this->returnCallback($logArgCheck))
-            ;
-
-            $handler = ErrorHandler::register(E_NOTICE);
-            $handler->setLogger($logger, 'scream');
-            unset($undefVar);
-            @$undefVar++;
+            $handler->handle(E_USER_DEPRECATED, 'foo', 'foo.php', 12, array());
 
             restore_error_handler();
         } catch (\Exception $e) {
@@ -216,8 +254,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         $m->invoke($handler, $exceptionHandler, $error);
 
         $this->assertInstanceof($class, $exceptionHandler->e);
-        // class names are case insensitive and PHP/HHVM do not return the same
-        $this->assertSame(strtolower($translatedMessage), strtolower($exceptionHandler->e->getMessage()));
+        $this->assertSame($translatedMessage, $exceptionHandler->e->getMessage());
         $this->assertSame($error['type'], $exceptionHandler->e->getSeverity());
         $this->assertSame($error['file'], $exceptionHandler->e->getFile());
         $this->assertSame($error['line'], $exceptionHandler->e->getLine());

@@ -145,6 +145,7 @@ class InstallController extends Controller
                     $table->string('reset_password_code')->nullable();
                     $table->string('first_name')->nullable();
                     $table->string('last_name')->nullable();
+                    $table->text('remember_token')->nullable();
                     $table->timestamps();
 
                     // We'll need to ensure that MySQL uses the InnoDB engine to
@@ -289,6 +290,18 @@ class InstallController extends Controller
             /* cfgFileSetIncludeOptions   */
             if (!Schema::hasTable('cfgFileSetIncludeOptions')) {
                 Schema::create('cfgFileSetIncludeOptions', function ($table) {
+                    $table->increments('id');
+                    $table->integer('idfileset')->nullable();
+                    $table->string('option')->nullable();
+                    $table->string('value')->nullable();
+
+                });
+
+            }
+
+             /* cfgFileSetIncludeOptions   */
+            if (!Schema::hasTable('cfgFileSetExcludeOptions')) {
+                Schema::create('cfgFileSetExcludeOptions', function ($table) {
                     $table->increments('id');
                     $table->integer('idfileset')->nullable();
                     $table->string('option')->nullable();

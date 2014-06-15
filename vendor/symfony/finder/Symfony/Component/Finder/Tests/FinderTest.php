@@ -336,17 +336,6 @@ class FinderTest extends Iterator\RealIteratorTestCase
     /**
      * @dataProvider getAdaptersTestData
      */
-    public function testInWithGlobBrace($adapter)
-    {
-        $finder = $this->buildFinder($adapter);
-        $finder->in(array(__DIR__.'/Fixtures/{A,copy/A}/B/C'))->getIterator();
-
-        $this->assertIterator($this->toAbsoluteFixtures(array('A/B/C/abc.dat', 'copy/A/B/C/abc.dat.copy')), $finder);
-    }
-
-    /**
-     * @dataProvider getAdaptersTestData
-     */
     public function testGetIterator($adapter)
     {
         $finder = $this->buildFinder($adapter);
@@ -835,6 +824,10 @@ class FinderTest extends Iterator\RealIteratorTestCase
 
     public function testNonSeekableStream()
     {
+        if (!in_array('ftp', stream_get_wrappers())) {
+            $this->markTestSkipped(sprintf('Unavailable stream "%s".', 'ftp'));
+        }
+
         try {
             $i = Finder::create()->in('ftp://ftp.mozilla.org/')->depth(0)->getIterator();
         } catch (\UnexpectedValueException $e) {

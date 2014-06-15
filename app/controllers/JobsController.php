@@ -46,7 +46,7 @@ class JobsController extends BaseController
             $jobselected=0;
         } else {
             $jobselected = Job::select('name')
-                ->where('jobid','=', $jobselected )->get();
+                ->where('jobid','=', $jobselected )->remember(10)->get();
 
             $jobselected = $jobselected->first()->name;
             /* Array Search for Get Id and set the select box when passing url id of job*/
@@ -60,7 +60,7 @@ class JobsController extends BaseController
         $permissions = Userspermissions::where('id', '=', $user->id)->first();
         if ($permissions<>null) {
             $permissions=unserialize($permissions->jobs);
-            $jobs = Job::wherein('jobid', $permissions)->get();
+            $jobs = Job::wherein('jobid', $permissions)->remember(10)->get();
             $jobsSelectBox=Job::jobSelectBox($jobs->toArray());
         } else {
             $jobsSelectBox=Job::jobSelectBox();
@@ -72,10 +72,10 @@ class JobsController extends BaseController
           $cfgjob =  ""; //cfgJob::wherename($jobselected)->first();
 
           if ($cfgjob<>"") {
-              $cfgfileset  = cfgFileset::wherename($cfgjob->fileset)->first();
-              $fileinclude = cfgFileset::find($cfgfileset->id)->filesinclude()->get();
+              $cfgfileset  = cfgFileset::wherename($cfgjob->fileset)->remember(10)->first();
+              $fileinclude = cfgFileset::find($cfgfileset->id)->filesinclude()->remember(10)->get();
 
-              $fileexclude = cfgFileset::find($cfgfileset->id)->filesexclude()->get();
+              $fileexclude = cfgFileset::find($cfgfileset->id)->filesexclude()->remember(10)->get();
           } else {
               $fileinclude = "";
               $fileexclude = "";
@@ -88,6 +88,7 @@ class JobsController extends BaseController
                   ->where('starttime','>=',  $start)
                   ->where('endtime','<=',$end)
                   ->where('name','=', $jobselected)
+                  ->remember(10)
                   ->get();
 
         //dd ($tjobs);
@@ -99,6 +100,7 @@ class JobsController extends BaseController
                 ->where('starttime','>=',$start)
                 ->where('endtime','<=',$end)
                  ->where('name','=',$jobselected)
+                 ->remember(10)
                 ->get();
 
         // Number Terminate Jobs
@@ -109,6 +111,7 @@ class JobsController extends BaseController
                 ->where('starttime','>=',$start)
                 ->where('endtime','<=',$end)
                 ->where('name','=',$jobselected)
+                ->remember(10)
                 ->get();
 
         // Number Running Jobs
@@ -119,6 +122,7 @@ class JobsController extends BaseController
                 ->where('endtime','<=',$end)
                 ->where('starttime','>=',$start)
                 ->where('name','=',$jobselected)
+                ->remember(10)
                 ->get();
 
         // Number Watting Jobs
@@ -129,6 +133,7 @@ class JobsController extends BaseController
                 ->where('starttime','>=',$start)
                 ->where('endtime','<=',$end)
                 ->where('name','=',$jobselected)
+                ->remember(10)
                 ->get();
 
         // Number Error Jobs
@@ -151,6 +156,7 @@ class JobsController extends BaseController
                   ->where('starttime','>=',  $start)
                   ->where('endtime','<=',    $end )
                   ->orderby('starttime', 'asc')
+                  ->remember(10)
                   ->get(array(DB::raw('date(job.starttime) as date'), DB::raw('jobbytes as bytes')));
         $graphBytes= json_encode((array) $graphBytes);
 
@@ -158,6 +164,7 @@ class JobsController extends BaseController
                   ->where('starttime','>=', $start )
                   ->where('endtime','<=',   $end  )
                   ->orderby('starttime', 'asc')
+                  ->remember(10)
                   ->get(array(DB::raw('date(job.starttime) as date'), DB::raw('jobfiles as files')));
         $graphFiles = json_encode((array) $graphFiles);
 
@@ -216,7 +223,8 @@ class JobsController extends BaseController
                   ->groupby('job.level')
                   ->groupby('job.jobbytes')
                   ->groupby('job.jobfiles')
-                  ->groupby('job.jobstatus');
+                  ->groupby('job.jobstatus')
+                  ->remember(10);
 
         switch (Input::get('type')) {
             case "terminated":
