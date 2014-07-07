@@ -68,9 +68,40 @@ Route::group(array('prefix' => 'admin', 'before' => 'auth.admin'), function () {
     Route::get('readbacula',    array('as' => 'admin.readbacula',    'uses' => 'app\controllers\admin\ConfiguratorController@readbacula'));
     Route::get('gettreedata',   array('as' => 'admin.gettreedata',   'uses' => 'app\controllers\admin\ConfiguratorController@gettreedata'));
     Route::post('getnode',       array('as' => 'admin.getnode',       'uses' => 'app\controllers\admin\ConfiguratorController@getnode'));
+    Route::get('getincludes',        array('as' => 'admin.getincludes',       'uses' => 'app\controllers\admin\ConfiguratorController@getincludes'));
+    Route::get('getincludesoptions', array('as' => 'admin.getincludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@getincludesoptions'));
+    Route::get('getexcludes',        array('as' => 'admin.getexcludes',       'uses' => 'app\controllers\admin\ConfiguratorController@getexcludes'));
+    Route::get('getexcludesoptions', array('as' => 'admin.getexcludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@getexcludesoptions'));
 
+    Route::post('addincludes', array('as' => 'admin.addincludes',       'uses' => 'app\controllers\admin\ConfiguratorController@addincludes'));
+    Route::post('editincludes', array('as' => 'admin.editincludes',       'uses' => 'app\controllers\admin\ConfiguratorController@editincludes'));
+    Route::post('deleteincludes', array('as' => 'admin.deleteincludes',       'uses' => 'app\controllers\admin\ConfiguratorController@deleteincludes'));
+
+    Route::post('addincludesoptions', array('as' => 'admin.addincludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@addincludesoptions'));
+    Route::post('editincludesoptions', array('as' => 'admin.editincludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@editincludesoptions'));
+    Route::post('deleteincludesoptions', array('as' => 'admin.deleteincludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@deleteincludesoptions'));
+
+    Route::post('addexcludes', array('as' => 'admin.addexcludes',       'uses' => 'app\controllers\admin\ConfiguratorController@addexcludes'));
+    Route::post('editexcludes', array('as' => 'admin.editexcludes',       'uses' => 'app\controllers\admin\ConfiguratorController@editexcludes'));
+    Route::post('deleteexcludes', array('as' => 'admin.deleteexcludes',       'uses' => 'app\controllers\admin\ConfiguratorController@deleteexcludes'));
+
+    Route::post('addexcludesoptions', array('as' => 'admin.addexcludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@addexcludesoptions'));
+    Route::post('editexcludesoptions', array('as' => 'admin.editexcludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@editexcludesoptions'));
+    Route::post('deleteexcludesoptions', array('as' => 'admin.deleteexcludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@deleteexcludesoptions'));
+
+    /* Configuration Editor Saves*/
+    Route::post('savedir', array('as' => 'admin.savedir', 'uses' => 'app\controllers\admin\ConfiguratorController@savedir'));
+    Route::post('savestorage', array('as' => 'admin.savestorage', 'uses' => 'app\controllers\admin\ConfiguratorController@savestorage'));
+    Route::post('saveclient', array('as' => 'admin.saveclient', 'uses' => 'app\controllers\admin\ConfiguratorController@saveclient'));
+    Route::post('savejob', array('as' => 'admin.savejob', 'uses' => 'app\controllers\admin\ConfiguratorController@savejob'));
+    Route::post('savepool', array('as' => 'admin.savepool', 'uses' => 'app\controllers\admin\ConfiguratorController@savepool'));
+    Route::post('saveschedule', array('as' => 'admin.saveschedule', 'uses' => 'app\controllers\admin\ConfiguratorController@saveschedule'));
+    Route::post('savefileset', array('as' => 'admin.savefileset', 'uses' => 'app\controllers\admin\ConfiguratorController@savefileset'));
+    Route::post('savecatalog', array('as' => 'admin.savecatalog', 'uses' => 'app\controllers\admin\ConfiguratorController@savecatalog'));
+
+    
 });
-
+    
 
 /* Routes For Reportula App Loged Users */
 Route::group(array('before' => 'auth'), function () {
@@ -117,8 +148,6 @@ Route::group(array('before' => 'auth'), function () {
 
 
 
-// # m h  dom mon dow   command Crontab
-// 1 * * * * php /home/pedro/www/laravel/artisan BaculaStats:collect
 
 
 

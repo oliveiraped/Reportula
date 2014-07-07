@@ -20,6 +20,16 @@ class PoolsController extends BaseController
         Asset::add('select2', 'assets/css/select2.css');
         Asset::container('footer')->add('momentmin', 'assets/js/moment.min.js');
         Asset::container('footer')->add('select2min', 'assets/js/select2.min.js');
+
+        /* Html Exports Tables */
+        Asset::add('bootstrap-dropdown.js', 'assets/js/bootstrap-dropdown.js');
+        Asset::add('tableExport.js', 'assets/js/tableExport.js');
+        Asset::add('jquery.base64.js', 'assets/js/jquery.base64.js');
+        Asset::add('html2canvas.js', 'assets/js/html2canvas.js');
+        Asset::add('sprintf.js', 'assets/js/sprintf.js');
+        Asset::add('jspdf.js', 'assets/js/jspdf.js');
+        Asset::add('base64.js', 'assets/js/base64.js');
+
         Asset::container('footer')->add('pools.js', 'assets/js/pools.js');
 
         /* Fill Up the Select Box */

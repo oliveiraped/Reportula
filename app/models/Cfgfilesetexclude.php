@@ -9,4 +9,6 @@ class Cfgfilesetexclude extends Eloquent
 	protected $guarded = array('id');
     protected $table = 'cfgfilesetexclude';
     public $timestamps = false;
+    public $key = 'id';
+   
 }

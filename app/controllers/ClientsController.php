@@ -27,6 +27,16 @@ class ClientsController extends BaseController
 
         Asset::add('momentmin', 'assets/js/moment.min.js');
         Asset::add('daterangepicker', 'assets/js/daterangepicker.js');
+
+         /* Html Exports Tables */
+        Asset::add('bootstrap-dropdown.js', 'assets/js/bootstrap-dropdown.js');
+        Asset::add('tableExport.js', 'assets/js/tableExport.js');
+        Asset::add('jquery.base64.js', 'assets/js/jquery.base64.js');
+        Asset::add('html2canvas.js', 'assets/js/html2canvas.js');
+        Asset::add('sprintf.js', 'assets/js/sprintf.js');
+        Asset::add('jspdf.js', 'assets/js/jspdf.js');
+        Asset::add('base64.js', 'assets/js/base64.js');
+
         Asset::container('footer')->add('clients', 'assets/js/clients.js');
 
     }
@@ -36,9 +46,8 @@ class ClientsController extends BaseController
 
         
 
-        $start = Input::get('start', Date::forge('last day')->format('date'));
-        
-        $end   = Input::get('end',   Date::forge('today')->format('date'));
+        $start = Input::get('start', Date::now()->sub('1 day'));
+        $end   = Input::get('end',   Date::now());
 
         $clientselected = Input::get('Client', $client);
         $client = Client::where('clientid', '=', $clientselected)->first();
@@ -100,7 +109,7 @@ class ClientsController extends BaseController
             /* Get Terminated Jobs */
             $tjobs = Job::where('jobstatus','=', 'T')
                       ->where('starttime',  '>=',  $start)
-                      ->where('endtime',    '<=',    $end)
+                      ->where('endtime',    '<=',  $end)
                       ->where('clientid','=',$client->clientid)
                       ->remember(10)
                       ->get();
@@ -234,8 +243,8 @@ class ClientsController extends BaseController
     public function getclients()
     {
 
-        $start = Input::get('start', Date::forge('today')->format('date'));
-        $end   = Input::get('end',   Date::forge('today')->format('date'));
+        $start = Input::get('start', Date::now()->format('date'));
+        $end   = Input::get('end',   Date::now()->format('date'));
 
         $client = Client::where('clientid', '=', Input::get('Client'))->first();
 

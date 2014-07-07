@@ -1,46 +1,41 @@
+{{ Former::horizontal_open('admin/savepool','post',array('class'=>'ajax', 'data-replace' => '.response')) }}
 <div class="span12 box-content breadcrumb">
     <div class="row-fluid">
         <center><div class="response"></div></center>
-        <div class="span4">
-                <h3>{{ HTML::image('assets/img/user.png') }} Pool - {{ $Name }}</h3>
+        <div class="span6">
+            <h3>{{ HTML::image('assets/img/pools.jpg') }} Pool - {{ $Name }} | {{Form::submit( ' Save ', array('class' => 'btn btn-small btn-success' ));}} </h3>
         </div>
-        <div class="span2 pull-right">
-                {{Form::submit( ' Save ', array('class' => 'btn btn-large btn-primary' ));}}
-                 <a href="{{ URL::route('admin.users') }}" class="btn btn-large">
-                    <i class="icon-fam-cross"></i>Close
-                </a>
-        </div>
+        
     </div>
+    <br>
     <div class="row-fluid">
-
-    {{ Former::horizontal_open('configurator/savedirector','post',array('class'=>'ajax', 'data-replace' => '.response')) }}
         <div class="span6">
             {{Former::hidden('id')->id('id')->value($id);}}
             {{Former::text('Name', 'Name')->placeholder('Name')->required()->autofocus()->value($Name);}}
-            {{Former::text('PoolType', 'PoolType')->placeholder('PoolType');}}
-            {{Former::text('Storage', 'Storage')->placeholder('Storage');}}
-            {{Former::text('UseVolumeOnce', 'Use Volume Once')->placeholder('UseVolumeOnce');}}
-            {{Former::text('VolumeUseDuration', 'Volume Use Duration')->placeholder('VolumeUseDuration');}}
-            {{Former::text('CatalogFiles', 'Catalog Files')->placeholder('CatalogFiles');}}
-            {{Former::text('AutoPrune', 'Auto Prune')->placeholder('AutoPrune');}}
-            {{Former::text('VolumeRetention', 'Volume Retention')->placeholder('VolumeRetention');}}
-            {{Former::text('FileRetention', 'File Retention')->placeholder('FileRetention');}}
-            {{Former::text('JobRetention', 'Job Retention')->placeholder('JobRetention');}}
-            {{Former::text('CleaningPrefix', 'Cleaning Prefix')->placeholder('CleaningPrefix');}}
-            {{Former::text('LabelFormat', 'Label Format')->placeholder('LabelFormat');}}
+            {{Former::text('PoolType', 'PoolType')->placeholder('PoolType')->value($PoolType);}}
+            {{Former::text('Storage', 'Storage')->placeholder('Storage')->value($Storage);}}
+            {{Former::text('UseVolumeOnce', 'Use Volume Once')->placeholder('UseVolumeOnce')->value($UseVolumeOnce);}}
+            {{Former::text('VolumeUseDuration', 'Volume Use Duration')->placeholder('VolumeUseDuration')->value($VolumeUseDuration);}}
+            {{Former::text('CatalogFiles', 'Catalog Files')->placeholder('CatalogFiles')->value($CatalogFiles);}}
+            {{Former::text('AutoPrune', 'Auto Prune')->placeholder('AutoPrune')->value($AutoPrune);}}
+            {{Former::text('VolumeRetention', 'Volume Retention')->placeholder('VolumeRetention')->value($VolumeRetention);}}
+            {{Former::text('FileRetention', 'File Retention')->placeholder('FileRetention')->value($FileRetention);}}
+            {{Former::text('JobRetention', 'Job Retention')->placeholder('JobRetention')->value($JobRetention);}}
+            {{Former::text('CleaningPrefix', 'Cleaning Prefix')->placeholder('CleaningPrefix')->value($CleaningPrefix);}}
+            {{Former::text('LabelFormat', 'Label Format')->placeholder('LabelFormat')->value($LabelFormat);}}
 
         </div>
         <div class="span6">
-            {{Former::text('MaximumVolumes', 'Maximum Volumes')->placeholder('MaximumVolumes');}}
-            {{Former::text('MaximumVolumeJobs', 'Max. Volume Jobs')->placeholder('MaximumVolumeJobs');}}
-            {{Former::text('MaximumVolumeFiles', 'Max. Volume Files')->placeholder('MaximumVolumeFiles');}}
-            {{Former::text('MaximumVolumeBytes', 'Max. Volume Bytes')->placeholder('MaximumVolumeBytes');}}
-            {{Former::text('RecyclePool', 'Recycle Pool')->placeholder('RecyclePool');}}
-            {{Former::text('RecycleOldestVolume', 'Recycle Oldest Volume')->placeholder('RecycleOldestVolume');}}
-            {{Former::text('RecycleCurrentVolume', 'Recycle Current Volume')->placeholder('RecycleCurrentVolume');}}
-            {{Former::text('Recycle', 'Recycle')->placeholder('Recycle');}}
-            {{Former::text('PurgeOldestVolume', 'Purge Oldest Volume')->placeholder('PurgeOldestVolume');}}
-            {{Former::text('ScratchPool', 'Scratch Pool')->placeholder('ScratchPool');}}
+            {{Former::text('MaximumVolumes', 'Maximum Volumes')->placeholder('MaximumVolumes')->value($MaximumVolumes);}}
+            {{Former::text('MaximumVolumeJobs', 'Max. Volume Jobs')->placeholder('MaximumVolumeJobs')->value($MaximumVolumeJobs);}}
+            {{Former::text('MaximumVolumeFiles', 'Max. Volume Files')->placeholder('MaximumVolumeFiles')->value($MaximumVolumeFiles);}}
+            {{Former::text('MaximumVolumeBytes', 'Max. Volume Bytes')->placeholder('MaximumVolumeBytes')->value($MaximumVolumeBytes);}}
+            {{Former::text('RecyclePool', 'Recycle Pool')->placeholder('RecyclePool')->value($RecyclePool);}}
+            {{Former::text('RecycleOldestVolume', 'Recycle Oldest Volume')->placeholder('RecycleOldestVolume')->value($RecycleOldestVolume);}}
+            {{Former::text('RecycleCurrentVolume', 'Recycle Current Volume')->placeholder('RecycleCurrentVolume')->value($RecycleCurrentVolume);}}
+            {{Former::text('Recycle', 'Recycle')->placeholder('Recycle')->value($Recycle);}}
+            {{Former::text('PurgeOldestVolume', 'Purge Oldest Volume')->placeholder('PurgeOldestVolume')->value($PurgeOldestVolume);}}
+            {{Former::text('ScratchPool', 'Scratch Pool')->placeholder('ScratchPool')->value($ScratchPool);}}
         </div>
     <div>
     {{Former::close();}}

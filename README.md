@@ -32,6 +32,12 @@ Documentation for the entire project  can be found on the [Reportula website](ht
 
 **All issues and pull requests should be filed on the [Reportula Forum ](http://www.reportula.org) repository.**
 
+##Like My Work?
+
+Feel like buying me a coffee? [Any amount donated to is greatly apprecieated :)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TGSYTBJHBR8UJ)
+
+
+
 ### License
 
 The Reportula Project is open-sourced software licensed under the [GPL license](http://opensource.org/licenses/GPL)

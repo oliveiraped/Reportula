@@ -42,8 +42,6 @@ $(document).ready(function() {
     $('#userjobs').multiSelect();
     $('#userclients').multiSelect();
     
-    
-
 
     $('#usergroups').multiSelect({
         /* afterSelect: function(value, text){

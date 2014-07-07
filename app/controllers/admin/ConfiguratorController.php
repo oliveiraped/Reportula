@@ -1,7 +1,7 @@
 <?php namespace app\controllers\admin;
 
 use BaseController, Datatables, View, Sentry, URL, Input, Validator, Response, Former, Log, Asset, Vd\Vd, File, Request;
-use Debugbar, Cache;
+use Debugbar, Cache, DB;
 //use DB;
 
 // Models
@@ -27,17 +27,25 @@ class ConfiguratorController extends BaseController
         
         Asset::add('multi-select', 'assets/css/multi-select.css');
         Asset::add('fancytreecss', 'assets/css/fancytree.css');
+        Asset::add('jquery-ui-bootstrap.css', 'assets/css/jquery-ui-bootstrap.css');
 
-        Asset::add('jquery2', 'assets/js/jquery-2.0.3.min.js');
-        Asset::add('jqueryui', 'assets/js/jquery.ui.js', 'jquery2');
+
+        Asset::add('jquery', 'assets/js/jquery-2.0.3.min.js');
+        Asset::add('jquery-ui.min.js', 'assets/js/jquery-ui.min.js','jquery');
+
         Asset::add('jquerymultiselect', 'assets/js/jquery.multi-select.js', 'jquery');
         Asset::add('eldarionform', 'assets/js/eldarion-ajax.min.js', 'jquery');
         Asset::add('bootbox.js', 'assets/js/bootbox.min.js', 'jquery');
         Asset::add('tab', 'assets/js/bootstrap-tab.js', 'jquery2');
         Asset::add('fancytree', 'assets/js/jquery.fancytree-all.min.js', 'jquery');
         Asset::add('fancytreefilter', 'assets/js/jquery.fancytree.filter.js', 'fancytree');
-        Asset::add('configurator.js', 'assets/js/configurator.js', 'jquery');
         
+        Asset::add('jquery.jeditable.js', 'assets/js/jquery.jeditable.js');
+        Asset::add('jquery.validate.js', 'assets/js/jquery.validate.js');
+        Asset::add('jquery.dataTables.editable.js', 'assets/js/jquery.dataTables.editable.js','jquery');
+
+        Asset::add('configurator.js', 'assets/js/configurator.js', 'jquery');
+       
     }
 
     /**
@@ -46,12 +54,8 @@ class ConfiguratorController extends BaseController
      */
     public function configurator()
     {
-      /*  $vd= new VD;
+       /*  $vd= new VD;
         $vd->dump(Settings::find(1));*/
-
-
-         
-
         return View::make('admin.configurator');
     }
 
@@ -65,25 +69,25 @@ class ConfiguratorController extends BaseController
         $parent = Input::get('parent','');
         
         if ( $parent=="Director") {
-            $viewvalues = CfgDirector::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            $viewvalues = CfgDirector::orderBy('Name')->where('Name',$node)->first()->toArray();
             Former::populate(  $viewvalues );    
             $view = 'admin.configurator.director';
         }
 
         if ( $parent=="Storage") {
-            $viewvalues = CfgStorage::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            $viewvalues = CfgStorage::orderBy('Name')->where('Name',$node)->first()->toArray();
             Former::populate( $viewvalues );    
             $view = 'admin.configurator.storage';
         }
 
         if ( $parent=="Clients") {
-            $viewvalues = CfgClient::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            $viewvalues = CfgClient::orderBy('Name')->where('Name',$node)->first()->toArray();
             Former::populate( $viewvalues );    
             $view = 'admin.configurator.clients';
         }
 
         if ( $parent=="Jobs") {
-            $viewvalues = CfgJob::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            $viewvalues = CfgJob::orderBy('Name')->where('Name',$node)->first()->toArray();
             Former::populate( $viewvalues );    
             $view = 'admin.configurator.jobs';
         }
@@ -95,14 +99,11 @@ class ConfiguratorController extends BaseController
                                     ->with('Cfgfilesetincludeoptions')
                                     ->with('Cfgfilesetexcludeoptions')
                                     ->orderBy('Name')->where('Name',$node)
-                                    ->remember(10)->first()->toArray();
+                                    ->first()->toArray();
             
             Debugbar::info($viewvalues);
            
             //Debugbar::info($viewvalues-> )
-        
-           
-           
             
             //$cfgFileSetIncludeOptions = Cfgfilesetincludeoptions::orderBy('Name')->where('Name',$node)->first()->toArray();
             //$cfgfilesetexcludeoptions = Cfgfilesetexcludeoptions::orderBy('Name')->where('Name',$node)->first()->toArray();
@@ -113,19 +114,19 @@ class ConfiguratorController extends BaseController
         }
 
         if ( $parent=="Catalogs") {
-            $viewvalues = CfgCatalog::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            $viewvalues = CfgCatalog::orderBy('Name')->where('Name',$node)->first()->toArray();
             Former::populate( $viewvalues );    
             $view = 'admin.configurator.catalog';
         }
 
         if ( $parent=="Pools") {
-            $viewvalues = Cfgpool::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            $viewvalues = Cfgpool::orderBy('Name')->where('Name',$node)->first()->toArray();
             Former::populate( $viewvalues );    
             $view = 'admin.configurator.pools';
         }
 
         if ( $parent=="Schedules") {
-            $viewvalues = Cfgschedule::orderBy('Name')->where('Name',$node)->remember(10)->first()->toArray();
+            $viewvalues = Cfgschedule::orderBy('Name')->where('Name',$node)->first()->toArray();
             Former::populate( $viewvalues );    
             $view = 'admin.configurator.schedules';
         }
@@ -260,11 +261,346 @@ class ConfiguratorController extends BaseController
         
         $lastkey=$key;
         return Response::json ($tree);
+    }
+
+    /**
+     * Save Catalog
+     * @return Json
+     */
+    public function savecatalog()
+    {   
+      $dir = Cfgcatalog::find(Input::get('id'));
+      if ($dir->update(Input::all())) {
+           return Response::json(array('html' => '<div class="alert alert-success"> Catalog Sucessufull Updated </div> '));
+      } else {
+          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
+      }
+    }
+
+    /**
+     * Save Schedule
+     * @return Json
+     */
+    public function savesfileset()
+    {   
+      $dir = CfgFileset::find(Input::get('id'));
+      if ($dir->update(Input::all())) {
+           return Response::json(array('html' => '<div class="alert alert-success"> Client Sucessufull Updated </div> '));
+      } else {
+          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
+      }
+    }
+
+    /**
+     * Save Schedule
+     * @return Json
+     */
+    public function saveschedule()
+    {   
+      
+      $dir = CfgSchedule::find(Input::get('id'));
+
+      if ($dir->update(Input::all())) {
+           return Response::json(array('html' => '<div class="alert alert-success"> Schedule Sucessufull Updated </div> '));
+      } else {
+           return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
+      }
+    }
+
+    /**
+     * Save Pool
+     * @return Json
+     */
+    public function savepool()
+    {  
+
+      $dir = CfgPool::find(Input::get('id'));
+
+      if ($dir->update(Input::all())) {
+           return Response::json(array('html' => '<div class="alert alert-success"> Pool Sucessufull Updated </div> '));
+      } else {
+          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
+      }
+    }
+
+    /**
+     * Save Job
+     * @return Json
+     */
+    public function savejob()
+    {   
+      
+      $dir = CfgJob::find(Input::get('id'));
+      if ($dir->update(Input::all())) {
+           return Response::json(array('html' => '<div class="alert alert-success"> Client Sucessufull Updated </div> '));
+      } else {
+          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
+      }
+    }
+
+
+    /**
+     * Save Client
+     * @return Json
+     */
+    public function saveclient()
+    {   
+      
+      $dir = CfgClient::find(Input::get('id'));
+      if ($dir->update(Input::all())) {
+           return Response::json(array('html' => '<div class="alert alert-success"> Client Sucessufull Updated </div> '));
+      } else {
+          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
+      }
+    }
+
+
+    /**
+     * Save Storage 
+     * @return Json
+     */
+    public function savestorage()
+    {   
+      
+      $dir = CfgStorage::find(Input::get('id'));
+      if ($dir->update(Input::all())) {
+           return Response::json(array('html' => '<div class="alert alert-success"> Storage Sucessufull Updated </div> '));
+      } else {
+          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
+      }
+    }
+
+    /**
+     * Save Director 
+     * @return Json
+     */
+    public function savedir()
+    {   
+
+
+      $dir = CfgDirector::find(Input::get('id'));
+      if ($dir->update(Input::all())) {
+           return Response::json(array('html' => '<div class="alert alert-success"> Director Sucessufull Updated </div> '));
+      } else {
+          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
+      }
+    }
+
+
+  /**
+     * Add FileSets Excludes
+     * @return Json
+     */
+    public function addexcludes()
+    {
+        $filesetexclude = new  Cfgfilesetexclude;
+        $filesetexclude->idfileset = Input::get('id','');;
+        $filesetexclude->file      = Input::get('path','');
+        $filesetexclude->save();
+        return json_encode(true);
 
     }
-  
 
+    /**
+     * Edit FileSets excludes 
+     * @return Json
+     */
+    public function editexcludes()
+    {
+      $exclude = Cfgfilesetexclude::find(Input::get('id'));
+      $exclude->file = Input::get('value');
+      $exclude->save();
+      return $exclude->file;
+    }
+
+    /**
+     * Delete FileSets excludes 
+     * @return Json
+     */
+    public function deleteexcludes()
+    {
+      $exclude = Cfgfilesetexclude::find(Input::get('id',''));
+      $exclude->delete();
+      return 'ok';
+    }
+
+
+    /**
+     * Add FileSets excludesoptions 
+     * @return Json
+     */
+    public function addexcludesoptions()
+    {
+        $filesetexclude = new  Cfgfilesetexcludeoptions;
+        $filesetexclude->idfileset = Input::get('id','');;
+        $filesetexclude->file  = Input::get('path','');
+        $filesetexclude->save();
+        return json_encode(true);
+
+
+    }
+
+    /**
+     * Edit FileSets excludesoptions 
+     * @return Json
+     */
+    public function editexcludesoptions()
+    {
+      $exclude = Cfgfilesetexcludeoptions::find(Input::get('id'));
+      $exclude->option = Input::get('option');
+      $exclude->value = Input::get('value');
+      $exclude->save();
+      return $exclude->value;
+    }
+
+    /**
+     * Delete FileSets excludesoptions 
+     * @return Json
+     */
+    public function deleteexcludesoptions()
+    {
         
+      $exclude = Cfgfilesetexcludeoptions::find(Input::get('id',''));
+      $exclude->delete();
+      return 'ok';
+    }        
+
+
+
+
+
+    /**
+     * Add FileSets Includesoptions 
+     * @return Json
+     */
+    public function addincludesoptions()
+    {
+        $filesetinclude = new  Cfgfilesetincludeoptions;
+        $filesetinclude->idfileset = Input::get('id','');;
+        $filesetinclude->file  = Input::get('path','');
+        $filesetinclude->save();
+        return json_encode(true);
+
+
+    }
+
+    /**
+     * Edit FileSets Includesoptions 
+     * @return Json
+     */
+    public function editincludesoptions()
+    {
+      $include = Cfgfilesetincludeoptions::find(Input::get('id'));
+      $include->option = Input::get('option');
+      $include->value = Input::get('value');
+      $include->save();
+      return $include->value;
+    }
+
+    /**
+     * Delete FileSets Includesoptions 
+     * @return Json
+     */
+    public function deleteincludesoptions()
+    {
+        
+      $include = Cfgfilesetincludeoptions::find(Input::get('id',''));
+      $include->delete();
+      return 'ok';
+
+
+    }        
+
+
+
+     /**
+     * Add FileSets Includes 
+     * @return Json
+     */
+    public function addincludes()
+    {
+        $filesetinclude = new  Cfgfilesetinclude;
+        $filesetinclude->idfileset = Input::get('id','');;
+        $filesetinclude->file      = Input::get('path','');
+        $filesetinclude->save();
+        return json_encode(true);
+
+
+    }
+
+    /**
+     * Edit FileSets Includes 
+     * @return Json
+     */
+    public function editincludes()
+    {
+      $include = Cfgfilesetinclude::find(Input::get('id'));
+      $include->file = Input::get('value');
+      $include->save();
+      return $include->file;
+    }
+
+    /**
+     * Delete FileSets Includes 
+     * @return Json
+     */
+    public function deleteincludes()
+    {
+      $include = Cfgfilesetinclude::find(Input::get('id',''));
+      $include->delete();
+      return 'ok';
+    }
+
+
+
+    /**
+     * Get FileSets Includes 
+     * @return Json
+     */
+    public function getincludes()
+    {
+      
+      return Datatables::of(Cfgfilesetinclude::select(array('id','file')) 
+                                    ->where('idfileset','=', Input::get('filesetid'))
+                            )->make();
+    }
+
+    /**
+     * Get FileSets IncludesOptions
+     * @return Json
+     */
+    public function getincludesoptions()
+    {
+      return Datatables::of(Cfgfilesetincludeoptions::select(array('id','option','value')) 
+                                    ->where('idfileset','=', Input::get('filesetid'))
+                            )->make();
+    }
+
+    /**
+     * Get FileSets Excludes
+     * @return Json
+     */
+    public function getexcludes()
+    {
+     
+      return Datatables::of(Cfgfilesetexclude::select(array('id','file')) 
+                                    ->where('idfileset','=', Input::get('filesetid'))
+                            )->make();
+                         
+    }
+
+    /**
+     * Get FileSets Excludes Options
+     * @return Json
+     */
+    public function getexcludesoptions()
+    {
+      
+      return Datatables::of(Cfgfilesetexcludeoptions::select(array('id','option','value')) 
+                                    ->where('idfileset','=', Input::get('filesetid'))
+                            )->make();
+    }
+
 
 
 

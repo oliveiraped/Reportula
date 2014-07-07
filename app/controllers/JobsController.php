@@ -28,6 +28,16 @@ class JobsController extends BaseController
         Asset::container('footer')->add('select2min', 'assets/js/select2.min.js');
 
         Asset::container('footer')->add('momentmin', 'assets/js/moment.min.js');
+
+        /* Html Exports Tables */
+        Asset::add('bootstrap-dropdown.js', 'assets/js/bootstrap-dropdown.js');
+        Asset::add('tableExport.js', 'assets/js/tableExport.js');
+        Asset::add('jquery.base64.js', 'assets/js/jquery.base64.js');
+        Asset::add('html2canvas.js', 'assets/js/html2canvas.js');
+        Asset::add('sprintf.js', 'assets/js/sprintf.js');
+        Asset::add('jspdf.js', 'assets/js/jspdf.js');
+        Asset::add('base64.js', 'assets/js/base64.js');
+
         Asset::container('footer')->add('daterangepicker', 'assets/js/daterangepicker.js');
 
     }
@@ -36,9 +46,9 @@ class JobsController extends BaseController
     {
          Asset::container('footer')->add('amcharts', 'assets/js/amcharts.js');
          Asset::container('footer')->add('jobs', 'assets/js/jobs.js');
-
-        $start = Input::get('start', Date::forge('yesterday')->format('date'));
-        $end   = Input::get('end',   Date::forge('today')->format('date'));
+         
+        $start = Input::get('start', Date::now()->sub('1 day'));
+        $end   = Input::get('end',   Date::now());
 
         $jobselected = Input::get('Job', $job);
 
@@ -201,8 +211,8 @@ class JobsController extends BaseController
     public function getjobs()
     {
 
-        $start = Input::get('start', Date::forge('yesterday')->format('date'));
-        $end   = Input::get('end',   Date::forge('today')->format('date'));
+        $start = Input::get('start', Date::now()->sub('1 day'));
+        $end   = Input::get('end',   Date::now());
 
         $jobselected = Job::select('name')
                 ->where('jobid','=', Input::get('Job') )->get()->first()->name;

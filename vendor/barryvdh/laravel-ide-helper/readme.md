@@ -3,6 +3,8 @@
 
 ### Complete phpDocs, directly from the source
 
+_Checkout [this Laracasts video](https://laracasts.com/series/how-to-be-awesome-in-phpstorm/episodes/15) for a quick introduction/explanation!_
+
 This packages generates a file that your IDE can understand, so it can provide accurate autocompletion. Generation is done, based on the files in your project, so they are alway up-to-date.
 If you don't want to generate it, you can add a pre-generated file to the root folder of your laravel project. (But this isn't as up-to-date as self generated files)
 
@@ -51,10 +53,10 @@ The Illuminate/Support/helpers.php is already set-up, but you can add/remove you
 
 ### Automatic phpDocs for Models
 
+> **Note:** Since v1.10 you need to require `doctrine/dbal: ~2.3` in your own composer.json. 
+
 If you don't want to write your properties yourself, you can use the command `ide-helper:models` to generate
-phpDocs, based on table columns, relations and getters/setters. Still in beta, so please provide feedback if you want.
-You can now also write the comments directly to your Model file, using the `--write (-W)` option. By default, you are asked to overwrite or
-write to a separate file (\_ide\_helper\_models.php) (You can force No with `--nowrite (-N)`).
+phpDocs, based on table columns, relations and getters/setters. You can write the comments directly to your Model file, using the `--write (-W)` option. By default, you are asked to overwrite or write to a separate file (\_ide\_helper\_models.php) (You can force No with `--nowrite (-N)`).
 Please make sure to backup your models, before writing the info.
 It should keep the existing comments and only append new properties/methods. The existing phpdoc is replaced, or added if not found.
 With the `--reset (-R)` option, the existing phpdocs are ignored, only the newly found columns/relations are saved as phpdocs.

@@ -25,6 +25,16 @@ class DashboardController extends BaseController
         Asset::add('amchartsPie', 'assets/js/pie.js');
 
         Asset::add('bootstrap-tooltip.js', 'assets/js/bootstrap-tooltip.js');
+        Asset::add('bootstrap-dropdown.js', 'assets/js/bootstrap-dropdown.js');
+        
+        /* Html Exports Tables */
+        Asset::add('tableExport.js', 'assets/js/tableExport.js');
+        Asset::add('jquery.base64.js', 'assets/js/jquery.base64.js');
+        Asset::add('html2canvas.js', 'assets/js/html2canvas.js');
+        Asset::add('sprintf.js', 'assets/js/sprintf.js');
+        Asset::add('jspdf.js', 'assets/js/jspdf.js');
+        Asset::add('base64.js', 'assets/js/base64.js');
+
         Asset::container('footer')->add('dashboard', 'assets/js/dashboard.js');
 
         // Caching DbSize Value
@@ -146,21 +156,26 @@ public function makeList($array, $depth=0, $key_map=FALSE)
 
     public function dashboard($data=null)
     {
-
+       
         /* Possbilidade de utilizar as datas*/
         $datetype=$data;
 
         if ($data == null || $data == 'day') {
             $datetype='day' ;
-            $date = Date::forge('last day')->format('datetime');
+            $date=Date::now()->sub('1 day');
+            
+            //$date = Date::forge('last day')->format('datetime');
             $nameDate = 'Last 24 Hours';
         } elseif ($data == 'week') {
-            $date = Date::forge('last week')->format('datetime');
+            
+            $date = Date::now()->sub('7 day');
             $nameDate =  'Last Week';
         } elseif ($data == 'month') {
-            $date = Date::forge('last month')->format('datetime');
+            $date = Date::now()->sub('1 month');
             $nameDate =  'Last Month';
         }
+
+
 
         /* Get Terminated Jobs */
         $tjobs = Job::where('starttime','>=', $date )
@@ -258,11 +273,10 @@ public function makeList($array, $depth=0, $key_map=FALSE)
     // Ajax Dashboard Jobs Table
     public function getjobs($data=null)
     {
-
+       $date = new Date('last '.Input::get('date'));
        $tjobs = Job::select(array('jobid','name','starttime','endtime',
                                   'level','jobbytes','jobfiles','jobstatus'))
-
-                    ->where('starttime','>=', (string) Date::forge('last '.Input::get('date'))->format('datetime')  );
+                    ->where('starttime','>=', (string) $date );
 
         switch (Input::get('type')) {
             case "terminated":
@@ -297,9 +311,11 @@ public function makeList($array, $depth=0, $key_map=FALSE)
     // Ajax Volumes & Pools Table
     public function getvolumes($data=null)
     {
+          $date = new Date('last '. Input::get('date'));
+
 
           $volumes = Media::join('pool','media.poolid', '=', 'pool.poolid')
-                            ->where('lastwritten','>=', (string) Date::forge('last '.Input::get('date'))->format('datetime') )
+                            ->where('lastwritten','>=', (string)  $date )
                             ->select(array('volumename','slot','volbytes','mediatype','pool.name','lastwritten','volstatus'));
 
            return (Datatables::of($volumes)

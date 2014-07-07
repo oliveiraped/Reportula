@@ -819,6 +819,28 @@ class Net_SSH2
     var $connectionTimeout;
 
     /**
+     * Number of columns for terminal window size
+     * 
+     * @see Net_SSH2::getWindowColumns()
+     * @see Net_SSH2::setWindowColumns()
+     * @see Net_SSH2::setWindowSize()
+     * @var Integer
+     * @access private
+     */
+    var $windowColumns = 80;
+
+    /**
+     * Number of columns for terminal window size
+     * 
+     * @see Net_SSH2::getWindowRows()
+     * @see Net_SSH2::setWindowRows()
+     * @see Net_SSH2::setWindowSize()
+     * @var Integer
+     * @access private
+     */
+    var $windowRows = 24;
+
+    /**
      * Default Constructor.
      *
      * @param String $host
@@ -1107,31 +1129,31 @@ class Net_SSH2
                 'none'            // OPTIONAL          no encryption; NOT RECOMMENDED
             );
 
-            if (!$this->_is_includable('Crypt/RC4.php')) {
+            if (phpseclib_resolve_include_path('Crypt/RC4.php') === false) {
                 $encryption_algorithms = array_diff(
                     $encryption_algorithms,
                     array('arcfour256', 'arcfour128', 'arcfour')
                 );
             }
-            if (!$this->_is_includable('Crypt/Rijndael.php')) {
+            if (phpseclib_resolve_include_path('Crypt/Rijndael.php') === false) {
                 $encryption_algorithms = array_diff(
                     $encryption_algorithms,
                     array('aes128-ctr', 'aes192-ctr', 'aes256-ctr', 'aes128-cbc', 'aes192-cbc', 'aes256-cbc')
                 );
             }
-            if (!$this->_is_includable('Crypt/Twofish.php')) {
+            if (phpseclib_resolve_include_path('Crypt/Twofish.php') === false) {
                 $encryption_algorithms = array_diff(
                     $encryption_algorithms,
                     array('twofish128-ctr', 'twofish192-ctr', 'twofish256-ctr', 'twofish128-cbc', 'twofish192-cbc', 'twofish256-cbc', 'twofish-cbc')
                 );
             }
-            if (!$this->_is_includable('Crypt/Blowfish.php')) {
+            if (phpseclib_resolve_include_path('Crypt/Blowfish.php') === false) {
                 $encryption_algorithms = array_diff(
                     $encryption_algorithms,
                     array('blowfish-ctr', 'blowfish-cbc')
                 );
             }
-            if (!$this->_is_includable('Crypt/TripleDES.php')) {
+            if (phpseclib_resolve_include_path('Crypt/TripleDES.php') === false) {
                 $encryption_algorithms = array_diff(
                     $encryption_algorithms,
                     array('3des-ctr', '3des-cbc')
@@ -2268,7 +2290,7 @@ class Net_SSH2
             $terminal_modes = pack('C', NET_SSH2_TTY_OP_END);
             $packet = pack('CNNa*CNa*N5a*',
                 NET_SSH2_MSG_CHANNEL_REQUEST, $this->server_channels[NET_SSH2_CHANNEL_EXEC], strlen('pty-req'), 'pty-req', 1, strlen('vt100'), 'vt100',
-                80, 24, 0, 0, strlen($terminal_modes), $terminal_modes);
+                $this->windowColumns, $this->windowRows, 0, 0, strlen($terminal_modes), $terminal_modes);
 
             if (!$this->_send_binary_packet($packet)) {
                 return false;
@@ -2375,7 +2397,7 @@ class Net_SSH2
         $terminal_modes = pack('C', NET_SSH2_TTY_OP_END);
         $packet = pack('CNNa*CNa*N5a*',
             NET_SSH2_MSG_CHANNEL_REQUEST, $this->server_channels[NET_SSH2_CHANNEL_SHELL], strlen('pty-req'), 'pty-req', 1, strlen('vt100'), 'vt100',
-            80, 24, 0, 0, strlen($terminal_modes), $terminal_modes);
+            $this->windowColumns, $this->windowRows, 0, 0, strlen($terminal_modes), $terminal_modes);
 
         if (!$this->_send_binary_packet($packet)) {
             return false;
@@ -3625,6 +3647,13 @@ class Net_SSH2
      */
     function getServerPublicHostKey()
     {
+        if (!($this->bitmap & NET_SSH2_MASK_CONSTRUCTOR)) {
+            $this->bitmap |= NET_SSH2_MASK_CONSTRUCTOR;
+            if (!$this->_connect()) {
+                return false;
+            }
+        }
+
         $signature = $this->signature;
         $server_public_host_key = $this->server_public_host_key;
 
@@ -3770,30 +3799,59 @@ class Net_SSH2
     }
 
     /**
-     * Is a path includable?
-     *
-     * @return Boolean
-     * @access private
+     * Returns the number of columns for the terminal window size.
+     * 
+     * @return Integer
+     * @access public
      */
-    function _is_includable($suffix)
+    function getWindowColumns()
     {
-        // stream_resolve_include_path was introduced in PHP 5.3.2
-        if (function_exists('stream_resolve_include_path')) {
-            return stream_resolve_include_path($suffix) !== false;
-        }
+        return $this->windowColumns;
+    }
 
-        $paths = PATH_SEPARATOR == ':' ?
-            preg_split('#(?<!phar):#', get_include_path()) :
-            explode(PATH_SEPARATOR, get_include_path());
-        foreach ($paths as $prefix) {
-            $ds = substr($prefix, -1) == DIRECTORY_SEPARATOR ? '' : DIRECTORY_SEPARATOR;
-            $file = $prefix . $ds . $suffix;
+    /**
+     * Returns the number of rows for the terminal window size.
+     * 
+     * @return Integer
+     * @access public
+     */
+    function getWindowRows()
+    {
+        return $this->windowRows;
+    }
 
-            if (file_exists($file)) {
-                return true;
-            }
-        }
+    /**
+     * Sets the number of columns for the terminal window size.
+     * 
+     * @param Integer $value
+     * @access public
+     */
+    function setWindowColumns($value)
+    {
+        $this->windowColumns = $value;
+    }
 
-        return false;
+    /**
+     * Sets the number of rows for the terminal window size.
+     * 
+     * @param Integer $value
+     * @access public
+     */
+    function setWindowRows($value)
+    {
+        $this->windowRows = $value;
+    }
+
+    /**
+     * Sets the number of columns and rows for the terminal window size.
+     * 
+     * @param Integer $columns
+     * @param Integer $rows
+     * @access public
+     */
+    function setWindowSize($columns = 80, $rows = 24)
+    {
+        $this->windowColumns = $columns;
+        $this->windowRows = $rows;
     }
 }

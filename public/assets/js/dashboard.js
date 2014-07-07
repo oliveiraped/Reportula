@@ -31,6 +31,8 @@ var chart;
 
 $(document).ready(function() {
 
+  
+   
 
     // ToolTips for Calendars
     $('#day').tooltip(options)

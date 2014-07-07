@@ -18,6 +18,15 @@ class FilesController extends BaseController
     {
         parent::__construct();
         Asset::add('files.js', 'assets/js/files.js');
+
+        /* Html Exports Tables */
+        Asset::add('bootstrap-dropdown.js', 'assets/js/bootstrap-dropdown.js');
+        Asset::add('tableExport.js', 'assets/js/tableExport.js');
+        Asset::add('jquery.base64.js', 'assets/js/jquery.base64.js');
+        Asset::add('html2canvas.js', 'assets/js/html2canvas.js');
+        Asset::add('sprintf.js', 'assets/js/sprintf.js');
+        Asset::add('jspdf.js', 'assets/js/jspdf.js');
+        Asset::add('base64.js', 'assets/js/base64.js');
     //    Asset::add('jstree', 'assets/css/jstree.css');
     //    Asset::add('jstree', 'assets/js/jstree.js');
 

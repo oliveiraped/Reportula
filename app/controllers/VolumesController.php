@@ -19,7 +19,18 @@ class VolumesController extends BaseController
 
         Asset::add('select2.css', 'assets/css/select2.css');
         Asset::add('select2.min.js', 'assets/js/select2.min.js');
-        Asset::add('pool', 'assets/js/volumes.js');
+
+        /* Html Exports Tables */
+        Asset::add('bootstrap-dropdown.js', 'assets/js/bootstrap-dropdown.js');
+        Asset::add('tableExport.js', 'assets/js/tableExport.js');
+        Asset::add('jquery.base64.js', 'assets/js/jquery.base64.js');
+        Asset::add('html2canvas.js', 'assets/js/html2canvas.js');
+        Asset::add('sprintf.js', 'assets/js/sprintf.js');
+        Asset::add('jspdf.js', 'assets/js/jspdf.js');
+        Asset::add('base64.js', 'assets/js/base64.js');
+
+
+        Asset::add('volumes', 'assets/js/volumes.js');
 
         /* Fill Up the Select Box */
         $volumesall = Media::select(array('mediaid','volumename'))

@@ -2,6 +2,12 @@
 
 return array(
 
+
+
+	'cipher' => MCRYPT_RIJNDAEL_256,
+
+
+
 	/*
 	|--------------------------------------------------------------------------
 	| Application Debug Mode
@@ -119,6 +125,8 @@ return array(
 		'Barryvdh\Debugbar\ServiceProvider',
 		/* RSS READER */
 		 'Awjudd\FeedReader\FeedReaderServiceProvider',
+		 /* Laravel Graphs */
+		 'Khill\Lavacharts\LavachartsServiceProvider'
 		
 		
 

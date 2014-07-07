@@ -44,10 +44,8 @@ class UsersController extends BaseController
     */
     public function createuser()
     {
-        $groupSelected = "";
-
         return View::make('admin.usersnewedit')->with('groups',$this->group_array)
-                                               ->with('groupSelected', $groupSelected )
+                                               ->with('groupSelected', '' )
                                                ->with('clientsSelected', '' )
                                                ->with('jobsSelected',    '' )
                                                ->with('clients', Client::clientSelectBox()  )

@@ -281,7 +281,7 @@ class LaravelDebugbar extends DebugBar
             }
         }
         if($this->shouldCollect('files', false)){
-            $this->addCollector(new FilesCollector());
+            $this->addCollector(new FilesCollector($app));
         }
 
         if ($this->shouldCollect('auth', false)) {
@@ -348,17 +348,33 @@ class LaravelDebugbar extends DebugBar
         }
 
         if($response->isRedirection()){
-            $this->stackData();
+            try {
+                $this->stackData();
+            }catch(\Exception $e){
+                $app['log']->error('Debugbar exception: '.$e->getMessage());
+            }
         }elseif( $request->isXmlHttpRequest() and $app['config']->get('laravel-debugbar::config.capture_ajax', true)){
-            $this->sendDataInHeaders(true);
+            try {
+                $this->sendDataInHeaders(true);
+            }catch(\Exception $e){
+                $app['log']->error('Debugbar exception: '.$e->getMessage());
+            }
         }elseif(
             ($response->headers->has('Content-Type') && false === strpos($response->headers->get('Content-Type'), 'html'))
             || 'html' !== $request->format()
         ){
             //Do nothing
         }elseif($app['config']->get('laravel-debugbar::config.inject', true)){
-            $this->injectDebugbar($response);
+            try {
+                $this->injectDebugbar($response);
+            }catch(\Exception $e){
+                $app['log']->error('Debugbar exception: '.$e->getMessage());
+            }
         }
+        
+        // Stop further rendering (on subrequests etc)
+        $this->disable();
+        
         return $response;
     }
 
@@ -485,17 +501,15 @@ class LaravelDebugbar extends DebugBar
 
         $renderedContent = $renderer->renderHead() . $renderer->render();
 
-        $pos = mb_strripos($content, '</body>');
+        $pos = strripos($content, '</body>');
         if (false !== $pos) {
-            $content = mb_substr($content, 0, $pos) . $renderedContent . mb_substr($content, $pos);
+            $content = substr($content, 0, $pos) . $renderedContent . substr($content, $pos);
         }else{
             $content = $content . $renderedContent;
         }
 
         $response->setContent($content);
         
-        // Stop further rendering (on subrequests etc)
-        $this->disable();
     }
 
     /**
@@ -522,6 +536,13 @@ class LaravelDebugbar extends DebugBar
         foreach ($this->collectors as $name => $collector) {
             $this->data[$name] = $collector->collect();
         }
+		
+        // Remove all invalid (non UTF-8) characters
+        array_walk_recursive($this->data, function(&$item){
+                if(is_string($item) && !mb_check_encoding($item, 'UTF-8')){
+                    $item = mb_convert_encoding($item, 'UTF-8', 'UTF-8');
+                }
+            });
 
         if ($this->storage !== null) {
             $this->storage->save($this->getCurrentRequestId(), $this->data);
@@ -530,6 +551,46 @@ class LaravelDebugbar extends DebugBar
         return $this->data;
     }
 
+    /**
+     * Collects the data from the collectors
+     *
+     * @return array
+     */
+    public function collect()
+    {
+        /** @var Request $request */
+        $request = $this->app['request'];
+
+        $this->data = array(
+            '__meta' => array(
+                'id' => $this->getCurrentRequestId(),
+                'datetime' => date('Y-m-d H:i:s'),
+                'utime' => microtime(true),
+                'method' => $request->getMethod(),
+                'uri' => $request->getRequestUri(),
+                'ip' => $request->getClientIp()
+            )
+        );
+
+        foreach ($this->collectors as $name => $collector) {
+            $this->data[$name] = $collector->collect();
+        }
+
+        // Remove all invalid (non UTF-8) characters
+        array_walk_recursive($this->data, function(&$item){
+                if(is_string($item) && !mb_check_encoding($item, 'UTF-8')){
+                    $item = mb_convert_encoding($item, 'UTF-8', 'UTF-8');
+                }
+            });
+
+
+        if ($this->storage !== null) {
+            $this->storage->save($this->getCurrentRequestId(), $this->data);
+        }
+
+        return $this->data;
+    }
+	
     /**
      * Magic calls for adding messages
      *

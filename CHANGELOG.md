@@ -1,3 +1,17 @@
+2.0.5 - 7 July - 2014
+===============================================
+
+Features:
+
+* Added Export Html Table to Csv,Sql,Pdf,Json,Excel,Word to all DataTables.
+* Created Fileset Files and Options Forms
+* Added Save Configurations for Jobs, Directors, Storages, Fileset, Schedules, Pools and Catalogs
+
+Bugfixes:
+
+* Change the Date Methods to respect the code upgrade of Laravel Date Module
+
+
 2.0.4 - 23 May - 2014
 ===============================================
 
@@ -29,7 +43,6 @@ Bugfixes:
 
 Bugfixes:
 
-
 * Corrected Volume Date Retention Information
 * Corrected Client Job Date Retention Information
 * Corrected Client File Date Retention Information
@@ -37,7 +50,6 @@ Bugfixes:
 * Corrected Admin Groups Edit
 * Corrected Admin New User Creation is not activated on creation
 * Corrected Ldap Import Users activate login 
-
 
 Features:
 

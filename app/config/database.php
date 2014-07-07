@@ -67,7 +67,7 @@ return array(
 			'driver'   => 'pgsql',
 			'host'     => '',
 			'database' => 'bacula',
-			'username' => 'bacula',
+			'username' => '',
 			'password' => '',
 			'charset'  => 'utf8',
 			'prefix'   => '',
