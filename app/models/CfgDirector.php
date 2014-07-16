@@ -10,4 +10,13 @@ class CfgDirector extends Eloquent
     public $key = 'id';
     protected $table = 'cfgdirector';
     public $timestamps = false;
+
+	
+	public function getColumnsNames() {
+	 	return array_keys($this->attributesToArray());
+	}
+
+
+
+
 }

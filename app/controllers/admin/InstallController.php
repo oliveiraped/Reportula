@@ -267,6 +267,45 @@ class InstallController extends Controller
 
             /// Configuration Bacula Tables /////
 
+             if (!Schema::hasTable('cfgConsole')) {
+                /* cfgFileSetExclude */
+                Schema::create('cfgConsole', function ($table) {
+                    $table->increments('id');
+                    $table->string('Name')->nullable();
+                    $table->string('Password')->nullable();
+                    $table->string('JobACL')->nullable();
+                    $table->string('ClientACL')->nullable();
+                    $table->string('StorageACL')->nullable();
+                    $table->string('ScheduleACL')->nullable();
+                    $table->string('PoolACL')->nullable();
+                    $table->string('FileSetACL')->nullable();
+                    $table->string('CatalogACL')->nullable();
+                    $table->string('CommandACL')->nullable();
+                    $table->string('WhereACL')->nullable();
+
+                });
+            }
+
+
+             if (!Schema::hasTable('cfgMessages')) {
+                /* cfgFileSetExclude */
+                Schema::create('cfgMessages', function ($table) {
+                    $table->increments('id');
+                    $table->string('Name')->nullable();
+                    $table->string('MailCommand')->nullable();
+                    $table->string('OperatorCommand')->nullable();
+                    $table->string('destination')->nullable();
+                    $table->string('append')->nullable();
+                    $table->string('operator')->nullable();
+                    $table->string('console')->nullable();
+                    $table->string('mailonerror')->nullable();
+                    $table->string('catalog')->nullable();
+                    
+                });
+            }
+
+
+
             if (!Schema::hasTable('cfgFileSetExclude')) {
                 /* cfgFileSetExclude */
                 Schema::create('cfgFileSetExclude', function ($table) {

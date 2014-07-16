@@ -66,6 +66,7 @@ Route::group(array('prefix' => 'admin', 'before' => 'auth.admin'), function () {
     //Configurator Controllers
     Route::get('configurator',  array('as' => 'admin.configurator',  'uses' => 'app\controllers\admin\ConfiguratorController@configurator'));
     Route::get('readbacula',    array('as' => 'admin.readbacula',    'uses' => 'app\controllers\admin\ConfiguratorController@readbacula'));
+    Route::get('writebacula',    array('as' => 'admin.writebacula',    'uses' => 'app\controllers\admin\ConfiguratorController@writebacula'));
     Route::get('gettreedata',   array('as' => 'admin.gettreedata',   'uses' => 'app\controllers\admin\ConfiguratorController@gettreedata'));
     Route::post('getnode',       array('as' => 'admin.getnode',       'uses' => 'app\controllers\admin\ConfiguratorController@getnode'));
     Route::get('getincludes',        array('as' => 'admin.getincludes',       'uses' => 'app\controllers\admin\ConfiguratorController@getincludes'));
@@ -90,14 +91,7 @@ Route::group(array('prefix' => 'admin', 'before' => 'auth.admin'), function () {
     Route::post('deleteexcludesoptions', array('as' => 'admin.deleteexcludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@deleteexcludesoptions'));
 
     /* Configuration Editor Saves*/
-    Route::post('savedir', array('as' => 'admin.savedir', 'uses' => 'app\controllers\admin\ConfiguratorController@savedir'));
-    Route::post('savestorage', array('as' => 'admin.savestorage', 'uses' => 'app\controllers\admin\ConfiguratorController@savestorage'));
-    Route::post('saveclient', array('as' => 'admin.saveclient', 'uses' => 'app\controllers\admin\ConfiguratorController@saveclient'));
-    Route::post('savejob', array('as' => 'admin.savejob', 'uses' => 'app\controllers\admin\ConfiguratorController@savejob'));
-    Route::post('savepool', array('as' => 'admin.savepool', 'uses' => 'app\controllers\admin\ConfiguratorController@savepool'));
-    Route::post('saveschedule', array('as' => 'admin.saveschedule', 'uses' => 'app\controllers\admin\ConfiguratorController@saveschedule'));
-    Route::post('savefileset', array('as' => 'admin.savefileset', 'uses' => 'app\controllers\admin\ConfiguratorController@savefileset'));
-    Route::post('savecatalog', array('as' => 'admin.savecatalog', 'uses' => 'app\controllers\admin\ConfiguratorController@savecatalog'));
+    Route::post('saveconfiguration', array('as' => 'admin.saveconfiguration', 'uses' => 'app\controllers\admin\ConfiguratorController@saveconfiguration'));
 
     
 });

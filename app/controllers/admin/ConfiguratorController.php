@@ -1,8 +1,7 @@
 <?php namespace app\controllers\admin;
 
 use BaseController, Datatables, View, Sentry, URL, Input, Validator, Response, Former, Log, Asset, Vd\Vd, File, Request;
-use Debugbar, Cache, DB;
-//use DB;
+use Debugbar, Cache, DB, Filesystem;
 
 // Models
 use app\models\Settings;
@@ -18,13 +17,17 @@ use app\models\Cfgfilesetincludeoptions;
 use app\models\Cfgfilesetexcludeoptions;
 use app\models\CfgPool;
 use app\models\CfgJob;
+use app\models\CfgMessage;
+use app\models\CfgConsole;
+
+
 
 class ConfiguratorController extends BaseController
 {
    public function __construct()
     {
         parent::__construct();
-        
+
         Asset::add('multi-select', 'assets/css/multi-select.css');
         Asset::add('fancytreecss', 'assets/css/fancytree.css');
         Asset::add('jquery-ui-bootstrap.css', 'assets/css/jquery-ui-bootstrap.css');
@@ -39,13 +42,13 @@ class ConfiguratorController extends BaseController
         Asset::add('tab', 'assets/js/bootstrap-tab.js', 'jquery2');
         Asset::add('fancytree', 'assets/js/jquery.fancytree-all.min.js', 'jquery');
         Asset::add('fancytreefilter', 'assets/js/jquery.fancytree.filter.js', 'fancytree');
-        
+
         Asset::add('jquery.jeditable.js', 'assets/js/jquery.jeditable.js');
         Asset::add('jquery.validate.js', 'assets/js/jquery.validate.js');
         Asset::add('jquery.dataTables.editable.js', 'assets/js/jquery.dataTables.editable.js','jquery');
 
         Asset::add('configurator.js', 'assets/js/configurator.js', 'jquery');
-       
+
     }
 
     /**
@@ -60,331 +63,197 @@ class ConfiguratorController extends BaseController
     }
 
     /**
-     * Get Selected Node Data 
+     * Get Selected Node Data
      * @return Json
      */
     public function getnode()
     {
         $node = Input::get('node','');
-        $parent = Input::get('parent','');
-        
-        if ( $parent=="Director") {
-            $viewvalues = CfgDirector::orderBy('Name')->where('Name',$node)->first()->toArray();
-            Former::populate(  $viewvalues );    
-            $view = 'admin.configurator.director';
-        }
-
-        if ( $parent=="Storage") {
-            $viewvalues = CfgStorage::orderBy('Name')->where('Name',$node)->first()->toArray();
-            Former::populate( $viewvalues );    
-            $view = 'admin.configurator.storage';
-        }
-
-        if ( $parent=="Clients") {
-            $viewvalues = CfgClient::orderBy('Name')->where('Name',$node)->first()->toArray();
-            Former::populate( $viewvalues );    
-            $view = 'admin.configurator.clients';
-        }
-
-        if ( $parent=="Jobs") {
-            $viewvalues = CfgJob::orderBy('Name')->where('Name',$node)->first()->toArray();
-            Former::populate( $viewvalues );    
-            $view = 'admin.configurator.jobs';
-        }
-
-       
-         if ( $parent=="Filesets") {
-            $viewvalues = CfgFileset::with('Cfgfilesetinclude')
+        $parent = substr(Input::get('parent',''),0,-1);
+        $classname  = "app\models\Cfg".$parent;
+        if ($parent!="Fileset") {
+          $viewvalues = $classname::orderBy('Name')->where('Name',$node)->first()->toArray();
+        } else {
+           $viewvalues = $classname::with('Cfgfilesetinclude')
                                     ->with('Cfgfilesetexclude')
                                     ->with('Cfgfilesetincludeoptions')
                                     ->with('Cfgfilesetexcludeoptions')
                                     ->orderBy('Name')->where('Name',$node)
                                     ->first()->toArray();
-            
-            Debugbar::info($viewvalues);
-           
-            //Debugbar::info($viewvalues-> )
-            
-            //$cfgFileSetIncludeOptions = Cfgfilesetincludeoptions::orderBy('Name')->where('Name',$node)->first()->toArray();
-            //$cfgfilesetexcludeoptions = Cfgfilesetexcludeoptions::orderBy('Name')->where('Name',$node)->first()->toArray();
-            
-
-            Former::populate( $viewvalues );    
-            $view = 'admin.configurator.filesets';
         }
 
-        if ( $parent=="Catalogs") {
-            $viewvalues = CfgCatalog::orderBy('Name')->where('Name',$node)->first()->toArray();
-            Former::populate( $viewvalues );    
-            $view = 'admin.configurator.catalog';
-        }
+        $viewvalues['config'] = $parent.'s';
+        Former::populate( $viewvalues );
+        $view = 'admin.configurator.'.lcfirst($parent);
+        return View::make($view, $viewvalues)->render();
 
-        if ( $parent=="Pools") {
-            $viewvalues = Cfgpool::orderBy('Name')->where('Name',$node)->first()->toArray();
-            Former::populate( $viewvalues );    
-            $view = 'admin.configurator.pools';
-        }
-
-        if ( $parent=="Schedules") {
-            $viewvalues = Cfgschedule::orderBy('Name')->where('Name',$node)->first()->toArray();
-            Former::populate( $viewvalues );    
-            $view = 'admin.configurator.schedules';
-        }
-
-        return View::make($view,  $viewvalues)->render();
-
-        
     }
 
      /**
-     * Get Tree Data 
+     * Get Tree Data
      * @return Json
      */
     public function gettreedata()
     {
         $tree=array();
         $key=2;
-
-
-        /* Fill Up Directors Name on Tree */
-        $dir = CfgDirector::orderBy('Name')->remember(10)->get();
-        foreach ($dir as $director)
+        $models=array("Director", "Storage",
+                      "Client","Job","Fileset",
+                      "Schedule","Pool","Catalog",
+                      "Console","Message"
+                      );
+        $lastkey=1;
+        foreach ($models as $model)
         {
-             $dirarray[]=array('key'=> $key++, 'title' => $director->Name, 'parent' => $director->id);
+          $classname="app\models\Cfg".$model;
+          $values=$classname::orderBy('Name')->get();
+          foreach ($values as $value)
+          {
+             $valuearray[]=array('key'=> $key++, 'title' => $value->Name, 'parent' => $value->id);
+          }
+          $tree[]=array('key'         => $lastkey,
+                        'title'       => $model."s",
+                        'folder'      => 'true',
+                        'children'    => $valuearray
+                      );
+            $valuearray="";
+            $lastkey=$key;
         }
-
-        $tree[]=array('key'         => 1, 
-                      'title'       => 'Director', 
-                      'folder'      => 'true',
-                      'children'    => $dirarray
-                      );  
-        $lastkey=$key;
-
-        /* Fill Up Storage Name on Tree */
-        $stor = CfgStorage::orderBy('Name')->remember(10)->get();
-        foreach ($stor as $storage)
-        {
-             $storarray[]=array('key'=> $key++, 'title' => $storage->Name , 'id' => $storage->id);
-        }
-
-        $tree[]=array('key'         => $lastkey, 
-                      'title'       => 'Storage', 
-                      'folder'      => 'true',
-                      'children'    => $storarray
-                      );          
-
-        $lastkey=$key;
-
-        /* Fill Up Clients Name on Tree */
-        $clt = CfgClient::orderBy('Name')->remember(10)->get(); 
-        foreach ($clt as $client)
-        {
-             $cltarray[]=array('key'=> $key++, 'title' => $client->Name ,'id' =>  $client->id);
-        }
-        $tree[]=array('key'         => $lastkey, 
-                      'title'       => 'Clients', 
-                      'folder'      => 'true',
-                      'children'    => $cltarray
-                      );          
-
-        $lastkey=$key;
-
-
-        /* Fill Up Jobs Name on Tree */
-        $job = CfgJob::orderBy('Name')->remember(10)->get(); 
-        foreach ($job as $jobs)
-        {
-             $jobarray[]=array('key'=> $key++, 'title' => $jobs->Name );
-        }
-        $tree[]=array('key'         => $lastkey, 
-                      'title'       => 'Jobs', 
-                      'folder'      => 'true',
-                      'children'    => $jobarray
-                      );          
-        $lastkey=$key;
-
-        /* Fill Up Filesets Name on Tree */
-        $fileset = CfgFileset::orderBy('Name')->remember(10)->get(); 
-        foreach ($fileset as $filesets)
-        {
-             $filesetarray[]=array('key'=> $key++, 'title' => $filesets->Name );
-        }
-        $tree[]=array('key'         => $lastkey, 
-                      'title'       => 'Filesets', 
-                      'folder'      => 'true',
-                      'children'    => $filesetarray
-                      );          
-        
-        $lastkey=$key;
-
-
-        /* Fill Up Filesets Name on Tree */
-        $schedule = CfgSchedule::orderBy('Name')->remember(10)->get(); 
-        foreach ($schedule as $schedules)
-        {
-             $schedulearray[]=array('key'=> $key++, 'title' => $schedules->Name );
-        }
-        $tree[]=array('key'         => $lastkey, 
-                      'title'       => 'Schedules', 
-                      'folder'      => 'true',
-                      'children'    => $schedulearray
-                      );          
-        
-        $lastkey=$key;
-
-
-        /* Fill Up Pools Name on Tree */
-        $pool = CfgPool::orderBy('Name')->remember(10)->get(); 
-        foreach ($pool as $pools)
-        {
-             $poolarray[]=array('key'=> $key++, 'title' => $pools->Name );
-        }
-        $tree[]=array('key'         => $lastkey, 
-                      'title'       => 'Pools', 
-                      'folder'      => 'true',
-                      'children'    => $poolarray
-                      );          
-        
-        $lastkey=$key;
-            
-        /* Fill Up Catalogs Name on Tree */
-        $catalog = CfgCatalog::orderBy('Name')->remember(10)->get(); 
-        foreach ($catalog as $catalogs)
-        {
-             $catalogarray[]=array('key'=> $key++, 'title' => $catalogs->Name );
-        }
-        $tree[]=array('key'         => $lastkey, 
-                      'title'       => 'Catalogs', 
-                      'folder'      => 'true',
-                      'children'    => $catalogarray
-                      );          
-        
-        $lastkey=$key;
         return Response::json ($tree);
     }
 
-    /**
-     * Save Catalog
+
+    /*****
+     * Write Configuration Files
      * @return Json
      */
-    public function savecatalog()
-    {   
-      $dir = Cfgcatalog::find(Input::get('id'));
-      if ($dir->update(Input::all())) {
-           return Response::json(array('html' => '<div class="alert alert-success"> Catalog Sucessufull Updated </div> '));
-      } else {
-          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
+    public function writebacula()
+    {
+
+      $contents ='Director {
+        Name = cyclopes.bkp.fccn.pt-dir
+        DIRport = 9101
+        QueryFile = "/etc/bacula/query.sql"
+        WorkingDirectory = "/backup/working-dir"
+        PidDirectory = "/var/run"
+        Maximum Concurrent Jobs = 18
+        Password = "UDy45fQxup8h/zOvqp98OcazmV+Km7VP99nDR94E/oIH"
+        Messages = Daemon
+        Heartbeat Interval = 60
       }
+
+
+
+
+    #############################################################################################
+    ################################## Definicoes dos JOBS ######################################
+    #############################################################################################
+
+
+
+
+#@/etc/bacula/conf.d/clients/bancodevideo.fccn.pt-job.conf
+
+
+
+
+      ';
+
+      $contents ="Director {\n";
+
+
+      $model = Cfgdirector::find(1);
+      $model = $model->toArray();
+
+      //dd($model);
+      foreach( $model as $key => $value){
+        if ( $value!="" && $key!='id') {
+
+          if ($key=='MaximumConcurrentJobs') { $key = "Maximum Concurrent Jobs"; }
+          if ($key=='HeartbeatInterval')     { $key = "Heartbeat Interval"; }
+
+            $contents .= "\t". $key .' = '.$value ."\n";
+        }
+      }
+
+      $contents .= "}\n
+      \n
+
+      ###################### JOBS DEFAULTS DEFINITION FILES ###############################################\n
+      @/etc/bacula/conf.d/jobdefaults.conf\n
+
+      ###################### Schedule Definition Files ##############################################\n
+      @/etc/bacula/conf.d/schedule.conf\n
+      \n
+      ###################### STORAGE DEFINITION FILES ###############################################\n
+      @/etc/bacula/conf.d/storage.conf\n
+      \n
+      ";
+      File::put('/home/pedro/www/laravel/bacula/bacula-dir.conf', $contents);
+
+
+
+
+      ################## JobDefaults ######################
+
+      $model = CfgJob::where('JobDefs', '=', Null)
+                      ->where('Type', '<>', 'Admin')
+                      ->where('Type', '<>', 'Restore')
+
+                      ->get();
+
+
+      $model = $model->toArray();
+
+
+      dd ($model);
+
+      $contents ="JobDefs {\n";
+      foreach( $model[0] as $key => $value){
+        if ( $value!="" && $key!='id') {
+            $contents .= "\t". $key .' = '.$value ."\n";
+        }
+      }
+      $contents .= "}\n\n\n";
+
+
+
+      File::put('/home/pedro/www/laravel/bacula/conf.d/jobdefaults.conf', $contents);
+
+
+
+
+
+
+
+
+      return Response::json(array('html' => $contents));
+
+      //return Response::json(array('html' => '<div class="alert alert-success"> Write Configuration Sucessufull Updated </div>'));
+
     }
 
-    /**
-     * Save Schedule
+
+    /*****
+     * Save Configuration Items
      * @return Json
      */
-    public function savesfileset()
-    {   
-      $dir = CfgFileset::find(Input::get('id'));
-      if ($dir->update(Input::all())) {
-           return Response::json(array('html' => '<div class="alert alert-success"> Client Sucessufull Updated </div> '));
-      } else {
-          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
+    public function saveconfiguration()
+    {
+      $save = Input::all();
+      $config = substr($save['config'], 0, -1);
+
+      $classname="app\models\Cfg".$config;
+      $values=$classname::find(Input::get('id'));
+      $save = array_except($save, array('config'));
+
+      if ($values->update($save) ) {
+        return Response::json(array('html' => '<div class="alert alert-success"> '.$config.' Sucessufull Updated </div>'));
       }
-    }
 
-    /**
-     * Save Schedule
-     * @return Json
-     */
-    public function saveschedule()
-    {   
-      
-      $dir = CfgSchedule::find(Input::get('id'));
-
-      if ($dir->update(Input::all())) {
-           return Response::json(array('html' => '<div class="alert alert-success"> Schedule Sucessufull Updated </div> '));
-      } else {
-           return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
-      }
-    }
-
-    /**
-     * Save Pool
-     * @return Json
-     */
-    public function savepool()
-    {  
-
-      $dir = CfgPool::find(Input::get('id'));
-
-      if ($dir->update(Input::all())) {
-           return Response::json(array('html' => '<div class="alert alert-success"> Pool Sucessufull Updated </div> '));
-      } else {
-          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
-      }
-    }
-
-    /**
-     * Save Job
-     * @return Json
-     */
-    public function savejob()
-    {   
-      
-      $dir = CfgJob::find(Input::get('id'));
-      if ($dir->update(Input::all())) {
-           return Response::json(array('html' => '<div class="alert alert-success"> Client Sucessufull Updated </div> '));
-      } else {
-          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
-      }
     }
 
 
-    /**
-     * Save Client
-     * @return Json
-     */
-    public function saveclient()
-    {   
-      
-      $dir = CfgClient::find(Input::get('id'));
-      if ($dir->update(Input::all())) {
-           return Response::json(array('html' => '<div class="alert alert-success"> Client Sucessufull Updated </div> '));
-      } else {
-          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
-      }
-    }
-
-
-    /**
-     * Save Storage 
-     * @return Json
-     */
-    public function savestorage()
-    {   
-      
-      $dir = CfgStorage::find(Input::get('id'));
-      if ($dir->update(Input::all())) {
-           return Response::json(array('html' => '<div class="alert alert-success"> Storage Sucessufull Updated </div> '));
-      } else {
-          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
-      }
-    }
-
-    /**
-     * Save Director 
-     * @return Json
-     */
-    public function savedir()
-    {   
-
-
-      $dir = CfgDirector::find(Input::get('id'));
-      if ($dir->update(Input::all())) {
-           return Response::json(array('html' => '<div class="alert alert-success"> Director Sucessufull Updated </div> '));
-      } else {
-          return Response::json(array('html' => '<div class="alert alert-error"> Error </div> '));
-      }
-    }
 
 
   /**
@@ -402,7 +271,7 @@ class ConfiguratorController extends BaseController
     }
 
     /**
-     * Edit FileSets excludes 
+     * Edit FileSets excludes
      * @return Json
      */
     public function editexcludes()
@@ -414,7 +283,7 @@ class ConfiguratorController extends BaseController
     }
 
     /**
-     * Delete FileSets excludes 
+     * Delete FileSets excludes
      * @return Json
      */
     public function deleteexcludes()
@@ -426,7 +295,7 @@ class ConfiguratorController extends BaseController
 
 
     /**
-     * Add FileSets excludesoptions 
+     * Add FileSets excludesoptions
      * @return Json
      */
     public function addexcludesoptions()
@@ -441,7 +310,7 @@ class ConfiguratorController extends BaseController
     }
 
     /**
-     * Edit FileSets excludesoptions 
+     * Edit FileSets excludesoptions
      * @return Json
      */
     public function editexcludesoptions()
@@ -454,23 +323,23 @@ class ConfiguratorController extends BaseController
     }
 
     /**
-     * Delete FileSets excludesoptions 
+     * Delete FileSets excludesoptions
      * @return Json
      */
     public function deleteexcludesoptions()
     {
-        
+
       $exclude = Cfgfilesetexcludeoptions::find(Input::get('id',''));
       $exclude->delete();
       return 'ok';
-    }        
+    }
 
 
 
 
 
     /**
-     * Add FileSets Includesoptions 
+     * Add FileSets Includesoptions
      * @return Json
      */
     public function addincludesoptions()
@@ -485,7 +354,7 @@ class ConfiguratorController extends BaseController
     }
 
     /**
-     * Edit FileSets Includesoptions 
+     * Edit FileSets Includesoptions
      * @return Json
      */
     public function editincludesoptions()
@@ -498,23 +367,23 @@ class ConfiguratorController extends BaseController
     }
 
     /**
-     * Delete FileSets Includesoptions 
+     * Delete FileSets Includesoptions
      * @return Json
      */
     public function deleteincludesoptions()
     {
-        
+
       $include = Cfgfilesetincludeoptions::find(Input::get('id',''));
       $include->delete();
       return 'ok';
 
 
-    }        
+    }
 
 
 
      /**
-     * Add FileSets Includes 
+     * Add FileSets Includes
      * @return Json
      */
     public function addincludes()
@@ -529,7 +398,7 @@ class ConfiguratorController extends BaseController
     }
 
     /**
-     * Edit FileSets Includes 
+     * Edit FileSets Includes
      * @return Json
      */
     public function editincludes()
@@ -541,7 +410,7 @@ class ConfiguratorController extends BaseController
     }
 
     /**
-     * Delete FileSets Includes 
+     * Delete FileSets Includes
      * @return Json
      */
     public function deleteincludes()
@@ -554,13 +423,13 @@ class ConfiguratorController extends BaseController
 
 
     /**
-     * Get FileSets Includes 
+     * Get FileSets Includes
      * @return Json
      */
     public function getincludes()
     {
-      
-      return Datatables::of(Cfgfilesetinclude::select(array('id','file')) 
+
+      return Datatables::of(Cfgfilesetinclude::select(array('id','file'))
                                     ->where('idfileset','=', Input::get('filesetid'))
                             )->make();
     }
@@ -571,7 +440,7 @@ class ConfiguratorController extends BaseController
      */
     public function getincludesoptions()
     {
-      return Datatables::of(Cfgfilesetincludeoptions::select(array('id','option','value')) 
+      return Datatables::of(Cfgfilesetincludeoptions::select(array('id','option','value'))
                                     ->where('idfileset','=', Input::get('filesetid'))
                             )->make();
     }
@@ -582,11 +451,11 @@ class ConfiguratorController extends BaseController
      */
     public function getexcludes()
     {
-     
-      return Datatables::of(Cfgfilesetexclude::select(array('id','file')) 
+
+      return Datatables::of(Cfgfilesetexclude::select(array('id','file'))
                                     ->where('idfileset','=', Input::get('filesetid'))
                             )->make();
-                         
+
     }
 
     /**
@@ -595,15 +464,11 @@ class ConfiguratorController extends BaseController
      */
     public function getexcludesoptions()
     {
-      
-      return Datatables::of(Cfgfilesetexcludeoptions::select(array('id','option','value')) 
+
+      return Datatables::of(Cfgfilesetexcludeoptions::select(array('id','option','value'))
                                     ->where('idfileset','=', Input::get('filesetid'))
                             )->make();
     }
-
-
-
-
 
 
 
@@ -613,6 +478,23 @@ class ConfiguratorController extends BaseController
      */
     public function readbacula()
     {
+        // Delete All Database Rows
+
+          CfgCatalog::truncate();
+          CfgClient::truncate();
+          CfgDirector::truncate();
+          CfgFileset::truncate();
+          CfgJob::truncate();
+          CfgPool::truncate();
+          CfgSchedule::truncate();
+          CfgStorage::truncate();
+          cfgfilesetinclude::truncate();
+          Cfgfilesetincludeoptions::truncate();
+          cfgFileSetExclude::truncate();
+          cfgFileSetExcludeOptions::truncate();
+          CfgConsole::truncate();
+          CfgMessage::truncate();
+
          //path to directory to scan
          $confdir=Settings::find(1);
          $path = $confdir->confdir;
@@ -629,24 +511,71 @@ class ConfiguratorController extends BaseController
         $nfiles=count($conffiles);
 
         ////////////////////////////////////////////////////////////////////////////
-        
+
         //remover o path
         $path.="bacula";
 
         foreach ($conffiles as $file) {
             $config = file($file);
            // LOG::info($path);
-           // LOG::info($file);           
+           // LOG::info($file);
             $filename=$file->getFilename();
 
             if ( $filename!='bacula-fd.conf' || $filename!='bacula-sd.conf' || $filename!='mtx-changer.conf') {
-                
-             //   LOG::info($filename);           
+                   $i=0;
+             //   LOG::info($filename);
 
-                          
-                
+                /////////////////////////////////////Codigo para Ler as Messages////////////////////////
+                $Consolecfg = new CfgConsole;
+                $Console = array ();
+                // Codigo para Ler Values
+
+                foreach ($config as $key => $value) {
+                    if (trim($value)=="Console {") {
+                        $i=$key;
+                        do {
+                            $i++;
+                            $result = preg_split ('[=]', $config[$i]);
+                            // Se não for comentário adiciona
+                            if (substr(trim($result[0]), 0, 1) != '#')
+                                $Console[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+                        } while (trim($config[$i+1]) != "}");
+
+                        $Consoletest = CfgConsole::where('Name', '=', $Console['Name']);
+                        if ($Consoletest->count()==0) {
+                            $Consolecfg = CfgConsole::create($Console);
+                        };
+                    }
+                }
+                ////////////////////////////////////////////////////////////////////////////////////////////
+
+                /////////////////////////////////////Codigo para Ler as Messages////////////////////////
+                $Messagescfg = new CfgMessage;
+                $Messages = array ();
+                // Codigo para Ler Values
+
+                foreach ($config as $key => $value) {
+                    if (trim($value)=="Messages {") {
+                        $i=$key;
+                        do {
+                            $i++;
+                            $result = preg_split ('[=]', $config[$i]);
+                            // Se não for comentário adiciona
+                            if (substr(trim($result[0]), 0, 1) != '#')
+                                $Messages[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+                        } while (trim($config[$i+1]) != "}");
+
+                        $Messagestest = CfgMessage::where('Name', '=', $Messages['Name']);
+                        if ($Messagestest->count()==0) {
+                            $Messagescfg = CfgMessage::create($Messages);
+                        };
+                    }
+                }
+                ////////////////////////////////////////////////////////////////////////////////////////////
+
+
                 /////////////////////////////////////Codigo para Ler os Schedule////////////////////////
-                $i=0;
+
                 $schedulecfg = new CfgSchedule;
                 $schedule = array ();
                 // Codigo para Ler Values
@@ -698,11 +627,11 @@ class ConfiguratorController extends BaseController
                 foreach ($config as $key => $value) {
                     if (trim($value)=="Pool {") {
                         $i=$key;
-                        
+
                         do {
                             $i++;
                             $result = preg_split ('[ = ]', $config[$i]);
-                            
+
 
                             $pool[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
                         } while (trim($config[$i+1]) != "}");
@@ -776,7 +705,7 @@ class ConfiguratorController extends BaseController
                             } while (trim($config[$i+1]) != "}");
                             $directortest = CfgDirector::where('Name', '=', $director['Name']);
                             if ($directortest->count()==0) {
-                                
+
                                 $directorcfg = CfgDirector::create($director);
                             };
                         }
@@ -792,7 +721,7 @@ class ConfiguratorController extends BaseController
 
                 foreach ($config as $key => $value) {
 
-                    if (trim($value)=="Job {") {
+                    if (trim($value)=="Job {" || trim($value)=="JobDefs {") {
 
                         $i=$key;
                         do {
@@ -884,11 +813,11 @@ class ConfiguratorController extends BaseController
                                 }
                             }
 
-                            
-                            $result = preg_split ('[=]', $config[$key]);
-                           // log::info($result);    
 
-                            if ((substr(trim($result[0]), 0, 1) != '#') && (substr(trim($result[0]), 0, 1) != '}')) 
+                            $result = preg_split ('[=]', $config[$key]);
+                           // log::info($result);
+
+                            if ((substr(trim($result[0]), 0, 1) != '#') && (substr(trim($result[0]), 0, 1) != '}'))
                                 $fileset[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
 
                             if (!array_key_exists($key+1, $config)) {
@@ -1084,7 +1013,7 @@ class ConfiguratorController extends BaseController
             //////////////////////////////////////////////////////////////////////////////////////////
 
             ////////////////////////// Codigo para Ler o Director ////////////////////////////////////////////////
-            
+
             $directorcfg = new Cfgdirector;
             $director = array ();
             // Codigo para Ler Values

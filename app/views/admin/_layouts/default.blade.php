@@ -56,7 +56,7 @@
                  @yield('main')
             <hr>
             <footer>
-                <p><center>Reportula V2.0.5 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 - 2014 </center></p>
+                <p><center>Reportula V2.0.6 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 - 2014 </center></p>
             </footer>
 
         </div>

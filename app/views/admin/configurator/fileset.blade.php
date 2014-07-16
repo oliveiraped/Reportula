@@ -1,4 +1,4 @@
- {{ Former::horizontal_open('admin/savefileset','post',array('class'=>'ajax', 'data-replace' => '.response')) }}
+ {{ Former::horizontal_open('admin/saveconfiguration','post',array('class'=>'ajax', 'data-replace' => '.response')) }}
 <div class="span12 box-content breadcrumb">
     <div class="row-fluid">
         <center><div class="response"></div></center>
@@ -10,6 +10,8 @@
     <div class="row-fluid">
    <!-- {{ Former::horizontal_open('configurator/savedirector','post',array('class'=>'ajax', 'data-replace' => '.response')) }} -->
         <div class="span6">
+                        {{Former::hidden('config')->id('config')->value($config);}}
+
             {{Former::hidden('id')->id('id')->value($id);}}
             {{Former::text('Name', 'Name')->placeholder('Name')->required()->autofocus()->value($Name);}}
             {{Former::text('IgnoreFileSetChanges', 'IgnoreFileSetChanges')->placeholder('IgnoreFileSetChanges');}}

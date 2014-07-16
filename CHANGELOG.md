@@ -1,3 +1,24 @@
+2.0.6 - 11 July - 2014
+===============================================
+
+Features:
+
+* Added Read Configuration to Messages, Console Options in Bacula Director configuration
+* Added Form Config for Messages, Console Options
+* Added Button to Reload Tree Data
+
+Bugfixes:
+
+* Fix the Search Filter on Configurator Tree
+* Configurator Reader - Reads JobsDef Resource
+* Upgrade DataTables Version 1.10.1
+
+Code Refactor
+
+* Configuration Controller - Refactoring the code
+
+
+
 2.0.5 - 7 July - 2014
 ===============================================
 
@@ -24,9 +45,9 @@ Features:
 
 Bugfixes:
 
-* Updated Laravel Framework Version 
-* Changed Users and Groups Model to respect Laravel needs 
-* Remove the profile link on the welcome admin text 
+* Updated Laravel Framework Version
+* Changed Users and Groups Model to respect Laravel needs
+* Remove the profile link on the welcome admin text
 
 
 2.0.3
@@ -38,7 +59,7 @@ Bugfixes:
 * Corrected Client Job Date Retention Information
 * Corrected Client File Date Retention Information
 
-2.0.2 
+2.0.2
 ===============================================
 
 Bugfixes:
@@ -49,13 +70,13 @@ Bugfixes:
 * Corrected Admin User Edit
 * Corrected Admin Groups Edit
 * Corrected Admin New User Creation is not activated on creation
-* Corrected Ldap Import Users activate login 
+* Corrected Ldap Import Users activate login
 
 Features:
 
 * Added Reportula Rss Reader News to Administration Dashboard
-* Added Reportula Logo	
-	
+* Added Reportula Logo
+
 
 2.0.1
 ===============================================
@@ -64,7 +85,7 @@ Bugfixes:
 
 * Corrected Js Files Users & Groups Administration Clients Select Boxes
 * Corrected Form Population Field on Users Administration
-* Corrected Groups Population Field on Users Administration 
+* Corrected Groups Population Field on Users Administration
 
 Features:
 

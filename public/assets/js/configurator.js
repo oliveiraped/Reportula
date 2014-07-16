@@ -1,15 +1,39 @@
 $(document).ready(function() {
     
+    $("#refreshTree").click(function(){
+       $("input[name=search]").val("");
+       $("span#matches").text("");
+        tree.clearFilter();
+        tree.reload();
+    });
+
+
     $("#readBacula").click(function(){
        $.ajax({
             type: "GET",
             url: "readbacula",
         }).done(function( msg ) {
-            alert( msg );
+          
+          tree.reload();
+
+           // bootbox.alert(msg);
+
+            //alert( msg );
         });
     });
 
-    $("#tree").fancytree({
+    $("#writeBacula").click(function(){
+       $.ajax({
+            type: "GET",
+            url: "writebacula",
+        }).done(function( msg ) {
+             bootbox.alert(msg);
+        });
+    });
+
+
+
+   var tree = $("#tree").fancytree({
       extensions: ["filter"],
       filter: {
         mode: "hide"
