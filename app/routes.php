@@ -11,15 +11,12 @@
 |
 */
 
-
 Route::group(array('prefix' => 'install'), function () {
     Route::any('/',                		'app\controllers\InstallController@getInstall');
     Route::resource('testDb',      		'app\controllers\InstallController@testDb');
     Route::resource('installSucess',    'app\controllers\InstallController@installSucess');
     Route::resource('installSave',      'app\controllers\InstallController@installSave');
 });
-
-
 
 /* Not Logged admin Routes*/
 Route::get('admin/logout',  array('as' => 'admin.logout',      'uses' => 'app\controllers\admin\AuthController@getLogout'));
@@ -59,7 +56,7 @@ Route::group(array('prefix' => 'admin', 'before' => 'auth.admin'), function () {
     Route::get('settings',         array('as' => 'admin.settings',     'uses' => 'app\controllers\admin\SettingsController@settings'));
     Route::post('savesettings',    array('as' => 'admin.savesettings', 'uses' => 'app\controllers\admin\SettingsController@savesettings'));
     Route::get('settings/ldap',    array('as' => 'admin.settings.ldap',     'uses' => 'app\controllers\admin\SettingsController@ldap'));
-    
+
     Route::resource('settings/testLdap',     'app\controllers\admin\SettingsController@testLdap');
     Route::resource('settings/syncLdap',    'app\controllers\admin\SettingsController@syncLdap');
 
@@ -73,29 +70,44 @@ Route::group(array('prefix' => 'admin', 'before' => 'auth.admin'), function () {
     Route::get('getincludesoptions', array('as' => 'admin.getincludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@getincludesoptions'));
     Route::get('getexcludes',        array('as' => 'admin.getexcludes',       'uses' => 'app\controllers\admin\ConfiguratorController@getexcludes'));
     Route::get('getexcludesoptions', array('as' => 'admin.getexcludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@getexcludesoptions'));
+    Route::get('getschedule',        array('as' => 'admin.getschedule',       'uses' => 'app\controllers\admin\ConfiguratorController@getschedule'));
 
     Route::post('addincludes', array('as' => 'admin.addincludes',       'uses' => 'app\controllers\admin\ConfiguratorController@addincludes'));
-    Route::post('editincludes', array('as' => 'admin.editincludes',       'uses' => 'app\controllers\admin\ConfiguratorController@editincludes'));
     Route::post('deleteincludes', array('as' => 'admin.deleteincludes',       'uses' => 'app\controllers\admin\ConfiguratorController@deleteincludes'));
 
     Route::post('addincludesoptions', array('as' => 'admin.addincludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@addincludesoptions'));
-    Route::post('editincludesoptions', array('as' => 'admin.editincludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@editincludesoptions'));
     Route::post('deleteincludesoptions', array('as' => 'admin.deleteincludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@deleteincludesoptions'));
-
     Route::post('addexcludes', array('as' => 'admin.addexcludes',       'uses' => 'app\controllers\admin\ConfiguratorController@addexcludes'));
-    Route::post('editexcludes', array('as' => 'admin.editexcludes',       'uses' => 'app\controllers\admin\ConfiguratorController@editexcludes'));
     Route::post('deleteexcludes', array('as' => 'admin.deleteexcludes',       'uses' => 'app\controllers\admin\ConfiguratorController@deleteexcludes'));
 
-    Route::post('addexcludesoptions', array('as' => 'admin.addexcludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@addexcludesoptions'));
-    Route::post('editexcludesoptions', array('as' => 'admin.editexcludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@editexcludesoptions'));
+    Route::post('addexcludesoptions', array('as' => 'admin.addexcladdSchedulerunudesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@addexcludesoptions'));
+
     Route::post('deleteexcludesoptions', array('as' => 'admin.deleteexcludesoptions',       'uses' => 'app\controllers\admin\ConfiguratorController@deleteexcludesoptions'));
+
+    Route::post('addSchedulerun', array('as' => 'admin.addSchedulerun',       'uses' => 'app\controllers\admin\ConfiguratorController@addSchedulerun'));
+
+    Route::post('deleteSchedulerun', array('as' => 'admin.deleteSchedulerun',       'uses' => 'app\controllers\admin\ConfiguratorController@deleteSchedulerun'));
+
+    /* Console Route */
+    Route::get('console', array('as' => 'admin.console',       'uses' => 'app\controllers\admin\ConsoleController@console'));
+
+
 
     /* Configuration Editor Saves*/
     Route::post('saveconfiguration', array('as' => 'admin.saveconfiguration', 'uses' => 'app\controllers\admin\ConfiguratorController@saveconfiguration'));
 
-    
+    /* Configuration New Item*/
+    Route::post('newitem', array('as' => 'admin.newitem', 'uses' => 'app\controllers\admin\ConfiguratorController@newitem'));
+
+    /* Delete Configuration Item*/
+    Route::post('deleteitem', array('as' => 'admin.deleteitem', 'uses' => 'app\controllers\admin\ConfiguratorController@deleteitem'));
+
+    /* Console commands */
+    Route::post('command', array('as' => 'admin.command', 'uses' => 'app\controllers\admin\ConsoleController@command'));
+
+
 });
-    
+
 
 /* Routes For Reportula App Loged Users */
 Route::group(array('before' => 'auth'), function () {

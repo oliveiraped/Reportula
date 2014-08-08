@@ -1,3 +1,29 @@
+2.0.7 - 8 August - 2014
+===============================================
+
+Features:
+
+- [add] Added Bacula Bconsole Console Terminal
+- [add] Added Bacula Configuration Test Menu
+- [add] Clients Names and Fileset Names Dropdown to Job Config Form
+- [add] Write Configuration Files
+- [add] Read Configuration Files
+- [add] Delete Button to Configuration Items
+- [add] Dropdown Button to Created new Configuration Items
+- [add] Persist Extension to FancyTree on Configuration items Tree
+
+Bugfixes:
+
+- [fix] Fixed Rss Reader Link on Administration Dashboard
+- [fix] Fixed Installer on Creation of Configuration Tables
+- [fix] Fixed Database Models names CfgMessages, CfgConsole
+
+Code Refactor
+
+- [mod] Configurator Fileset Form Rewrited the code
+- [mod] Cfg Models Extended the BaseModel
+
+
 2.0.6 - 11 July - 2014
 ===============================================
 

@@ -2,12 +2,11 @@
 
 
 
-
 class BaseController extends Controller
 {
     public function __construct()
     {
-     
+
         Asset::add('bootstraptheme', 'assets/css/bootstrap-spacelab.css');
         Asset::add('bootstrapresponsive', 'assets/css/bootstrap-responsive.css');
         Asset::add('charisma', 'assets/css/charisma-app.css');
@@ -24,9 +23,9 @@ class BaseController extends Controller
         Asset::add('jqueryloader', 'assets/js/jquery.loader-min.js', 'jquery');
         Asset::add('main', 'assets/js/main.js', 'TableTools');
         Asset::add('modal', 'assets/js/bootstrap-modal.js', 'jquery');
-        
+
         //Asset::add('TableTools', 'assets/js/TableTools.min.js','datatables');
-        
+
         /* Get Monolog instance from Laravel */
         $monolog = Log::getMonolog();
         /* Add the FirePHP handler */
@@ -142,7 +141,7 @@ function MakeMenu($items, $level = 0)
 }
 
 
-  
+
 
 
 }

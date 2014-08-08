@@ -28,9 +28,6 @@ class SettingsController extends BaseController
     public function settings()
     {
         Former::populate(Settings::find(1));
-      /*  $vd= new VD;
-        $vd->dump(Settings::find(1));*/
-
         return View::make('admin.settings', array ('settings'=>Settings::find(1) ));
     }
 
@@ -88,8 +85,9 @@ class SettingsController extends BaseController
                 $settings->ldapbasedn   = Input::get('ldapbasedn','');
                 $settings->ldapport     = Input::get('ldapport','');
             }
-
             $settings->save();
+
+            /* Check if Conf Dir is writables */
             echo json_encode(array('html' => '<div class="response"><div class="alert alert-success"> Settings Sucessufull Updated </div><div class="response"></div>'));
         }
 
@@ -204,7 +202,7 @@ class SettingsController extends BaseController
                     $userInsert['last_name']="";
                     $userInsert['password']="reportula";
                     $userInsert['activated']="1";
-                    
+
 
                     if (!empty($u->displayname)) {
                       $displayname = explode(" ", $u->displayname);
@@ -260,6 +258,6 @@ class SettingsController extends BaseController
 
 
 
-    
+
 
 }

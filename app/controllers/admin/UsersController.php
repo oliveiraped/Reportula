@@ -50,7 +50,7 @@ class UsersController extends BaseController
                                                ->with('jobsSelected',    '' )
                                                ->with('clients', Client::clientSelectBox()  )
                                                ->with('jobs',    Job::jobSelectBox() )
-                                               ->with('email',    "" ) 
+                                               ->with('email',    "" )
                                                ->with('id',       "");
     }
 
@@ -76,9 +76,9 @@ class UsersController extends BaseController
             $clientspermissions =unserialize ($permissions->clients);
             $jobspermissions = unserialize ($permissions->jobs);
         }
-        
+
         Former::populate($user);
-       
+
         //LOG::info(User::find($id));
 
         return View::make('admin.usersnewedit')->with('groups',          $this->group_array)
@@ -87,7 +87,7 @@ class UsersController extends BaseController
                                                ->with('clientsSelected', $clientspermissions )
                                                ->with('jobsSelected',    $jobspermissions )
                                                ->with('jobs',            Job::jobSelectBox())
-                                               ->with('email',           $user->email ) 
+                                               ->with('email',           $user->email )
                                                ->with('id',              $user->id)
                                             ;
     }
@@ -238,7 +238,7 @@ class UsersController extends BaseController
 
         ->add_column('actions', '
                      <center>
-                        <a href="{{  URL::route(\'admin.edituser\', array($id) )}}" class="btn btn-info"><i class="icon-edit icon-white"></i> Edit </a>'
+                        <a href="{{  URL::route(\'admin.edituser\', array($id) )}}" class="btn btn-info btn-mini"><i class="icon-edit icon-white"></i> Edit </a>'
                 )
 
         ->make();

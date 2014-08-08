@@ -33,7 +33,7 @@ $(document).ready(function() {
         "bServerSide": true,
         "sAjaxSource": "getgroups",
         "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-            $('td:eq(4)', nRow).html( aData[4]+'<a href="#" onclick="groupDelete('+aData[0]+');" class="btn btn-danger"><i class="icon-trash icon-white"></i> Delete </a></center>');
+            $('td:eq(4)', nRow).html( aData[4]+'<a href="#" onclick="groupDelete('+aData[0]+');" class="btn btn-danger btn-mini"><i class="icon-trash icon-white"></i> Delete </a></center>');
             return nRow
         },
     });

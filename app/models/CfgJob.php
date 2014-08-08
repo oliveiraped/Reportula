@@ -3,8 +3,9 @@
 namespace app\models;
 
 use Eloquent;
+use app\models\BaseModel;
 
-class CfgJob extends Eloquent
+class CfgJob extends BaseModel
 {
 
     protected $guarded = array('id');

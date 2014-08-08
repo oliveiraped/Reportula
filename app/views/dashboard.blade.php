@@ -13,7 +13,7 @@
                 <a href={{ URL::route('dashboard', array('data'=>'month') ) }} class="btn" id="month" data-rel="tooltip" title="Month Stats" data-placement="bottom" ><i class="icon-fam-calendar-view-week"></i></a>
             </div></h4>
             <hr>
-            
+
             <table id="stats" class="" style="width:100%">
                 <thead>
                     <tr>
@@ -113,8 +113,8 @@
                     <li class="divider"></li>
                     <li><a href="#" onClick ="$('#dashboardStatsTable').tableExport({type:'csv',escape:'false'});"><i class="icon-fam-text-columns"></i> CSV</a></li>
                     <li><a href="#" onClick ="$('#dashboardStatsTable').tableExport({type:'txt',escape:'false'});"><i class="icon-fam-page-white-vector"></i> TXT</a></li>
-                    <li class="divider"></li>               
-                    
+                    <li class="divider"></li>
+
                     <li><a href="#" onClick ="$('#dashboardStatsTable').tableExport({type:'excel',escape:'false'});"><i class="icon-fam-page-white-flash"></i> Excel</a></li>
                     <li><a href="#" onClick ="$('#dashboardStatsTable').tableExport({type:'doc',escape:'false'});"><i class="icon-fam-page-world"></i> Word</a></li>
                     <li class="divider"></li>
@@ -162,8 +162,8 @@
                     <li class="divider"></li>
                     <li><a href="#" onClick ="$('#dashboardTableVolumes').tableExport({type:'csv',escape:'false'});"><i class="icon-fam-text-columns"></i> CSV</a></li>
                     <li><a href="#" onClick ="$('#dashboardTableVolumes').tableExport({type:'txt',escape:'false'});"><i class="icon-fam-page-white-vector"></i> TXT</a></li>
-                    <li class="divider"></li>               
-                    
+                    <li class="divider"></li>
+
                     <li><a href="#" onClick ="$('#dashboardTableVolumes').tableExport({type:'excel',escape:'false'});"><i class="icon-fam-page-white-flash"></i> Excel</a></li>
                     <li><a href="#" onClick ="$('#dashboardTableVolumes').tableExport({type:'doc',escape:'false'});"><i class="icon-fam-page-world"></i> Word</a></li>
                     <li class="divider"></li>

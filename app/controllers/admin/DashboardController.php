@@ -11,16 +11,16 @@ class DashboardController extends BaseController
     	// Get kernel info
 		list($system, $host, $kernel) = explode(" ", exec("uname -a"), 5);
 		// Grab uptime output
-		
+
 		// Get the kernel info, and grab the cool stuff
 		$cpuinfo = file("/proc/cpuinfo");
 		$total_cpu=0;
-		
+
 	//	dd($cpuinfo);
-	
+
 /*
 		for ($i = 0; $i <= count($cpuinfo); $i++) {
-				
+
 				list($item, $data) = explode(":", $cpuinfo[$i], 2);
 				$item = chop($item);
 				$data = chop($data);
@@ -31,8 +31,8 @@ class DashboardController extends BaseController
 				}
 				if ($item == "vendor_id") { $cpu_info .= $data; }
 				if ($item == "model name") { $cpu_info .= $data; }
-				if ($item == "cpu MHz") { 
-						$cpu_info .= " " . floor($data); 
+				if ($item == "cpu MHz") {
+						$cpu_info .= " " . floor($data);
 						$found_cpu = "yes";
 				}
 				if ($item == "cache size") { $cache = $data;}
@@ -40,7 +40,7 @@ class DashboardController extends BaseController
 
 		}
 		/*
-		if($found_cpu != "yes") { $cpu_info .= " <b>unknown</b>"; } 
+		if($found_cpu != "yes") { $cpu_info .= " <b>unknown</b>"; }
 		$cpu_info .= " MHz Processor(s)\n";
 
 		//Get the memory info, and grab the cool stuf
@@ -58,7 +58,7 @@ class DashboardController extends BaseController
 				if ($item == "Cached") { $cache_mem = $data; }
 				if ($item == "MemShared") {$shared_mem = $data; }
 		}
-		$used_mem = ( $total_mem - $free_mem ); 
+		$used_mem = ( $total_mem - $free_mem );
 		$used_swap = ( $total_swap - $free_swap );
 		$percent_free = round( $free_mem / $total_mem * 100 );
 		$percent_used = round( $used_mem / $total_mem * 100 );
@@ -66,7 +66,7 @@ class DashboardController extends BaseController
 		$percent_swap_free = round( $free_swap / $total_swap * 100 );
 		$percent_buff = round( $buffer_mem / $total_mem * 100 );
 		$percent_cach = round( $cache_mem / $total_mem * 100 );
-		
+
 		//$percent_shar = round( $shared_mem / $total_mem * 100 );
 		//Now it's time to grab the cool stuff from the hard drive
 		//This one is not quite as straight forward.....
@@ -74,11 +74,11 @@ class DashboardController extends BaseController
 		$count = 1;
 		/*while ($count < sizeof($x)) {
 				list($drive[$count], $size[$count], $used[$count], $avail[$count], $percent[$count], $mount[$count]) = explode(" +", $x[$count]);
-				$percent_part[$count] = str_replace( "%", "", $percent[$count] );	
+				$percent_part[$count] = str_replace( "%", "", $percent[$count] );
 		$count++;
 		}*/
-		
-		$rss=FeedReader::read('http://www.reportula.org/reportula/category/News/feed/');
+
+		$rss=FeedReader::read('http://www.reportula.org/reportula/?feed=rss2');
   		return View::make('admin.dashboard', array (
         										'rss'               => $rss,
         										'uptime'            => (exec("uptime")),

@@ -1,12 +1,30 @@
 <?php namespace app\controllers\admin;
 
-use BaseController, Datatables, View, Sentry, URL, Input, Validator, Response, Former, Log, Asset, Vd\Vd, File, Request;
-use Debugbar, Cache, DB, Filesystem;
+use BaseController;
+use Datatables;
+use View;
+use Sentry;
+use URL;
+use Input;
+use Validator;
+use Response;
+use Former;
+use Log;
+use Asset;
+use Vd\Vd;
+use File;
+use Request;
+use Debugbar;
+use Cache;
+use DB;
+use Filesystem;
+use Schema;
 
 // Models
 use app\models\Settings;
 use app\models\CfgDirector;
 use app\models\CfgSchedule;
+use app\models\CfgSchedulerun;
 use app\models\CfgStorage;
 use app\models\CfgCatalog;
 use app\models\CfgClient;
@@ -20,35 +38,31 @@ use app\models\CfgJob;
 use app\models\CfgMessage;
 use app\models\CfgConsole;
 
-
-
 class ConfiguratorController extends BaseController
 {
-   public function __construct()
+    public function __construct()
     {
         parent::__construct();
-
         Asset::add('multi-select', 'assets/css/multi-select.css');
         Asset::add('fancytreecss', 'assets/css/fancytree.css');
         Asset::add('jquery-ui-bootstrap.css', 'assets/css/jquery-ui-bootstrap.css');
-
-
-        Asset::add('jquery', 'assets/js/jquery-2.0.3.min.js');
-        Asset::add('jquery-ui.min.js', 'assets/js/jquery-ui.min.js','jquery');
-
+        Asset::add('bootstrap-wizard.css', 'assets/css/bootstrap-wizard.css');
+        Asset::add('jquery-ui.min.js', 'assets/js/jquery-ui.min.js', 'jquery');
         Asset::add('jquerymultiselect', 'assets/js/jquery.multi-select.js', 'jquery');
         Asset::add('eldarionform', 'assets/js/eldarion-ajax.min.js', 'jquery');
         Asset::add('bootbox.js', 'assets/js/bootbox.min.js', 'jquery');
         Asset::add('tab', 'assets/js/bootstrap-tab.js', 'jquery2');
+        Asset::add('jquery.cookie.js', 'assets/js/jquery.cookie.js', 'jquery2');
         Asset::add('fancytree', 'assets/js/jquery.fancytree-all.min.js', 'jquery');
+        Asset::add('jquery.fancytree.persist.js', 'assets/js/jquery.fancytree.persist.js', 'fancytree');
         Asset::add('fancytreefilter', 'assets/js/jquery.fancytree.filter.js', 'fancytree');
-
-        Asset::add('jquery.jeditable.js', 'assets/js/jquery.jeditable.js');
         Asset::add('jquery.validate.js', 'assets/js/jquery.validate.js');
-        Asset::add('jquery.dataTables.editable.js', 'assets/js/jquery.dataTables.editable.js','jquery');
-
+        Asset::add('jquery.dataTables.editable.js', 'assets/js/jquery.dataTables.editable.js', 'jquery');
+        Asset::add('bootstrap-dropdown.js', 'assets/js/bootstrap-dropdown.js');
+        Asset::add('select2', 'assets/css/select2.css');
+        Asset::add('select2min', 'assets/js/select2.min.js');
+        Asset::add('bootstrap-wizard.min.js', 'assets/js/bootstrap-wizard.min.js');
         Asset::add('configurator.js', 'assets/js/configurator.js', 'jquery');
-
     }
 
     /**
@@ -86,7 +100,6 @@ class ConfiguratorController extends BaseController
         Former::populate( $viewvalues );
         $view = 'admin.configurator.'.lcfirst($parent);
         return View::make($view, $viewvalues)->render();
-
     }
 
      /**
@@ -111,6 +124,8 @@ class ConfiguratorController extends BaseController
           {
              $valuearray[]=array('key'=> $key++, 'title' => $value->Name, 'parent' => $value->id);
           }
+          if (!isset($valuearray)) { $valuearray =""; }
+
           $tree[]=array('key'         => $lastkey,
                         'title'       => $model."s",
                         'folder'      => 'true',
@@ -119,6 +134,7 @@ class ConfiguratorController extends BaseController
             $valuearray="";
             $lastkey=$key;
         }
+
         return Response::json ($tree);
     }
 
@@ -129,129 +145,505 @@ class ConfiguratorController extends BaseController
      */
     public function writebacula()
     {
+      $settings = Settings::find(1);
 
-      $contents ='Director {
-        Name = cyclopes.bkp.fccn.pt-dir
-        DIRport = 9101
-        QueryFile = "/etc/bacula/query.sql"
-        WorkingDirectory = "/backup/working-dir"
-        PidDirectory = "/var/run"
-        Maximum Concurrent Jobs = 18
-        Password = "UDy45fQxup8h/zOvqp98OcazmV+Km7VP99nDR94E/oIH"
-        Messages = Daemon
-        Heartbeat Interval = 60
+      $directory = $settings->confdir;
+      $dirname="bacula-dir.conf";
+
+      if ((Input::get('type')=="test")) {
+        $directory=$directory.'/reportulateste';
+        $dirname='/bacula-dir.test';
+
       }
 
+      $success = File::cleanDirectory($directory.'/conf.d');
 
-
-
-    #############################################################################################
-    ################################## Definicoes dos JOBS ######################################
-    #############################################################################################
-
-
-
-
-#@/etc/bacula/conf.d/clients/bancodevideo.fccn.pt-job.conf
-
-
-
-
-      ';
+      /* Check If Bacula Configuration Folder Exists if Not Create */
+      File::makeDirectory($directory.'/conf.d','','',true);
+      File::makeDirectory($directory.'/conf.d/clients', 0777, true );
+      File::makeDirectory($directory.'/conf.d/filesets', 0777, true );
+      File::makeDirectory($directory.'/conf.d/jobs', 0777, true );
 
       $contents ="Director {\n";
-
 
       $model = Cfgdirector::find(1);
       $model = $model->toArray();
 
-      //dd($model);
       foreach( $model as $key => $value){
         if ( $value!="" && $key!='id') {
 
           if ($key=='MaximumConcurrentJobs') { $key = "Maximum Concurrent Jobs"; }
           if ($key=='HeartbeatInterval')     { $key = "Heartbeat Interval"; }
+          if ($key=='PidDirectory') { $key = "Pid Directory"; }
+          if ($key=='ScriptsDirectory')     { $key = "Scripts Directory"; }
+          if ($key=='FDConnectTimeout') { $key = "FD Connect Timeout"; }
+          if ($key=='SDConnectTimeout')     { $key = "SD Connect Timeout"; }
+          if ($key=='StatisticsRetention')     { $key = "Statistics Retention"; }
 
-            $contents .= "\t". $key .' = '.$value ."\n";
+          $contents .= "\t". $key .' = '.$value ."\n";
         }
       }
 
       $contents .= "}\n
       \n
+      ###################### CATALOGS DEFINITION FILES ###############################################\n
+      @".$directory."/conf.d/catalog.conf\n
 
-      ###################### JOBS DEFAULTS DEFINITION FILES ###############################################\n
-      @/etc/bacula/conf.d/jobdefaults.conf\n
+      ###################### MESSAGES DEFINITION FILES ###############################################\n
+      @".$directory."/conf.d/messages.conf\n
 
-      ###################### Schedule Definition Files ##############################################\n
-      @/etc/bacula/conf.d/schedule.conf\n
+      ###################### CONSOLE DEFINITION FILES ###############################################\n
+      @".$directory."/conf.d/console.conf\n
+
+      ###################### SCHEDULES Definition Files ##############################################\n
+      @".$directory."/conf.d/schedule.conf\n
       \n
       ###################### STORAGE DEFINITION FILES ###############################################\n
-      @/etc/bacula/conf.d/storage.conf\n
+      @".$directory."/conf.d/storage.conf\n
+      \n
+      ###################### POOLS DEFINITION FILES ###############################################\n
+      @".$directory."/conf.d/pools.conf\n
+      \n
+
+      ###################### CLIENTS DEFAULTS DEFINITION FILES ###############################################\n
+      @|\"sh -c 'for f in ".$directory."/conf.d/clients/*.conf ; do echo @\${f} ; done'\"
+
+      ###################### FILESETS DEFAULTS DEFINITION FILES ###############################################\n
+      @|\"sh -c 'for f in ".$directory."/conf.d/filesets/*.conf ; do echo @\${f} ; done'\"
+
+      ###################### JOBS DEFAULTS DEFINITION FILES ###############################################\n
+      @|\"sh -c 'for f in ".$directory."/conf.d/jobs/*.conf ; do echo @\${f} ; done'\"
+
       \n
       ";
-      File::put('/home/pedro/www/laravel/bacula/bacula-dir.conf', $contents);
+
+      File::put( $directory.'/'.$dirname , $contents);
+      ################## Pools ######################
+
+      $model = CfgPool::get();
+      $model = $model->toArray();
+      $contents="";
+      foreach ($model as $v1) {
+        $contents.="Pool {\n";
+        foreach ($v1 as $key => $value) {
+          if ( $value!="" && $key!='id') {
+
+            if ($key=='PoolType') { $key = "Pool Type"; }
+            if ($key=='VolumeRetention') { $key = "Volume Retention"; }
+            if ($key=='MaximumVolumeJobs') { $key = "Maximum Volume Jobs"; }
+            if ($key=='LabelFormat') { $key = "Label Format"; }
+            if ($key=='MaximumVolumes') { $key = "Maximum Volumes"; }
+
+            if ($key=='UseVolumeOnce') { $key = "Use Volume Once"; }
+            if ($key=='MaximumVolumeFiles') { $key = "Maximum Volume Files"; }
+            if ($key=='MaximumVolumeBytes') { $key = "Maximum Volume Bytes"; }
+            if ($key=='VolumeUseDuration') { $key = "Volume Use Duration"; }
+            if ($key=='CatalogFiles') { $key = "Catalog Files"; }
+            if ($key=='ActionOnPurge') { $key = "Action On Purge"; }
+
+            if ($key=='RecycleOldestVolume') { $key = "Recycle Oldest Volume"; }
+            if ($key=='RecycleCurrentVolume') { $key = "Recycle Current Volume"; }
+            if ($key=='PurgeOldestVolume') { $key = "Purge Oldest Volume"; }
+            //if ($key=='ActionOnPurge') { $key = "ActionOnPurge"; }
+
+            if ($key=='FileRetention') { $key = "File Retention"; }
+            if ($key=='JobRetention') { $key = "Job Retention"; }
+            if ($key=='CleaningPrefix') { $key = "Cleaning Prefix"; }
+            if ($key=='LabelFormat') { $key = "Label Format"; }
+
+            $contents .= "\t". $key .' = '.$value ."\n";
+          }
+        }
+        $contents .= "}\n\n";
+      }
+      File::put($directory.'/conf.d/pools.conf', $contents);
+
+      ######################################################
+
+      ################## Sechedules ######################
+
+      $model = CfgSchedule::get();
+      $model = $model->toArray();
+      $contents="";
+      foreach ($model as $v1) {
+        $idschedule = $v1['id'];
+        $contents.="Schedule {\n";
+        foreach ($v1 as $key => $value) {
+          if ( $value!="" && $key!='id') {
+            $contents .= "\t". $key .' = '.$value ."\n";
+            $run = cfgSchedulerun::where('idschedule','=',$idschedule)->get();
+            $run = $run->toArray();
+            if (count( $run) !=0 ) {
+              foreach ($run as $v2) {
+                  $contents .= "\tRun = ".$v2['Run']."\n";
+              }
+            }
+          }
+        }
+        $contents .= "}\n\n";
+      }
+      File::put($directory.'/conf.d/schedule.conf', $contents);
+
+      ######################################################
 
 
+      ################## Storage ######################
+
+      $model = CfgStorage::get();
+      $model = $model->toArray();
+      $contents="";
+      foreach ($model as $v1) {
+        $contents.="Storage {\n";
+        foreach ($v1 as $key => $value) {
+          if ( $value!="" && $key!='id') {
+
+            if ($key=='SDPort') { $key = "SD Port"; }
+            if ($key=='MediaType') { $key = "Media Type"; }
+            if ($key=='MaximumConcurrentJobs') { $key = "Maximum Concurrent Jobs"; }
+            if ($key=='HeartbeatInterval') { $key = "Heartbeat Interval"; }
+
+            $contents .= "\t". $key .' = '.$value ."\n";
+          }
+        }
+        $contents .= "}\n\n";
+      }
+      File::put($directory.'/conf.d/storage.conf', $contents);
+
+      ######################################################
+      ################## Catalogs ######################
+
+      $model = CfgCatalog::get();
+
+      $model = $model->toArray();
+      $contents="";
+      foreach ($model as $v1) {
+        $contents.="Catalog {\n";
+        foreach ($v1 as $key => $value) {
+          if ( $value!="" && $key!='id') {
+
+            if ($key=='DBName') { $key = "DB Name"; }
+            if ($key=='DBSocket') { $key = "DB Socket"; }
+            if ($key=='DBAddress') { $key = "DB Address"; }
+            if ($key=='DBPort') { $key = "DB Port"; }
+            if ($key=='DBUser') { $key = "DB User"; }
 
 
-      ################## JobDefaults ######################
+            $contents .= "\t". $key .' = '.$value ."\n";
+          }
+        }
+        $contents .= "}\n\n";
+      }
+      File::put($directory.'/conf.d/catalog.conf', $contents);
 
-      $model = CfgJob::where('JobDefs', '=', Null)
-                      ->where('Type', '<>', 'Admin')
-                      ->where('Type', '<>', 'Restore')
+      ######################################################
 
-                      ->get();
+      ################## Console ######################
 
+      $model = CfgConsole::get();
+
+      $model = $model->toArray();
+      $contents="";
+      foreach ($model as $v1) {
+        $contents.="Console {\n";
+        foreach ($v1 as $key => $value) {
+          if ( $value!="" && $key!='id') {
+            $contents .= "\t". $key .' = '.$value ."\n";
+          }
+        }
+        $contents .= "}\n\n";
+      }
+      File::put($directory.'/conf.d/console.conf', $contents);
+
+      ######################################################
+
+      ################## Messages ######################
+
+      $model = CfgMessage::get();
+
+      $model = $model->toArray();
+      $contents="";
+      foreach ($model as $v1) {
+        $contents.="Messages {\n";
+        foreach ($v1 as $key => $value) {
+          if ( $value!="" && $key!='id') {
+            $contents .= "\t". $key .' = '.$value ."\n";
+          }
+        }
+        $contents .= "}\n\n";
+      }
+      File::put($directory.'/conf.d/messages.conf', $contents);
+
+      ######################################################
+
+      ################## Clients ######################
+
+      $model = CfgClient::get();
 
       $model = $model->toArray();
 
+      foreach ($model as $v1) {
+        $contents="";
+        $clientname = $v1['Name'];
+        $contents.="Client {\n";
+        foreach ($v1 as $key => $value) {
+          if ( $value!="" && $key!='id') {
 
-      dd ($model);
+            if ($key=='PidDirectory') { $key = "Pid Directory"; }
+            if ($key=='WorkingDirectory') { $key = "Working Directory"; }
+            if ($key=='HeartbeatInterval') { $key = "Heartbeat Interval"; }
+            if ($key=='MaximumConcurrentJobs') { $key = "Maximum Concurrent Jobs"; }
+            if ($key=='MaximumNetworkBufferSize') { $key = "Maximum Network Buffer Size"; }
+            if ($key=='MaximumBandwidthPerJob') { $key = "Maximum Bandwidth Per Job"; }
+            if ($key=='PKIEncryption') { $key = "PKI Encryption"; }
+            if ($key=='PKISignatures') { $key = "PKI Signatures"; }
+            if ($key=='PKIKeypair') { $key = "PKI Keypair"; }
+            if ($key=='PKIMasterKey') { $key = "PKI Master Key"; }
 
-      $contents ="JobDefs {\n";
-      foreach( $model[0] as $key => $value){
-        if ( $value!="" && $key!='id') {
             $contents .= "\t". $key .' = '.$value ."\n";
+          }
         }
+        $contents .= "}\n\n";
+
+        File::put($directory.'/conf.d/clients/'.$clientname.'.conf', $contents);
       }
-      $contents .= "}\n\n\n";
+      ######################################################
+
+      ################## Jobs ######################
+
+      $model = CfgJob::get();
+
+      $model = $model->toArray();
+
+      foreach ($model as $v1) {
+        $contents="";
+        $jobname = $v1['Name'];
+        $contents.="Job {\n";
+        /* check if is Default Job */
+        if ($v1['JobDefs']==Null) { $contents=""; $contents.="JobDefs {\n"; }
+
+        foreach ($v1 as $key => $value) {
+          if ( $value!="" && $key!='id') {
+
+            if ($key=='VerifyJob') { $key = "Verify Job"; }
+            if ($key=='WriteBootstrap')     { $key = "Write Bootstrap"; }
+            if ($key=='FullBackupPool') { $key = "Full Backup Pool"; }
+            if ($key=='DifferentialBackupPool')     { $key = "Differential Backup Pool"; }
+            if ($key=='IncrementalBackupPool') { $key = "Incremental Backup Pool"; }
+            if ($key=='IncrementalMaxRunTime') { $key = "Incremental Max Run Time"; }
+            if ($key=='DifferentialMaxWaitTime') { $key = "Differential Max Wait Time"; }
+            if ($key=='MaxRunSchedTime') { $key = "Max Run Sched Time"; }
+            if ($key=='MaxWaitTime') { $key = "Max Wait Time"; }
+            if ($key=='MaxRunTime') { $key = "Max Run Time"; }
+            if ($key=='MaximumBandwidth') { $key = "Maximum Bandwidth"; }
+            if ($key=='MaxFullInterval ') { $key = "Max Full Interval "; }
+            if ($key=='PreferMountedVolumes') { $key = "Prefer Mounted Volumes"; }
+            if ($key=='PruneJobs') { $key = "Prune Jobs"; }
+            if ($key=='PruneFiles') { $key = "Prune Files"; }
+            if ($key=='PruneVolumes') { $key = "Prune Volumes"; }
+            if ($key=='RunBeforeJob') { $key = "Run Before Job"; }
+            if ($key=='RunAfterJob') { $key = "Run After Job"; }
+            if ($key=='RunAfterFailedJob') { $key = "Run After Failed Job"; }
+            if ($key=='ClientRunBeforeJob') { $key = "Client Run Before Job"; }
+            if ($key=='RerunFailedLevels') { $key = "Rerun Failed Levels"; }
+            if ($key=='SpoolData') { $key = "Spool Data"; }
+            if ($key=='SpoolAttributes') { $key = "Spool Attributes"; }
+            if ($key=='AddPrefix') { $key = "Add Prefix"; }
+            if ($key=='AddSuffix') { $key = "Add Suffix "; }
+            if ($key=='StripPrefix') { $key = "Strip Prefix"; }
+            if ($key=='PrefixLinks') { $key = "Prefix Links"; }
+            if ($key=='MaximumConcurrentJobs') { $key = "Maximum Concurrent Jobs"; }
+            if ($key=='RescheduleOnError') { $key = "Reschedule On Error"; }
+            if ($key=='RescheduleInterval') { $key = "Reschedule Interval"; }
+            if ($key=='RescheduleTimes') { $key = "Reschedule Times"; }
+            if ($key=='AllowDuplicateJobs') { $key = "Allow Duplicate Jobs"; }
+            if ($key=='CancelLowerLevelDuplicates') { $key = "Cancel Lower Level Duplicates"; }
+            if ($key=='CancelQueuedDuplicates')   { $key = "Cancel Queued Duplicates"; }
+            if ($key=='CancelRunningDuplicates') { $key = "Cancel Running Duplicates"; }
+            if ($key=='AllowMixedPriority') { $key = "Allow Mixed Priority"; }
+            if ($key=='WritePartAfterJob') { $key = "Write Part After Job"; }
+
+            $contents .= "\t". $key .' = '.$value ."\n";
+          }
+        }
+        $contents .= "}\n\n";
 
 
+        File::put($directory.'/conf.d/jobs/'.$jobname.'.conf', $contents);
+      }
+      ######################################################*/
 
-      File::put('/home/pedro/www/laravel/bacula/conf.d/jobdefaults.conf', $contents);
+      ################## FileSets ######################
+
+      $model = CfgFileset::get();
+      $model = $model->toArray();
+
+      foreach ($model as $v1) {
+        $contents="";
+        $fileset = $v1['id'];
+        $filesetname = $v1['Name'];
+        $contents.="FileSet {\n";
+        foreach ($v1 as $key => $value) {
+          if ( $value!="" && $key!='id') {
+            if ($key=='IgnoreFileSetChanges') { $key = "Ignore FileSet Changes"; }
+            if ($key=='EnableVSS') { $key = "Enable VSS"; }
+            $contents .= "\t". $key .' = '.$value ."\n";
+          }
+        }
+        // Includes
+        $inc = cfgFileSetInclude::where('idfileset','=',$fileset)->get();
+        $inc = $inc->toArray();
+        $contents.="\tInclude {\n";
+        // Includes Options
+        $incfileopt  = cfgFileSetIncludeoptions::where('idfileset','=',$fileset)->get();
+        $incfileopt  =  $incfileopt->toArray();
+        if (count( $incfileopt) !=0 ) {
+          $contents.="\t\tOptions {\n";
+          foreach ($incfileopt as $v1) {
+              $contents .= "\t\t\t\t". $v1['option'] .' = '.$v1['value'] ."\n";
+          }
+          $contents .= "\t\t\t}\n";
+        }
+        /* Include File */
+        foreach ($inc as $v1) {
+          foreach ( $v1 as $key => $value) {
+          if ( $value!="" && $key!='id' && $key!='idfileset') {
+                $contents .= "\t\t\t File = ".$value ."\n";
+            }
+         }
+        }
+        $contents .= "\t\t}\n";
+        // Excludes
+        $inc = cfgFileSetExclude::where('idfileset','=',$fileset)->get();
+        $inc = $inc->toArray();
+        if (count( $inc) !=0 ) {
+          $contents.="\tExclude {\n";
+          // Excludes Options
+          $excludefileopt  = cfgFileSetExcludeoptions::where('idfileset','=',$fileset)->get();
+          $excludefileopt  =  $excludefileopt->toArray();
+          if (count( $excludefileopt) !=0 ) {
+            $contents.="\t\tOptions {\n";
+            foreach ($excludefileopt as $v1) {
+                $contents .= "\t\t\t\t". $v1['option'] .' = '.$v1['value'] ."\n";
+            }
+            $contents .= "\t\t\t}\n";
+          }
+          /* Exclude File */
+          foreach ($inc as $v1) {
+            foreach ( $v1 as $key => $value) {
+            if ( $value!="" && $key!='id' && $key!='idfileset') {
+                  $contents .= "\t\t\t File = ".$value ."\n";
+              }
+           }
+          }
+          $contents .= "\t\t}\n";
+        }
+        $contents .= "}\n";
+        File::put($directory.'/conf.d/filesets/'.$filesetname.'.conf', $contents);
+      }
+      ######################################################
+
+      if ((Input::get('type')=="test")) {
+        $output = shell_exec('sudo bacula-dir -t -c '.$directory.$dirname );
+        $message = array('html' => '<div class="alert alert-danger">'.$output.'</div>');
+        if ($output=="") {
+          $message = array('html' => '<div class="alert alert-success"> Test Configuration Sucessufull </div>');
+        }
+        return Response::json($message);
+      } else {
+        return Response::json(array('html' => '<div class="alert alert-success"> Write Configuration Sucessufull Updated </div>'));
+      }
+    }
+
+    /*****
+     * Delete Configuration Items
+     * @return Json
+     */
+    public function deleteitem()
+    {
+      $parent = substr(Input::get('parent',''),0,-1);
+      $classname  = "app\models\Cfg".$parent;
+
+      $item = $classname::find(Input::get('id'));
+      $item->delete();
+      /* FileSets delete include exclude and options */
+      if ($parent="Fileset") {
+        $affectedRows = Cfgfilesetexclude::where('idfileset', '=',Input::get('id'))->delete();
+        $affectedRows = Cfgfilesetexcludeoptions::where('idfileset', '=',Input::get('id'))->delete();
+        $affectedRows = Cfgfilesetinclude::where('idfileset', '=',Input::get('id'))->delete();
+        $affectedRows = Cfgfilesetincludeoptions::where('idfileset', '=',Input::get('id'))->delete();
+      }
+    }
 
 
-
-
-
-
-
-
-      return Response::json(array('html' => $contents));
-
-      //return Response::json(array('html' => '<div class="alert alert-success"> Write Configuration Sucessufull Updated </div>'));
+    /*****
+     * New Configuration Items
+     * @return Json
+     */
+    public function newitem()
+    {
+      $parent = substr(Input::get('parent',''),0,-1);
+      $classname  = "app\models\Cfg".$parent;
+      $model = new  $classname;
+      $viewvalues = $model->getAllColumnsNames();
+      foreach ($viewvalues as  $value) {
+          $values[$value] ="";
+      }
+      Former::populate( $values);
+      $values['config'] = $parent.'s';
+      $values['title'] = "New ". $parent;
+      $view = 'admin.configurator.'.lcfirst($parent);
+      return View::make($view, $values)->render();
 
     }
 
 
     /*****
-     * Save Configuration Items
+     * Save Or Insert New items Configuration Items
      * @return Json
      */
     public function saveconfiguration()
     {
       $save = Input::all();
       $config = substr($save['config'], 0, -1);
-
       $classname="app\models\Cfg".$config;
-      $values=$classname::find(Input::get('id'));
-      $save = array_except($save, array('config'));
-
-      if ($values->update($save) ) {
-        return Response::json(array('html' => '<div class="alert alert-success"> '.$config.' Sucessufull Updated </div>'));
+      $save = array_except($save, array('config','_token'));
+      if (Input::get('id')!='') {
+        $values=$classname::find(Input::get('id'));
+        if ($values->update($save) ) {
+          return Response::json(array('html' => '<div class="alert alert-success"> '.$config.' Sucessufull Updated </div>'));
+        }
+      }else{
+        $user = $classname::create($save);
+        return Response::json(array('html' => '<div class="alert alert-success"> '.$config.' Sucessufull Created </div>'));
       }
-
     }
+
+
+  /**
+    * Delete Schedule Run items
+    * @return Json
+    */
+   public function deleteSchedulerun()
+   {
+      $exclude = CfgSchedulerun::find(Input::get('id',''));
+      $exclude->delete();
+      return 'ok';
+    }
+
+    /**
+     * Add Schedule Runs
+     * @return Json
+     */
+    public function addSchedulerun()
+    {
+        $Schedulerun = new  CfgSchedulerun;
+        $Schedulerun->idschedule = Input::get('id','');;
+        $Schedulerun->Run      = Input::get('Run','');
+        $Schedulerun->save();
+        return json_encode(true);
+    }
+
+
 
 
 
@@ -270,17 +662,6 @@ class ConfiguratorController extends BaseController
 
     }
 
-    /**
-     * Edit FileSets excludes
-     * @return Json
-     */
-    public function editexcludes()
-    {
-      $exclude = Cfgfilesetexclude::find(Input::get('id'));
-      $exclude->file = Input::get('value');
-      $exclude->save();
-      return $exclude->file;
-    }
 
     /**
      * Delete FileSets excludes
@@ -293,7 +674,6 @@ class ConfiguratorController extends BaseController
       return 'ok';
     }
 
-
     /**
      * Add FileSets excludesoptions
      * @return Json
@@ -302,24 +682,10 @@ class ConfiguratorController extends BaseController
     {
         $filesetexclude = new  Cfgfilesetexcludeoptions;
         $filesetexclude->idfileset = Input::get('id','');;
-        $filesetexclude->file  = Input::get('path','');
+        $filesetexclude->option    = Input::get('option','');
+        $filesetexclude->value     = Input::get('value','');
         $filesetexclude->save();
         return json_encode(true);
-
-
-    }
-
-    /**
-     * Edit FileSets excludesoptions
-     * @return Json
-     */
-    public function editexcludesoptions()
-    {
-      $exclude = Cfgfilesetexcludeoptions::find(Input::get('id'));
-      $exclude->option = Input::get('option');
-      $exclude->value = Input::get('value');
-      $exclude->save();
-      return $exclude->value;
     }
 
     /**
@@ -328,15 +694,10 @@ class ConfiguratorController extends BaseController
      */
     public function deleteexcludesoptions()
     {
-
       $exclude = Cfgfilesetexcludeoptions::find(Input::get('id',''));
       $exclude->delete();
       return 'ok';
     }
-
-
-
-
 
     /**
      * Add FileSets Includesoptions
@@ -346,24 +707,11 @@ class ConfiguratorController extends BaseController
     {
         $filesetinclude = new  Cfgfilesetincludeoptions;
         $filesetinclude->idfileset = Input::get('id','');;
-        $filesetinclude->file  = Input::get('path','');
+        $filesetinclude->option    = Input::get('option','');
+        $filesetinclude->value     = Input::get('value','');
+
         $filesetinclude->save();
         return json_encode(true);
-
-
-    }
-
-    /**
-     * Edit FileSets Includesoptions
-     * @return Json
-     */
-    public function editincludesoptions()
-    {
-      $include = Cfgfilesetincludeoptions::find(Input::get('id'));
-      $include->option = Input::get('option');
-      $include->value = Input::get('value');
-      $include->save();
-      return $include->value;
     }
 
     /**
@@ -372,20 +720,15 @@ class ConfiguratorController extends BaseController
      */
     public function deleteincludesoptions()
     {
-
       $include = Cfgfilesetincludeoptions::find(Input::get('id',''));
       $include->delete();
       return 'ok';
-
-
     }
 
-
-
-     /**
-     * Add FileSets Includes
-     * @return Json
-     */
+    /**
+    * Add FileSets Includes
+    * @return Json
+    */
     public function addincludes()
     {
         $filesetinclude = new  Cfgfilesetinclude;
@@ -393,23 +736,9 @@ class ConfiguratorController extends BaseController
         $filesetinclude->file      = Input::get('path','');
         $filesetinclude->save();
         return json_encode(true);
-
-
     }
 
-    /**
-     * Edit FileSets Includes
-     * @return Json
-     */
-    public function editincludes()
-    {
-      $include = Cfgfilesetinclude::find(Input::get('id'));
-      $include->file = Input::get('value');
-      $include->save();
-      return $include->file;
-    }
-
-    /**
+     /**
      * Delete FileSets Includes
      * @return Json
      */
@@ -423,16 +752,31 @@ class ConfiguratorController extends BaseController
 
 
     /**
+     * Get Schedules Run
+     * @return Json
+     */
+    public function getschedule()
+    {
+
+      return Datatables::of(CfgSchedulerun::select(array('id','Run'))
+                            ->where('idschedule','=', Input::get('idschedule'))
+                )->make();
+    }
+
+
+
+    /**
      * Get FileSets Includes
      * @return Json
      */
     public function getincludes()
     {
 
-      return Datatables::of(Cfgfilesetinclude::select(array('id','file'))
-                                    ->where('idfileset','=', Input::get('filesetid'))
-                            )->make();
+      return Datatables::of(Cfgfilesetinclude::select(array('id','File'))
+                            ->where('idfileset','=', Input::get('filesetid'))
+                )->make();
     }
+
 
     /**
      * Get FileSets IncludesOptions
@@ -452,7 +796,7 @@ class ConfiguratorController extends BaseController
     public function getexcludes()
     {
 
-      return Datatables::of(Cfgfilesetexclude::select(array('id','file'))
+      return Datatables::of(Cfgfilesetexclude::select(array('id','File'))
                                     ->where('idfileset','=', Input::get('filesetid'))
                             )->make();
 
@@ -487,6 +831,7 @@ class ConfiguratorController extends BaseController
           CfgJob::truncate();
           CfgPool::truncate();
           CfgSchedule::truncate();
+          CfgSchedulerun::truncate();
           CfgStorage::truncate();
           cfgfilesetinclude::truncate();
           Cfgfilesetincludeoptions::truncate();
@@ -499,7 +844,11 @@ class ConfiguratorController extends BaseController
          $confdir=Settings::find(1);
          $path = $confdir->confdir;
 
-         // Read All Files all Directorys
+        /* Delete Test Bacula Configuration Teste*/
+        $success = File::cleanDirectory($path.'/reportulateste');
+
+
+        // Read All Files all Directorys
         $files = File::allFiles($path);
 
         foreach ($files as $file)
@@ -510,44 +859,39 @@ class ConfiguratorController extends BaseController
         }
         $nfiles=count($conffiles);
 
+
         ////////////////////////////////////////////////////////////////////////////
-
-        //remover o path
-        $path.="bacula";
-
         foreach ($conffiles as $file) {
-            $config = file($file);
-           // LOG::info($path);
-           // LOG::info($file);
+
+            $config = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
             $filename=$file->getFilename();
 
-            if ( $filename!='bacula-fd.conf' || $filename!='bacula-sd.conf' || $filename!='mtx-changer.conf') {
-                   $i=0;
-             //   LOG::info($filename);
+            if ( $filename!='bacula-fd.conf' && $filename!='bacula-sd.conf' && $filename!='mtx-changer.conf') {
 
-                /////////////////////////////////////Codigo para Ler as Messages////////////////////////
-                $Consolecfg = new CfgConsole;
-                $Console = array ();
-                // Codigo para Ler Values
+              $i=0;
 
-                foreach ($config as $key => $value) {
-                    if (trim($value)=="Console {") {
-                        $i=$key;
-                        do {
-                            $i++;
-                            $result = preg_split ('[=]', $config[$i]);
-                            // Se não for comentário adiciona
-                            if (substr(trim($result[0]), 0, 1) != '#')
-                                $Console[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-                        } while (trim($config[$i+1]) != "}");
+              // /////////////////////////////////////Codigo para Ler as Console////////////////////////
+              $Consolecfg = new CfgConsole;
+              $Console = array ();
+              // Codigo para Ler Values
+              foreach ($config as $key => $value) {
+                  if (trim($value)=="Console {") {
+                      $i=$key;
+                      do {
+                          $i++;
+                          $result = preg_split ('[=]', $config[$i]);
+                          // Se não for comentário adiciona
+                          if (substr(trim($result[0]), 0, 1) != '#')
+                              $Console[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+                      } while (trim($config[$i+1]) != "}");
+                      $Consoletest = CfgConsole::where('Name', '=', $Console['Name']);
+                      if ($Consoletest->count()==0) {
 
-                        $Consoletest = CfgConsole::where('Name', '=', $Console['Name']);
-                        if ($Consoletest->count()==0) {
-                            $Consolecfg = CfgConsole::create($Console);
-                        };
-                    }
-                }
-                ////////////////////////////////////////////////////////////////////////////////////////////
+                        $Consolecfg = CfgConsole::create($Console);
+                      };
+                  }
+              }
+              ////////////////////////////////////////////////////////////////////////////////////////////
 
                 /////////////////////////////////////Codigo para Ler as Messages////////////////////////
                 $Messagescfg = new CfgMessage;
@@ -559,111 +903,106 @@ class ConfiguratorController extends BaseController
                         $i=$key;
                         do {
                             $i++;
+
                             $result = preg_split ('[=]', $config[$i]);
+                            if (count($result)>=3) {
+                                $option = array_shift($result);
+                                $value = implode("=", $result);
+                                $result[0] = $option;
+                                $result[1] = $value;
+                            }
+
                             // Se não for comentário adiciona
                             if (substr(trim($result[0]), 0, 1) != '#')
                                 $Messages[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+
                         } while (trim($config[$i+1]) != "}");
 
-                        $Messagestest = CfgMessage::where('Name', '=', $Messages['Name']);
+                       $Messagestest = CfgMessage::where('Name', '=', $Messages['Name']);
                         if ($Messagestest->count()==0) {
                             $Messagescfg = CfgMessage::create($Messages);
                         };
+
                     }
                 }
-                ////////////////////////////////////////////////////////////////////////////////////////////
 
+                ///////////////////////////////////////////////////////////////////////////////////////////
 
                 /////////////////////////////////////Codigo para Ler os Schedule////////////////////////
-
                 $schedulecfg = new CfgSchedule;
                 $schedule = array ();
                 // Codigo para Ler Values
-
+                $k=0;
                 foreach ($config as $key => $value) {
                     if (trim($value)=="Schedule {") {
                         $i=$key;
+
                         do {
                             $i++;
                             $result = preg_split ('[=]', $config[$i]);
                             // Se não for comentário adiciona
-                            if (substr(trim($result[0]), 0, 1) != '#')
-                                $schedule[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+                            //var_dump (trim($result[0]));
+                            if (substr(trim($result[0]), 0, 1) != '#' ) {
+                              if (trim($result[0])!="Run") {
+                                  $schedule[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+                              } else {
+                                  $schedulerun[$k]['Run'] = preg_replace('/(\'|")/', '', trim($result[1]));
+                                  $k++;
+                              }
+                            }
                         } while (trim($config[$i+1]) != "}");
-
                         $scheduletest = CfgSchedule::where('Name', '=', $schedule['Name']);
                         if ($scheduletest->count()==0) {
-                            $schedulecfg = CfgSchedule::create($schedule);
+                          $scheduleid = CfgSchedule::create($schedule);
+                          // Insert Run Options Schedules
+                          foreach ($schedulerun as $valor) {
+                            $result = array_merge($valor, array("idschedule" => $scheduleid->id));
+                            CfgSchedulerun::create($result);
+                          }
                         };
                     }
                 }
                 ////////////////////////////////////////////////////////////////////////////////////////////
 
-                ////////////////////////////////// Codigo para Ler o Client////////////////////////
-                $clientcfg = new CfgClient;
-                $client = array ();
-                foreach ($config as $key => $value) {
-                    if (trim($value)=="Client {") {
-                        $i=$key;
-                        do {
-                            $i++;
-                            $result = preg_split ('[=]', $config[$i]);
-                            $client[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-                        } while (trim($config[$i+1]) != "}");
-                        $clienttest = CfgClient::where('Name', '=', $client['Name']);
-
-                        if ($clienttest->count()==0) {
-                            $clientcfg = Cfgclient::create($client);
-                        };
-                    }
-                }
-                ////////////////////////////////////////////////////////////////////////////////////////////
-
-                //////////////////////////////// Codigo para Ler as Pools //////////////////////////////
-
+               //////////////////////////////// Codigo para Ler as Pools //////////////////////////////
                 $poolcfg = new CfgPool;
                 $pool = array ();
                 // Codigo para Ler as Pools
                 foreach ($config as $key => $value) {
                     if (trim($value)=="Pool {") {
                         $i=$key;
-
                         do {
                             $i++;
                             $result = preg_split ('[ = ]', $config[$i]);
-
-
                             $pool[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
                         } while (trim($config[$i+1]) != "}");
                         $pooltest = CfgPool::where('Name', '=', $pool['Name']);
                         if ($pooltest->count()==0) {
-
                             $poolcfg = CfgPool::create($pool);
                         };
                     }
-
                 }
                 ////////////////////////////////////////////////////////////////////////////////////////////
 
                 //////////////////////////////// Codigo para Ler o Storage//////////////////////////////
-
-                $storagecfg = new CfgStorage;
-                $storage = array ();
-                // Codigo para Ler O Storage
-                foreach ($config as $key => $value) {
-                    if (trim($value)=="Storage {") {
-                        $i=$key;
-                        do {
-                            $i++;
-                            $result = preg_split ('[ = ]', $config[$i]);
-                            $storage[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-                        } while (trim($config[$i+1]) != "}");
-                        $storagetest = Cfgstorage::where('Name', '=', $storage['Name']);
-                        if ($storagetest->count()==0) {
-                            $storagecfg = Cfgstorage::create($storage);
-                        };
-                    }
-
+                if ( $filename!='bacula-sd.conf' && $filename!='tray-monitor.conf') {
+                  $storagecfg = new CfgStorage;
+                  $storage = array ();
+                  // Codigo para Ler O Storage
+                  foreach ($config as $key => $value) {
+                      if (trim($value)=="Storage {") {
+                          $i=$key;
+                          do {
+                              $i++;
+                              $result = preg_split ('[ = ]', $config[$i]);
+                              $storage[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+                          } while (trim($config[$i+1]) != "}");
+                          $storagetest = Cfgstorage::where('Name', '=', $storage['Name']);
+                          if ($storagetest->count()==0) {
+                              $storagecfg = Cfgstorage::create($storage);
+                          };
+                      }
+                  }
                 }
                 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -690,7 +1029,7 @@ class ConfiguratorController extends BaseController
                 //////////////////////////////////////////////////////////////////////////////////////////
 
                 ////////////////////////// Codigo para Ler o Director ////////////////////////////////////////////////
-                if ($filename!='bconsole.conf') {
+                if ($filename!='bconsole.conf' && $filename=='bacula-dir.conf') {
                     $directorcfg = new CfgDirector;
                     $director = array ();
                     // Codigo para Ler Values
@@ -714,15 +1053,38 @@ class ConfiguratorController extends BaseController
                 }
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
+                ////////////////////////////////// Codigo para Ler o Client////////////////////////
+                 if ($filename!='tray-monitor.conf' ) {
+                  $clientcfg = new CfgClient;
+                  $client = array ();
+
+                  foreach ($config as $key => $value) {
+                      if (trim($value)=="Client {") {
+                          $i=$key;
+                          do {
+                              $i++;
+                              $result = preg_split ('[=]', $config[$i]);
+                              $client[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+                          } while (trim($config[$i+1]) != "}");
+                          $clienttest = CfgClient::where('Name', '=', $client['Name']);
+
+                          if ($clienttest->count()==0) {
+                              $clientcfg = Cfgclient::create($client);
+                          };
+                          //log::info($filename,$client);
+                      }
+                  }
+                }
+                ////////////////////////////////////////////////////////////////////////////////////////////
                 ///////////////////////////// Codigo para Ler os Jobs//////////////////////////////////////////////////////
                 $jobcfg = new CfgJob;
                 $job = array ();
                 // Codigo para Ler Values
 
                 foreach ($config as $key => $value) {
-
                     if (trim($value)=="Job {" || trim($value)=="JobDefs {") {
-
                         $i=$key;
                         do {
                             $i++;
@@ -738,9 +1100,10 @@ class ConfiguratorController extends BaseController
                         };
                     }
                 }
-                ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+              //   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                ///////////////////////////// Codigo para Ler os Filesets//////////////////////////////////////////////////////
+
+                ///////////////////////////// Codigo para Ler os  Filesets//////////////////////////////////////////////////////
                 $filesetcfg = new CfgFileset;
                 $fileset = array ();
                 // Codigo para Ler Values
@@ -749,660 +1112,128 @@ class ConfiguratorController extends BaseController
                 $finc =array();
                 $fexc =array();
 
+
+
+
                 foreach ($config as $key => $value) {
-                    // Se For FileSet Executa
 
                     if (trim($value)=="FileSet {") {
-                        $key++;
-
-                        while (trim($config[$key]) != "}") {
-                            if (trim($config[$key])=="Include {") {
-                                $key++;
-                                $z=0;
-                                while (trim($config[$key]) != "}") {
-
-                                    if (trim($config[$key])=="Options {") {
-                                        $k=0;
-                                        $key++;
-                                        while ( trim($config[$key]) != "}") {
-                                            $options = preg_split ('[=]', $config[$key]);
-                                            if (substr(trim($options [0]), 0, 1) != '#') {
-                                                $oinc[$k]['option'] =preg_replace('/\s*/m', '', $options [0]);
-                                                $oinc[$k]['value'] = preg_replace('/(\'|")/', '', trim($options[1]));
-                                                $k++;
-                                            }
-                                            $key++;
-                                        }
-                                        $key++;
-                                    } // Fecho do If das Options Include
-                                    $include = preg_split ('[=]', $config[$key]);
-
-                                    if (substr(trim($include [0]), 0, 1) != '#') {
-                                        $finc[$z][preg_replace('/\s*/m', '', $include [0])]= preg_replace('/(\'|")/', '', trim($include[1]));
-                                        $z++;
-                                    }
-                                    $key++;
+                      $key++;
+                      while (trim($config[$key]) != "}") {
+                        if (trim($config[$key])=="Include {") {
+                          $key++;
+                          $z=0;
+                          while (trim($config[$key]) != "}") {
+                            if (trim($config[$key])=="Options {") {
+                              $k=0;
+                              $key++;
+                              while ( trim($config[$key]) != "}") {
+                                $options = preg_split ('[=]', $config[$key]);
+                                if (substr(trim($options [0]), 0, 1) != '#') {
+                                  $oinc[$k]['option'] = preg_replace('/\s*/m', '', $options [0]);
+                                  $oinc[$k]['value']  = preg_replace('/(\'|")/', '', trim($options[1]));
+                                  $k++;
                                 }
                                 $key++;
+                              }
+                              $key++;
+                            } // Fecho do If das Options Include
+                            $include = preg_split ('[=]', $config[$key]);
+                            if (substr(trim($include [0]), 0, 1) != '#') {
+                              if (array_key_exists(1, $result)) {
+                                $finc[$z][preg_replace('/\s*/m', '', $include [0])]= preg_replace('/(\'|")/', '', trim($include[1]));
+                                $z++;
+                              }
                             }
-
-                            if (trim($config[$key])=="Exclude {") {
-                                $key++;
-                                $z=0;
-                                while (trim($config[$key]) != "}") {
-                                    if (trim($config[$key])=="Options {") {
-                                        $k=0;
-                                        $key++;
-                                        while ( trim($config[$key]) != "}") {
-                                            $options = preg_split ('[=]', $config[$key]);
-                                            if (substr(trim($options [0]), 0, 1) != '#') {
-                                                $oexc[$k]['option'] =preg_replace('/\s*/m', '', $options [0]);
-                                                $oexc[$k]['value'] = preg_replace('/(\'|")/', '', trim($options[1]));
-                                                $k++;
-                                            }
-                                            $key++;
-                                        }
-                                        $key++;
-                                    } // Fecho do If das Options Include
-                                    $exclude = preg_split ('[=]', $config[$key]);
-                                     if (substr(trim($exclude [0]), 0, 1) != '#') {
-                                        $fexc[$z][preg_replace('/\s*/m', '', $exclude [0])]= preg_replace('/(\'|")/', '', trim($exclude[1]));
-                                        $z++;
-                                    }
-                                    $key++;
-                                }
-                            }
-
-
-                            $result = preg_split ('[=]', $config[$key]);
-                           // log::info($result);
-
-                            if ((substr(trim($result[0]), 0, 1) != '#') && (substr(trim($result[0]), 0, 1) != '}'))
-                                $fileset[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-
-                            if (!array_key_exists($key+1, $config)) {
-
-                                 break;
-
-                            }
-
                             $key++;
+                          }
+                          $key++;
                         }
-
-                        // Codigo para Inserir Fileset na BD
-                        $filesettest = CfgFileset::where('Name', '=', $fileset['Name']);
-                        if ($filesettest->count()==0) {
-                            $filesetcfg = CfgFileset::create($fileset);
-                            $filesetid = $filesetcfg->id;
-                        } else {
-                            $filesetid = $filesettest->first()->id;
-                        };
-
-                        // Insert File Includes
-                        foreach ($finc as $valor) {
-                            $result = array_merge($valor, array("idfileset" => $filesetid));
-                            $filesetcfg = Cfgfilesetinclude::create($result);
+                        if (trim($config[$key])=="}") {
+                          break;
                         }
-
-                        // Insert File Excludes
-                        foreach ($fexc as $valor) {
-                            $result = array_merge($valor, array("idfileset" => $filesetid));
-                            $filesetcfg = Cfgfilesetexclude::create($result);
+                        /* Fileset Exclude */
+                        if (trim($config[$key])=="Exclude {") {
+                          $key++;
+                          $h=0;
+                          while (trim($config[$key]) != "}") {
+                            if (trim($config[$key])=="Options {") {
+                              $b=0;
+                              $key++;
+                              while ( trim($config[$key]) != "}") {
+                                $options = preg_split ('[=]', $config[$key]);
+                                if (substr(trim($options [0]), 0, 1) != '#') {
+                                  $oexc[$b]['option'] =preg_replace('/\s*/m', '', $options [0]);
+                                  $oexc[$b]['value'] = preg_replace('/(\'|")/', '', trim($options[1]));
+                                  $k++;
+                                }
+                                $key++;
+                              }
+                              $key++;
+                            } // Fecho do If das Options Include
+                            $exclude = preg_split ('[=]', $config[$key]);
+                            if (substr(trim($exclude [0]), 0, 1) != '#') {
+                              if (array_key_exists(1, $result)) {
+                               $fexc[$h][preg_replace('/\s*/m', '', $exclude [0])]= preg_replace('/(\'|")/', '', trim($exclude[1]));
+                                $h++;
+                              }
+                              $key++;
+                            }
+                          }
                         }
-
-                        // Insert File Options Include
-                        foreach ($oinc as $valor) {
-                            $result = array_merge($valor, array("idfileset" => $filesetid));
-                            $filesetcfg = Cfgfilesetincludeoptions::create($result);
+                        $result = preg_split ('[=]', $config[$key]);
+                        if ((substr(trim($result[0]), 0, 1) != '#') && (substr(trim($result[0]), 0, 1) != '}')) {
+                          if (array_key_exists(1, $result)) {
+                            $fileset[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+                          }
                         }
-
-                         // Insert File Options Excludes
-                        foreach ($oexc as $valor) {
-                            $result = array_merge($valor, array("idfileset" => $filesetid));
-                            $filesetcfg = Cfgfilesetexcludeoptions::create($result);
+                        $key++;
+                        if (!array_key_exists($key, $config)) {
+                          break;
                         }
+                      }
+
+                      ////////////////////////////////////////// Fecho do while do FileSet
+
+                      //Codigo para Inserir Fileset na BD
+                      $filesettest = CfgFileset::where('Name', '=', $fileset['Name']);
+                      if ($filesettest->count()==0) {
+                          $filesetcfg = CfgFileset::create($fileset);
+                          $filesetid = $filesetcfg->id;
+                      } else {
+                          $filesetid = $filesettest->first()->id;
+                      };
+
+                      // Insert File Includes
+                      foreach ($finc as $valor) {
+                          $result = array_merge($valor, array("idfileset" => $filesetid));
+                          $filesetcfg = Cfgfilesetinclude::create($result);
+                      }
+
+                      // Insert File Excludes
+                      foreach ($fexc as $valor) {
+                          $result = array_merge($valor, array("idfileset" => $filesetid));
+                          $filesetcfg = Cfgfilesetexclude::create($result);
+                      }
+
+                      // Insert File Options Include
+                      foreach ($oinc as $valor) {
+                          $result = array_merge($valor, array("idfileset" => $filesetid));
+                          $filesetcfg = Cfgfilesetincludeoptions::create($result);
+                      }
+
+                       // Insert File Options Excludes
+                      foreach ($oexc as $valor) {
+                          $result = array_merge($valor, array("idfileset" => $filesetid));
+                          $filesetcfg = Cfgfilesetexcludeoptions::create($result);
+                      }
                     }
                     ////////////////////////////////////////// Fecho do if do FileSet
                 }
-            }
+           }
 
         }
-        return "$nfiles Configuration Files Readed!" ;
+        return Response::json(array('html' => '<div class="alert alert-success"> '.$nfiles.' Configuration Files Readed! </div>'));
 
     }
-
-    public function action_index($date=null)
-    {
-
-    // READ Directores Jobs
-    /*
-        Include { Options {file-options} ...; file-list }
-        Options { file-options }
-        Exclude { file-list }
-
-    */
-
-    /*  Resolver os Espaços, Resolver o codigo do Schedule na parte do level run"
-    */
-    $directory = "bacula/conf.d/clients/";
-
-
-
-    ////////////////////////////////////////////////////////////////////////////
-
-    foreach ($files as $file) {
-        $config = file($file);
-      //  Log::write('info',  $file);
-       // Log::write('info',  explode($path, $file));
-
-        if (($file!="bacula\bacula-fd.conf") || ($file!="bacula\bacula-sd.conf") ) {
-
-
-            /////////////////////////////////////Codigo para Ler os Schedule////////////////////////
-
-            $i=0;
-            $schedulecfg = new Cfgschedule;
-            $schedule = array ();
-            // Codigo para Ler Values
-
-            foreach ($config as $key => $value) {
-                if (trim($value)=="Schedule {") {
-                    $i=$key;
-                    do {
-                        $i++;
-                        $result = preg_split ('[=]', $config[$i]);
-                        // Se não for comentário adiciona
-                        if (substr(trim($result[0]), 0, 1) != '#')
-                            $schedule[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-                    } while (trim($config[$i+1]) != "}");
-
-
-                    $scheduletest = Cfgschedule::where('Name', '=', $schedule['Name']);
-                    if ($scheduletest->count()==0) {
-                        $schedulecfg = Cfgschedule::create($schedule);
-                    };
-                }
-            }
-            ////////////////////////////////////////////////////////////////////////////////////////////
-
-
-            ////////////////////////////////// Codigo para Ler o Client////////////////////////
-            $clientcfg = new CfgClient;
-            $client = array ();
-            foreach ($config as $key => $value) {
-                if (trim($value)=="Client {") {
-                    $i=$key;
-                    do {
-                        $i++;
-                        $result = preg_split ('[=]', $config[$i]);
-                        $client[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-                    } while (trim($config[$i+1]) != "}");
-                    $clienttest = CfgClient::where('Name', '=', $client['Name']);
-
-                    if ($clienttest->count()==0) {
-                        $clientcfg = CfgClient::create($client);
-                    };
-                }
-            }
-            ////////////////////////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////// Codigo para Ler as Pools //////////////////////////////
-
-            $poolcfg = new CfgPool;
-            $pool = array ();
-            // Codigo para Ler as Pools
-            foreach ($config as $key => $value) {
-                if (trim($value)=="Pool {") {
-                    $i=$key;
-                    do {
-                        $i++;
-                        $result = preg_split ('[ = ]', $config[$i]);
-                        $pool[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-                    } while (trim($config[$i+1]) != "}");
-                    $pooltest = CfgPool::where('Name', '=', $pool['Name']);
-                    if ($pooltest->count()==0) {
-                        $poolcfg = CfgPool::create($pool);
-                    };
-                }
-
-            }
-            ////////////////////////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////// Codigo para Ler o Storage//////////////////////////////
-
-            $storagecfg = new CfgStorage;
-            $storage = array ();
-            // Codigo para Ler O Storage
-            foreach ($config as $key => $value) {
-                if (trim($value)=="Storage {") {
-                    $i=$key;
-                    do {
-                        $i++;
-                        $result = preg_split ('[ = ]', $config[$i]);
-                        $storage[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-                    } while (trim($config[$i+1]) != "}");
-                    $storagetest = Cfgstorage::where('Name', '=', $storage['Name']);
-                    if ($storagetest->count()==0) {
-                        $storagecfg = Cfgstorage::create($storage);
-                    };
-                }
-
-            }
-            ////////////////////////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////// Codigo para Ler o Catalog
-
-            $catalogcfg = new CfgCatalog;
-            $catalog = array ();
-            // Codigo para Ler as Pools
-            foreach ($config as $key => $value) {
-                if (trim($value)=="Catalog {") {
-                    $i=$key;
-                    do {
-                        $i++;
-                        $result = preg_split ('[ = ]', $config[$i]);
-                        $catalog[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-                    } while (trim($config[$i+1]) != "}");
-                    $catalogtest = Cfgcatalog::where('Name', '=', $catalog['Name']);
-                    if ($catalogtest->count()==0) {
-                        $catalogcfg = Cfgcatalog::create($catalog);
-                    };
-                }
-
-            }
-            //////////////////////////////////////////////////////////////////////////////////////////
-
-            ////////////////////////// Codigo para Ler o Director ////////////////////////////////////////////////
-
-            $directorcfg = new Cfgdirector;
-            $director = array ();
-            // Codigo para Ler Values
-            foreach ($config as $key => $value) {
-                if (trim($value)=="Director {") {
-
-                    $i=$key;
-                    do {
-                        $i++;
-                        $result = preg_split ('[ = ]', $config[$i]);
-                        $director[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-                    } while (trim($config[$i+1]) != "}");
-                    $directortest = Cfgdirector::where('Name', '=', $director['Name']);
-                    if ($directortest->count()==0) {
-                        $directorcfg = Cfgdirector::create($director);
-                    };
-                }
-
-            }
-            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            ///////////////////////////// Codigo para Ler os Jobs//////////////////////////////////////////////////////
-            $jobcfg = new Cfgjob;
-            $job = array ();
-            // Codigo para Ler Values
-
-            foreach ($config as $key => $value) {
-
-                if (trim($value)=="Job {") {
-
-                    $i=$key;
-                    do {
-                        $i++;
-                        $result = preg_split ('[=]', $config[$i]);
-                        // Se não for comentário adiciona
-                        if (substr(trim($result[0]), 0, 1) != '#')
-                            $job[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-                    } while (trim($config[$i+1]) != "}");
-
-                    $jobtest = Cfgjob::where('Name', '=', $job['Name']);
-                    if ($jobtest->count()==0) {
-                        $jobcfg = Cfgjob::create($job);
-                    };
-                }
-            }
-            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            ///////////////////////////// Codigo para Ler os Filesets//////////////////////////////////////////////////////
-            $filesetcfg = new Cfgfileset;
-            $fileset = array ();
-            // Codigo para Ler Values
-            $oinc =array();
-            $oexc =array();
-            $finc =array();
-            $fexc =array();
-
-            foreach ($config as $key => $value) {
-                // Se For FileSet Executa
-
-                if (trim($value)=="FileSet {") {
-                    $key++;
-
-                    while (trim($config[$key]) != "}") {
-                        if (trim($config[$key])=="Include {") {
-                            $key++;
-                            $z=0;
-                            while (trim($config[$key]) != "}") {
-
-                                if (trim($config[$key])=="Options {") {
-                                    $k=0;
-                                    $key++;
-                                    while ( trim($config[$key]) != "}") {
-                                        $options = preg_split ('[=]', $config[$key]);
-                                        if (substr(trim($options [0]), 0, 1) != '#') {
-                                            $oinc[$k]['option'] =preg_replace('/\s*/m', '', $options [0]);
-                                            $oinc[$k]['value'] = preg_replace('/(\'|")/', '', trim($options[1]));
-                                            $k++;
-                                        }
-                                        $key++;
-                                    }
-                                    $key++;
-                                } // Fecho do If das Options Include
-                                $include = preg_split ('[=]', $config[$key]);
-
-                                if (substr(trim($include [0]), 0, 1) != '#') {
-                                    $finc[$z][preg_replace('/\s*/m', '', $include [0])]= preg_replace('/(\'|")/', '', trim($include[1]));
-                                    $z++;
-                                }
-                                $key++;
-                            }
-                            $key++;
-                        }
-
-                        if (trim($config[$key])=="Exclude {") {
-                            $key++;
-                            $z=0;
-                            while (trim($config[$key]) != "}") {
-                                if (trim($config[$key])=="Options {") {
-                                    $k=0;
-                                    $key++;
-                                    while ( trim($config[$key]) != "}") {
-                                        $options = preg_split ('[=]', $config[$key]);
-                                        if (substr(trim($options [0]), 0, 1) != '#') {
-                                            $oexc[$k]['option'] =preg_replace('/\s*/m', '', $options [0]);
-                                            $oexc[$k]['value'] = preg_replace('/(\'|")/', '', trim($options[1]));
-                                            $k++;
-                                        }
-                                        $key++;
-                                    }
-                                    $key++;
-                                } // Fecho do If das Options Include
-                                $exclude = preg_split ('[=]', $config[$key]);
-                                 if (substr(trim($exclude [0]), 0, 1) != '#') {
-                                    $fexc[$z][preg_replace('/\s*/m', '', $exclude [0])]= preg_replace('/(\'|")/', '', trim($exclude[1]));
-                                    $z++;
-                                }
-                                $key++;
-                            }
-                        }
-
-                        $result = preg_split ('[=]', $config[$key]);
-                        if ((substr(trim($result[0]), 0, 1) != '#') && (substr(trim($result[0]), 0, 1) != '}')) $fileset[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-
-                        if (!array_key_exists($key+1, $config)) {
-
-                             break;
-
-                        }
-
-                        $key++;
-                    }
-
-                    // Codigo para Inserir Fileset na BD
-                    $filesettest = Cfgfileset::where('Name', '=', $fileset['Name']);
-                    if ($filesettest->count()==0) {
-                        $filesetcfg = Cfgfileset::create($fileset);
-                        $filesetid = $filesetcfg->id;
-                    } else {
-                        $filesetid = $filesettest->first()->id;
-                    };
-
-                    // Insert File Includes
-                    foreach ($finc as $valor) {
-                        $result = array_merge($valor, array("idfileset" => $filesetid));
-                        $filesetcfg = cfgFileSetInclude::create($result);
-                    }
-
-                    // Insert File Excludes
-                    foreach ($fexc as $valor) {
-                        $result = array_merge($valor, array("idfileset" => $filesetid));
-                        $filesetcfg = cfgFileSetExclude::create($result);
-                    }
-
-                    // Insert File Options Include
-                    foreach ($oinc as $valor) {
-                        $result = array_merge($valor, array("idfileset" => $filesetid));
-                        $filesetcfg = cfgFileSetIncludeOptions::create($result);
-                    }
-
-                     // Insert File Options Excludes
-                    foreach ($oexc as $valor) {
-                        $result = array_merge($valor, array("idfileset" => $filesetid));
-                        $filesetcfg = cfgFileSetExcludeOptions::create($result);
-                    }
-                }
-                ////////////////////////////////////////// Fecho do if do FileSet
-            }
-        }
-
-    }
-
-    // READ Directores Jobs
-
-    //path to directory to scan
-/*    $directory = "bacula/conf.d/clients/";
-
-    //get all files with a .conf extension.
-    $files = glob($directory . "*.conf");
-
-    foreach ($files as $file) {
-        // Codigo para Ler os Jobs
-        $config = file($file);
-        $i=0;
-
-        $jobcfg = new Cfgjob;
-        $job = array ();
-        // Codigo para Ler Values
-
-        foreach ($config as $key => $value) {
-
-            if (trim($value)=="Job {") {
-
-                $i=$key;
-                do {
-                    $i++;
-                    $result = preg_split ('[=]', $config[$i]);
-                    // Se não for comentário adiciona
-                    if (substr(trim($result[0]), 0, 1) != '#')
-                        $job[preg_replace('/\s*///m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-/*                } while (trim($config[$i+1]) != "}");
-                 Log::write('info', $job);
-
-                $jobtest = Cfgjob::where('Name', '=', $job['Name']);
-                if ($jobtest->count()==0) {
-                    $jobcfg = Cfgjob::create($job);
-                };
-            }
-
-        }
-
-    }*/
-
-     // READ Directores Director
-
-    //path to directory to scan
-  /*  $directory = "bacula/";
-
-    //get all files with a .conf extension.
-    $files = glob($directory . "bacula-dir.conf");
-
-    foreach ($files as $file) {
-        // Codigo para Ler o Catalog
-        $config = file($file);
-        $i=0;
-        $directorcfg = new Cfgdirector;
-        $director = array ();
-        // Codigo para Ler Values
-        foreach ($config as $key => $value) {
-            if (trim($value)=="Director {") {
-
-                $i=$key;
-                do {
-                    $i++;
-                    $result = preg_split ('[ = ]', $config[$i]);
-                    $director[preg_replace('/\s*///m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-   /*             } while (trim($config[$i+1]) != "}");
-                $directortest = Cfgdirector::where('Name', '=', $director['Name']);
-                if ($directortest->count()==0) {
-                    $directorcfg = Cfgdirector::create($director);
-                };
-            }
-
-        }
-
-    }
-
-// READ Directores Catalog
-
-    //path to directory to scan
- /*   $directory = "bacula/";
-
-    //get all files with a .conf extension.
-    $files = glob($directory . "bacula-dir.conf");
-
-    foreach ($files as $file) {
-        // Codigo para Ler o Catalog
-        $config = file($file);
-        $i=0;
-        $catalogcfg = new CfgCatalog;
-        $catalog = array ();
-        // Codigo para Ler as Pools
-        foreach ($config as $key => $value) {
-            if (trim($value)=="Catalog {") {
-
-                $i=$key;
-                do {
-                    $i++;
-                    $result = preg_split ('[ = ]', $config[$i]);
-                    $catalog[preg_replace('/\s*///m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-   /*             } while (trim($config[$i+1]) != "}");
-                $catalogtest = Cfgcatalog::where('Name', '=', $catalog['Name']);
-                if ($catalogtest->count()==0) {
-                    $catalogcfg = Cfgcatalog::create($catalog);
-                };
-            }
-
-        }
-
-    }
-
-    // READ Directores Storages
-
-    //path to directory to scan
-  /*  $directory = "bacula/conf.d/";
-
-    //get all files with a .conf extension.
-    $files = glob($directory . "storage.conf");
-
-    foreach ($files as $file) {
-        // Codigo para Ler o Storage
-        $config = file($file);
-        $i=0;
-        $storagecfg = new CfgStorage;
-        $storage = array ();
-        // Codigo para Ler as Pools
-        foreach ($config as $key => $value) {
-            if (trim($value)=="Storage {") {
-
-                $i=$key;
-                do {
-                    $i++;
-                    $result = preg_split ('[ = ]', $config[$i]);
-                    $storage[preg_replace('/\s*///m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-  /*              } while (trim($config[$i+1]) != "}");
-                $storagetest = Cfgstorage::where('Name', '=', $storage['Name']);
-                if ($storagetest->count()==0) {
-                    $storagecfg = Cfgstorage::create($storage);
-                };
-            }
-
-        }
-
-    }
-
- /*
-    // READ POOLS
-    //path to directory to scan
-    $directory = "bacula/conf.d/";
-
-    //get all files with a .conf extension.
-    $files = glob($directory . "pools.conf");
-
-    foreach ($files as $file) {
-        // Codigo para Ler o Client
-        $config = file($file);
-        $i=0;
-        $poolcfg = new CfgPool;
-        $pool = array ();
-        // Codigo para Ler as Pools
-        foreach ($config as $key => $value) {
-            if (trim($value)=="Pool {") {
-
-                $i=$key;
-                do {
-                    $i++;
-                    $result = preg_split ('[ = ]', $config[$i]);
-                    $pool[preg_replace('/\s*///m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-/*                } while (trim($config[$i+1]) != "}");
-                $pooltest = CfgPool::where('Name', '=', $pool['Name']);
-                if ($pooltest->count()==0) {
-                    $poolcfg = CfgPool::create($pool);
-                };
-            }
-
-        }
-
-    }*/
-
- // READ Clients
-
-    // Intera sobre todos os ficheiro encontrados e preenche a bd
-     //path to directory to scan
-    /*$directory = "bacula/conf.d/clients/";
-
-    //get all files with a .conf extension.
-    $files = glob($directory . "*.conf");
-
-  /*  foreach ($files as $file) {
-        // Codigo para Ler o Client
-        $config = file($file);
-        $i=0;
-        $clientcfg = new CfgClient;
-        $client = array ();
-        foreach ($config as $key => $value) {
-            if (trim($value)=="Client {") {
-                $i=$key;
-                do {
-                    $i++;
-                    $result = preg_split ('[ = ]', $config[$i]);
-                    $client[preg_replace('/\s*///m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
-    /*            } while (trim($config[$i+1]) != "}");
-            }
-            $clienttest = CfgClient::where('Name', '=', $client['Name']);
-
-            if ($clienttest->count()==0) {
-                $clientcfg = CfgClient::create($client);
-            };
-        }
-    }*/
-            //Log::write('info', $client);
-            //$client[trim($result[1])]=trim($result[2]);
-            //ChromePhp::log($result);
-
-           // Log::write('info', $client);
-        return View::make('readconfig',array(
-                                    'username'      => $this->username,
-
-                                )
-                         );
-    }
-
 }

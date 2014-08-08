@@ -9,7 +9,7 @@
 						<h4 class="title"><a href="{{ $item->get_permalink(); }}">{{ $item->get_title(); }} </a></h4>
 						{{ $item->get_description(); }}
 						<p><small>Posted on  {{ $item->get_date('j F Y | g:i a'); }} </small></p>
-					</div>	
+					</div>
 				@endforeach
         </div>
         <div class="span6 box-content breadcrumb">
@@ -21,10 +21,7 @@
             <b>Used Memory   : </b> {{ $used_mem  }}</br>
             <b>Used Swap     : </b> {{$used_swap }}</br>
             <b>Free Memory  : </b> {{  $free_mem }}</br>
-			
-		
-
-        </div>
+		</div>
     </div>
 </div>
 @endsection

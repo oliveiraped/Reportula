@@ -205,7 +205,7 @@ class GroupsController extends BaseController
         return Datatables::of($groups)
         ->add_column('actions', '
                      <center>
-                        <a href="{{  URL::route(\'admin.editgroup\', array($id) )}}" class="btn btn-info"><i class="icon-edit icon-white"></i> Edit </a>
+                        <a href="{{  URL::route(\'admin.editgroup\', array($id) )}}" class="btn btn-info btn-mini"><i class="icon-edit icon-white"></i> Edit </a>
                      '
                 )
         ->make();

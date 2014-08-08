@@ -3,7 +3,11 @@
     <div class="row-fluid">
         <center><div class="response"></div></center>
         <div class="span6">
-            <h3>{{ HTML::image('assets/img/console.png') }} Console - {{ $Name }} | {{Form::submit( ' Save ', array('class' => 'btn btn-small btn-success' ));}} </h3>
+            <h3>{{ HTML::image('assets/img/console.png') }} Console - {{ $Name }} | {{Form::submit( ' Save ', array('class' => 'btn btn-small btn-success' ));}}
+                @unless ($Name=="")
+                   | <a onclick='deleteitem("{{$config}}","{{$id}}" );' class='btn btn-small btn-danger'> Delete </a>
+                @endunless
+            </h3>
         </div>
     </div>
     <br>
@@ -25,4 +29,4 @@
         </div>
     <div>
     {{Former::close();}}
-</div>  
+</div>

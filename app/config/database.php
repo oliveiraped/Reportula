@@ -26,7 +26,7 @@ return array(
 	|
 	*/
 
-	'default' => 'mysql',
+	'default' => 'pgsql',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -63,19 +63,16 @@ return array(
 			'prefix'    => '',
 		),
 
-		'pgsql' => array(
+
+			'pgsql' => array(
 			'driver'   => 'pgsql',
-			'host'     => '',
+			'host'     => 'localhost',
 			'database' => 'bacula',
 			'username' => '',
 			'password' => '',
 			'charset'  => 'utf8',
 			'prefix'   => '',
 			'schema'   => 'public',
-			
-
-			
-
 
 
 

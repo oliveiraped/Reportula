@@ -3,9 +3,10 @@
 namespace app\models;
 
 use Eloquent;
+use app\models\BaseModel;
 
 
-class CfgFileset extends Eloquent
+class CfgFileset extends BaseModel
 {
 	protected $guarded = array('id');
 	protected $table = 'cfgfileset';

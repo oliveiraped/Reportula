@@ -34,14 +34,14 @@ $(document).ready(function() {
         "bServerSide": true,
         "sAjaxSource": "getusers",
         "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-            $('td:eq(5)', nRow).html( aData[5]+' <a href="#" onclick="userDelete('+aData[0]+');" class="btn btn-danger"><i class="icon-trash icon-white"></i> Delete </a> </center>');
+            $('td:eq(5)', nRow).html( aData[5]+' <a href="#" onclick="userDelete('+aData[0]+');" class="btn btn-danger btn-mini"><i class="icon-trash icon-white"></i> Delete </a> </center>');
             return nRow
         },
     });
 
     $('#userjobs').multiSelect();
     $('#userclients').multiSelect();
-    
+
 
     $('#usergroups').multiSelect({
         /* afterSelect: function(value, text){

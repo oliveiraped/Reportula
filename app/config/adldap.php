@@ -1,13 +1,13 @@
 <?php
 
 return array(
-	'account_suffix' => "@corp.fccn.pt",
+	'account_suffix' => "",
 
-	'domain_controllers' => array("dc6.corp.fccn.pt"), // An array of domains may be provided for load balancing.
+	'domain_controllers' => array(""), // An array of domains may be provided for load balancing.
 
-	'base_dn' => 'DC=corp,DC=fccn,DC=pt',
+	'base_dn' => '',
 
-	'admin_username' => 'poliveira',
+	'admin_username' => '',
 
 	'admin_password' => '',
 	'real_primary_group' => true, // Returns the primary group (an educated guess).

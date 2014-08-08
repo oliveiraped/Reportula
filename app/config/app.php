@@ -118,17 +118,16 @@ return array(
 		'Bllim\Datatables\DatatablesServiceProvider',
 		'Orchestra\Asset\AssetServiceProvider',
 		'Jenssegers\Date\DateServiceProvider',
-		
+
 		'ExpressiveDateServiceProvider',
-		
+
 		'Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider',
 		'Barryvdh\Debugbar\ServiceProvider',
 		/* RSS READER */
 		 'Awjudd\FeedReader\FeedReaderServiceProvider',
-		 /* Laravel Graphs */
-		 'Khill\Lavacharts\LavachartsServiceProvider'
-		
-		
+
+
+
 
 	),
 
@@ -196,10 +195,10 @@ return array(
 		'Validator'       => 'Illuminate\Support\Facades\Validator',
 		'View'            => 'Illuminate\Support\Facades\View',
 
-		'Sentry' 		  => 'Cartalyst\Sentry\Facades\Laravel\Sentry',
-		'Former' 		  => 'Former\Facades\Former',
+		'Sentry' 		      => 'Cartalyst\Sentry\Facades\Laravel\Sentry',
+		'Former' 		      => 'Former\Facades\Former',
 		'Datatables'      => 'Bllim\Datatables\Datatables',
-		'Asset' 		  => 'Orchestra\Support\Facades\Asset',
+		'Asset' 		      => 'Orchestra\Support\Facades\Asset',
 		'Date'            => 'Jenssegers\Date\Date',
 		'Debugbar'        => 'Barryvdh\Debugbar\Facade',
 		'FeedReader'      => 'Awjudd\FeedReader\Facades\FeedReader',

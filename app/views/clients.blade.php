@@ -10,8 +10,8 @@
                 {{ Form::hidden('type', $type, array("id"=>"type")) }}
                 {{ Former::select('Client')->label('Selected Client')->options($clientSelectBox )->id('Client')->style("width:100%"); }}
                 {{ Former::text('date')->prepend('<i class="icon-fam-calendar-add"></i>')->placeholder('Select Date')->required()->id('date')->name('date');}}
-                {{Former::submit( 'Search ')->class('btn btn-primary pull-right btn-info') }}                     
-            {{Former::close();}} 
+                {{Former::submit( 'Search ')->class('btn btn-primary pull-right btn-info') }}
+            {{Former::close();}}
             <hr>
             <table id="stats" class="" style="width:100%">
                 <thead>
@@ -26,7 +26,7 @@
                     </tr>
                     <tr>
                         <td><a href="#" class="" onclick="jobsTable('terminated');"><i class="icon-fam-accept"></i> Terminated Jobs</a></td>
-                        <td><span class="label label-success">{{ $terminatedJobs }}</span> 
+                        <td><span class="label label-success">{{ $terminatedJobs }}</span>
                     </tr>
                      <tr>
                         <td><a href="#" class="" onclick="jobsTable('error');"><i class="icon-fam-delete"></i> Jobs With Errors </a></td>
@@ -70,7 +70,7 @@
                         <td colspan="2"><strong> Failed Jobs </strong><?=$errorJobs ?>/<?=$terminatedJobs+$errorJobs ?>
                         <div style="margin-bottom: 9px;" class="progress progress-danger progress-striped">
                             <div style="width: {{ intval($graphFailedJob).'%' }}" class="bar"></div>
-                        </div>  
+                        </div>
                     </tr>
                     <tr>
                     </tr>
@@ -96,7 +96,7 @@
                                        {{  'No' }}
                                     @endif
                              </strong></td>
-                    </tr>   
+                    </tr>
                </tbody>
             </table>
         </div>
@@ -113,8 +113,8 @@
                 <li class="divider"></li>
                 <li><a href="#" onClick ="$('#jobsTable').tableExport({type:'csv',escape:'false'});"><i class="icon-fam-text-columns"></i> CSV</a></li>
                 <li><a href="#" onClick ="$('#jobsTable').tableExport({type:'txt',escape:'false'});"><i class="icon-fam-page-white-vector"></i> TXT</a></li>
-                <li class="divider"></li>               
-                
+                <li class="divider"></li>
+
                 <li><a href="#" onClick ="$('#jobsTable').tableExport({type:'excel',escape:'false'});"><i class="icon-fam-page-white-flash"></i> Excel</a></li>
                 <li><a href="#" onClick ="$('#jobsTable').tableExport({type:'doc',escape:'false'});"><i class="icon-fam-page-world"></i> Word</a></li>
                 <li class="divider"></li>
@@ -154,14 +154,14 @@
 
 
 
-      
+
 <script>
 /* Code For The Graphs */
 var chart;
 var legend;
 
-<?php echo "var chartDataFiles = ". $graphFiles . ";\n"; 
-      echo "var chartDataBytes = ". $graphBytes . ";\n";   
+<?php echo "var chartDataFiles = ". $graphFiles . ";\n";
+      echo "var chartDataBytes = ". $graphBytes . ";\n";
 ?>
 
 </script>

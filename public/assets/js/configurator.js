@@ -1,5 +1,28 @@
+
+
+
+
+/* Disable User */
+function writeBacula(type)
+{
+    $.ajax({
+            type: "GET",
+            url: "writebacula",
+            data: ({
+              'type': type
+            }),
+        }).done(function( msg ) {
+             bootbox.alert(msg.html);
+        });
+}
+
 $(document).ready(function() {
-    
+
+    $(document).on("eldarion-ajax:success", function(evt, $el) {
+       tree.reload();
+    });
+
+
     $("#refreshTree").click(function(){
        $("input[name=search]").val("");
        $("span#matches").text("");
@@ -13,31 +36,25 @@ $(document).ready(function() {
             type: "GET",
             url: "readbacula",
         }).done(function( msg ) {
-          
-          tree.reload();
-
-           // bootbox.alert(msg);
-
-            //alert( msg );
+            tree.reload();
+            bootbox.alert(msg.html);
         });
     });
 
-    $("#writeBacula").click(function(){
-       $.ajax({
-            type: "GET",
-            url: "writebacula",
-        }).done(function( msg ) {
-             bootbox.alert(msg);
-        });
-    });
 
 
 
    var tree = $("#tree").fancytree({
-      extensions: ["filter"],
+      extensions: ["filter","persist"],
       filter: {
         mode: "hide"
       },
+      persist: {
+        expandLazy: true,
+        overrideSource: false, // true: cookie takes precedence over `source` data attributes.
+        store: "auto" // 'cookie', 'local': use localStore, 'session': sessionStore
+      },
+
 
       source: {
         url: "gettreedata",
@@ -50,7 +67,7 @@ $(document).ready(function() {
        init: function(event, data) {
         data.tree.getFirstChild().setFocus();
       },
-     
+
       beforeSelect: function(event, data){
           // A node is about to be selected: prevent this for folders:
         if( data.node.isFolder() ){
@@ -64,9 +81,9 @@ $(document).ready(function() {
           /* Ajax to Get Options Selected Node */
           $.ajax({
               type: "POST",
-              data: ({ 
-                      'node': data.node.title, 
-                      'parent': data.node.parent.title 
+              data: ({
+                      'node': data.node.title,
+                      'parent': data.node.parent.title
                     }),
               url: "getnode",
               datatype: "html",
@@ -76,7 +93,7 @@ $(document).ready(function() {
       },
 
     });
- 
+
   var tree = $("#tree").fancytree("getTree");
 
   $("input[name=search]").keyup(function(e){
@@ -98,7 +115,34 @@ $(document).ready(function() {
       $("button#btnResetSearch").attr("disabled", false);
       $("span#matches").text("(" + n + " matches)");
     }).focus();
-
-
-
 });
+function deleteitem(item,id)
+{
+  $.ajax({
+      type: "POST",
+      data: ({
+              'parent': item,
+              'id':id
+            }),
+      url: "deleteitem",
+      datatype: "html",
+  }).done(function( data ) {
+      $('#nodeDetails').empty();
+      $("#tree").fancytree("getTree").reload();
+  });
+}
+function newitem(item)
+{
+  $.ajax({
+      type: "POST",
+      data: ({
+              'parent': item
+            }),
+      url: "newitem",
+      datatype: "html",
+  }).done(function( data ) {
+      $('#nodeDetails').empty().html(data);
+      if (item="Filesets") { $("#includeexclude").hide(); }
+      if (item="Schedules") { $("#schedulerun").hide(); }
+  });
+}

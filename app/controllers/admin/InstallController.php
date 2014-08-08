@@ -130,7 +130,7 @@ class InstallController extends Controller
             }
 
 
-            if ( Schema::hasTable('users') == false ) { 
+            if ( Schema::hasTable('users') == false ) {
 
                 Schema::create('users', function ($table) {
                     $table->increments('id');
@@ -157,7 +157,7 @@ class InstallController extends Controller
                 });
             }
 
-            if ( Schema::hasTable('groups') == false ) { 
+            if ( Schema::hasTable('groups') == false ) {
                 Schema::create('groups', function ($table) {
                     $table->increments('id');
                     $table->string('name');
@@ -171,7 +171,7 @@ class InstallController extends Controller
                 });
             }
 
-            if ( Schema::hasTable('users_groups') == false ) { 
+            if ( Schema::hasTable('users_groups') == false ) {
 
                 Schema::create('users_groups', function ($table) {
                     $table->integer('user_id')->unsigned();
@@ -186,7 +186,7 @@ class InstallController extends Controller
 
 
             /* Userpermissions */
-            if ( Schema::hasTable('userspermissions') == false ) { 
+            if ( Schema::hasTable('userspermissions') == false ) {
                 Schema::create('userspermissions', function ($table) {
                     $table->increments('id');
                     $table->text('clients')->nullable();
@@ -194,7 +194,7 @@ class InstallController extends Controller
                 });
             }
 
-            if ( Schema::hasTable('groupspermissions') == false ) { 
+            if ( Schema::hasTable('groupspermissions') == false ) {
 
                 /* Groupspermissions */
                 Schema::create('groupspermissions', function ($table) {
@@ -204,7 +204,7 @@ class InstallController extends Controller
                 });
             }
 
-            if ( Schema::hasTable('throttle') == false ) { 
+            if ( Schema::hasTable('throttle') == false ) {
 
                 Schema::create('throttle', function ($table) {
                     $table->increments('id');
@@ -267,9 +267,9 @@ class InstallController extends Controller
 
             /// Configuration Bacula Tables /////
 
-             if (!Schema::hasTable('cfgConsole')) {
+             if (!Schema::hasTable('cfgconsole')) {
                 /* cfgFileSetExclude */
-                Schema::create('cfgConsole', function ($table) {
+                Schema::create('cfgconsole', function ($table) {
                     $table->increments('id');
                     $table->string('Name')->nullable();
                     $table->string('Password')->nullable();
@@ -287,9 +287,9 @@ class InstallController extends Controller
             }
 
 
-             if (!Schema::hasTable('cfgMessages')) {
+             if (!Schema::hasTable('cfgmessages')) {
                 /* cfgFileSetExclude */
-                Schema::create('cfgMessages', function ($table) {
+                Schema::create('cfgmessages', function ($table) {
                     $table->increments('id');
                     $table->string('Name')->nullable();
                     $table->string('MailCommand')->nullable();
@@ -298,37 +298,38 @@ class InstallController extends Controller
                     $table->string('append')->nullable();
                     $table->string('operator')->nullable();
                     $table->string('console')->nullable();
+                    $table->string('mail')->nullable();
                     $table->string('mailonerror')->nullable();
                     $table->string('catalog')->nullable();
-                    
+
                 });
             }
 
 
 
-            if (!Schema::hasTable('cfgFileSetExclude')) {
+            if (!Schema::hasTable('cfgfilesetexclude')) {
                 /* cfgFileSetExclude */
-                Schema::create('cfgFileSetExclude', function ($table) {
+                Schema::create('cfgfilesetexclude', function ($table) {
                     $table->increments('id');
                     $table->integer('idfileset')->nullable();
-                    $table->string('file')->nullable();
+                    $table->string('File')->nullable();
 
                 });
             }
 
             /* cfgFileSetInclude  */
-            if (!Schema::hasTable('cfgFileSetInclude')) {
-                Schema::create('cfgFileSetInclude', function ($table) {
+            if (!Schema::hasTable('cfgfilesetinclude')) {
+                Schema::create('cfgfilesetinclude', function ($table) {
                     $table->increments('id');
                     $table->integer('idfileset')->nullable();
-                    $table->string('file')->nullable();
+                    $table->string('File')->nullable();
 
                 });
             }
 
             /* cfgFileSetIncludeOptions   */
-            if (!Schema::hasTable('cfgFileSetIncludeOptions')) {
-                Schema::create('cfgFileSetIncludeOptions', function ($table) {
+            if (!Schema::hasTable('cfgfilesetincludeoptions')) {
+                Schema::create('cfgfilesetincludeoptions', function ($table) {
                     $table->increments('id');
                     $table->integer('idfileset')->nullable();
                     $table->string('option')->nullable();
@@ -339,13 +340,12 @@ class InstallController extends Controller
             }
 
              /* cfgFileSetIncludeOptions   */
-            if (!Schema::hasTable('cfgFileSetExcludeOptions')) {
-                Schema::create('cfgFileSetExcludeOptions', function ($table) {
+            if (!Schema::hasTable('cfgfilesetexcludeoptions')) {
+                Schema::create('cfgfilesetexcludeoptions', function ($table) {
                     $table->increments('id');
                     $table->integer('idfileset')->nullable();
                     $table->string('option')->nullable();
                     $table->string('value')->nullable();
-
                 });
 
             }
@@ -357,11 +357,10 @@ class InstallController extends Controller
                     $table->string('Name')->nullable();
                     $table->string('DBPassword')->nullable();
                     $table->string('DBName')->nullable();
-                    $table->string('DBuser')->nullable();
+                    $table->string('DBUser')->nullable();
                     $table->string('DBSocket')->nullable();
                     $table->string('DBAddress')->nullable();
-                    $table->integer('DBPort')->nullable();
-                    $table->string('DBDriver')->nullable();
+                    $table->string('DBPort')->nullable();
 
                 });
             }
@@ -372,14 +371,14 @@ class InstallController extends Controller
                     $table->increments('id');
                     $table->string('Name')->nullable();
                     $table->string('Address')->nullable();
-                    $table->integer('FDPort')->nullable();
-                    $table->integer('Catalog')->nullable();
+                    $table->string('FDPort')->nullable();
+                    $table->string('Catalog')->nullable();
                     $table->string('Password')->nullable();
                     $table->string('FileRetention')->nullable();
                     $table->string('JobRetention')->nullable();
                     $table->string('AutoPrune')->nullable();
-                    $table->integer('MaximumConcurrentJobs')->nullable();
-                    $table->integer('Priority')->nullable();
+                    $table->string('MaximumConcurrentJobs')->nullable();
+                    $table->string('Priority')->nullable();
                     $table->string('HeartbeatInterval')->nullable();
 
                 });
@@ -402,11 +401,11 @@ class InstallController extends Controller
                     $table->string('MaximumConcurrentJobs')->nullable();
                     $table->string('FDConnectTimeout')->nullable();
                     $table->string('SDConnectTimeout')->nullable();
-                    $table->integer('DirPort')->nullable();
+                    $table->string('DirPort')->nullable();
                     $table->string('DirAddress')->nullable();
                     $table->string('DirSourceAddress')->nullable();
                     $table->string('StatisticsRetention')->nullable();
-                    $table->integer('MaximumConsoleConnections')->nullable();
+                    $table->string('MaximumConsoleConnections')->nullable();
                     $table->string('VerId')->nullable();
                     $table->string('WorkingDirectory')->nullable();
                 });
@@ -424,46 +423,17 @@ class InstallController extends Controller
             }
 
              /* cfgfilesetexcludeoptions */
-            if (!Schema::hasTable('cfgfileset')) {
+            if (!Schema::hasTable('cfgfilesetexcludeoptions')) {
                 Schema::create('cfgfilesetexcludeoptions', function ($table) {
                     $table->increments('id');
                     $table->integer('idfileset')->nullable();
-                    $table->string('compression')->nullable();
-                    $table->string('signature')->nullable();
-                    $table->string('basejob')->nullable();
-                    $table->string('accurate')->nullable();
-                    $table->string('verify')->nullable();
-                    $table->string('onefs')->nullable();
-                    $table->string('honornodumpflag')->nullable();
-                    $table->string('portable')->nullable();
-                    $table->string('recurse')->nullable();
-                    $table->string('sparse')->nullable();
-                    $table->string('readfifo')->nullable();
-                    $table->string('noatime')->nullable();
-                    $table->string('mtimeonly')->nullable();
-                    $table->string('keepatime')->nullable();
-                    $table->string('fstype')->nullable();
-                    $table->string('ignorecase')->nullable();
-                    $table->string('DriveType')->nullable();
-                    $table->string('xattrsupport')->nullable();
-                    $table->string('aclsupport')->nullable();
-                    $table->string('strippath')->nullable();
-                    $table->string('hfsplussupport')->nullable();
-                    $table->string('checkfilechanges')->nullable();
-                    $table->string('wilddir')->nullable();
-                    $table->string('wild')->nullable();
-                    $table->string('hardlinks')->nullable();
-                    $table->string('wildfile')->nullable();
-                    $table->string('regex')->nullable();
-                    $table->string('regexdir')->nullable();
-                    $table->string('regexfile')->nullable();
-                    $table->string('exclude')->nullable();
-
+                    $table->string('option')->nullable();
+                    $table->string('value')->nullable();
                 });
             }
 
             /* cfgjob */
-            if (!Schema::hasTable('cfgfileset')) {
+            if (!Schema::hasTable('cfgjob')) {
                 Schema::create('cfgjob', function ($table) {
                     $table->increments('id');
                     $table->string('Name')->nullable();
@@ -518,7 +488,7 @@ class InstallController extends Controller
                     $table->string('AllowHigherDuplicates')->nullable();
                     $table->string('CancelLowerLevelDuplicates')->nullable();
                     $table->string('CancelQueuedDuplicates')->nullable();
-                    $table->integer('RescheduleTimes')->nullable();
+                    $table->string('RescheduleTimes')->nullable();
                     $table->string('AllowDuplicateJobs')->nullable();
                     $table->string('CancelRunningDuplicates')->nullable();
                     $table->string('SpoolAttributes')->nullable();
@@ -534,13 +504,13 @@ class InstallController extends Controller
                 Schema::create('cfgpool', function ($table) {
                     $table->increments('id');
                     $table->string('Name')->nullable();
-                    $table->integer('MaximumVolumes')->nullable();
+                    $table->string('MaximumVolumes')->nullable();
                     $table->string('PoolType')->nullable();
                     $table->string('Storage')->nullable();
                     $table->string('UseVolumeOnce')->nullable();
-                    $table->integer('MaximumVolumeJobs')->nullable();
-                    $table->integer('MaximumVolumeFiles')->nullable();
-                    $table->integer('MaximumVolumeBytes')->nullable();
+                    $table->string('MaximumVolumeJobs')->nullable();
+                    $table->string('MaximumVolumeFiles')->nullable();
+                    $table->string('MaximumVolumeBytes')->nullable();
                     $table->string('VolumeUseDuration')->nullable();
                     $table->string('CatalogFiles')->nullable();
                     $table->string('AutoPrune')->nullable();
@@ -562,15 +532,27 @@ class InstallController extends Controller
 
 
             /* cfgschedule */
-            if (!Schema::hasTable('cfgpool')) {
+            if (!Schema::hasTable('cfgschedule')) {
 
                 Schema::create('cfgschedule', function ($table) {
                     $table->increments('id');
                     $table->string('Name')->nullable();
                     $table->string('Run')->nullable();
-
                 });
             }
+
+            /* cfgscheduleRun */
+            if (!Schema::hasTable('cfgschedulerun')) {
+
+                Schema::create('cfgschedulerun', function ($table) {
+                    $table->increments('id');
+                    $table->string('idschedule')->nullable();
+                    $table->string('Run')->nullable();
+                });
+            }
+
+
+
 
             /* cfgstorage */
             if (!Schema::hasTable('cfgstorage')) {
@@ -579,12 +561,12 @@ class InstallController extends Controller
                     $table->increments('id');
                     $table->string('Name')->nullable();
                     $table->string('Run')->nullable();
-                    $table->integer('SDPort')->nullable();
+                    $table->string('SDPort')->nullable();
                     $table->string('Password')->nullable();
                     $table->string('Device')->nullable();
                     $table->string('MediaType')->nullable();
                     $table->string('Autochanger')->nullable();
-                    $table->integer('MaximumConcurrentJobs')->nullable();
+                    $table->string('MaximumConcurrentJobs')->nullable();
                     $table->string('AllowCompression')->nullable();
                     $table->string('HeartbeatInterval')->nullable();
                     $table->string('Address')->nullable();
@@ -606,7 +588,7 @@ class InstallController extends Controller
                 });
             }
 
-            
+
              /* hoursstats */
             if (!Schema::hasTable('hoursstats')) {
 
@@ -626,8 +608,8 @@ class InstallController extends Controller
 
             //Group::where('name', '=', 'Admins')->count();
             //var_dump ($count);
-            
-            /* If Not Found Create Admin Group */    
+
+            /* If Not Found Create Admin Group */
             if (!Group::where('name', '=', 'Admins')->count()){
                $group = Sentry::createGroup(array(
                     'name'        => 'Admins',
@@ -639,10 +621,10 @@ class InstallController extends Controller
             } else {
                 $group = Sentry::findGroupByName('Admins');
             }
-           
+
              // Create User
              if (!User::where('email', '=', Input::get('email'))->count()) {
-            
+
                 $user = Sentry::createUser(array(
                      'email'    => Input::get('email'),
                      'password' => Input::get('password'),

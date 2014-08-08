@@ -3,9 +3,10 @@
 namespace app\models;
 
 use Eloquent;
+use app\models\BaseModel;
 
-class Cfgfilesetexcludeoptions extends Eloquent
-{	
+class Cfgfilesetexcludeoptions extends BaseModel
+{
 		protected $guarded = array('id');
 
     public $key = 'id';

@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="Reportula - Bareos & Bacula Backups Web Gui">
+        <meta name="description" content="Reportula - Bacula Backups Web Gui">
         <meta name="author" content="Pedro Oliveira">
         <title>Reportula - Bareos & Bacula Web Gui </title>
         <script type="text/javascript">
@@ -61,10 +61,10 @@
             <hr>
             <footer>
                 <?php echo Asset::container('footer')->scripts(); ?>
-
-                <p><center>Reportula V2.0.6 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 - 2014 </center></p>
+                <p>
+                    <center>Reportula V2.0.7 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 - 2014 </center>
+                </p>
             </footer>
-
         </div>
     </body>
 </html>

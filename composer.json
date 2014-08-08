@@ -16,11 +16,9 @@
 		"jasonlewis/expressive-date": "1.0.*",
 		"laracasts/utilities": "1.0",
 		"barryvdh/laravel-debugbar": "1.*",
-		"awjudd/feed-reader": "1.0.*",
-		"khill/lavacharts" : "dev-master"
+		"awjudd/feed-reader": "1.0.*"
 
 
-		
 	},
 	"repositories" : [
         {

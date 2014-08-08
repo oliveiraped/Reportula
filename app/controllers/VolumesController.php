@@ -43,11 +43,8 @@ class VolumesController extends BaseController
 
     public function volumes($volumes=null)
     {
-       
-
         $volumeSelected = Input::get('Volume', $volumes);
         $media = Media::where('mediaid', '=', $volumeSelected )->first();
-
         if ($media == Null) {
             $slot="";
             $pool="";
@@ -73,15 +70,15 @@ class VolumesController extends BaseController
 
             $to =Date::now();
             $text=" Days";
-            
-            /* 86400  -> equal to seconds in i day*/ 
+
+            /* 86400  -> equal to seconds in i day*/
              $volretention = ($media->volretention/86400).$text;
 
             if ($volretention >= 365) {
                 $type = ' Year';
                 $volretention =intval($volretention/31536000).$type;
             }
-            
+
             $volbytes=$this->byte_format($media->VolBytes);
             $volstatus=$media->volstatus;
         }

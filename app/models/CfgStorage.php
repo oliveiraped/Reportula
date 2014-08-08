@@ -3,8 +3,9 @@
 namespace app\models;
 
 use Eloquent;
+use app\models\BaseModel;
 
-class CfgStorage extends Eloquent
+class CfgStorage extends BaseModel
 {
 	protected $guarded = array('id');
 	public $key = 'id';
