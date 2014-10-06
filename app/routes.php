@@ -36,6 +36,14 @@ Route::group(array('prefix' => 'admin', 'before' => 'auth.admin'), function () {
 
     Route::get('dashboard',  array('as' => 'admin.dashboard', 'uses' => 'app\controllers\admin\DashboardController@dashboard'));
 
+    //Emails Controllers
+    Route::get('emails',           array('as' => 'admin.emails',     'uses' => 'app\controllers\admin\EmailsController@emails'));
+    Route::get('getemails',        array('as' => 'admin.getemails',  'uses' => 'app\controllers\admin\EmailsController@getemails'));
+    Route::get('createemails',      array('as' => 'admin.createemails','uses' => 'app\controllers\admin\EmailsController@createemails'));
+    Route::get('editemails/{id}',   array('as' => 'admin.editemails',  'uses' => 'app\controllers\admin\EmailsController@editemails'));
+    Route::get('deleteemails/{id}', array('as' => 'admin.deleteemails','uses' => 'app\controllers\admin\EmailsController@deleteemails'));
+    Route::post('saveemails',       array('as' => 'admin.saveemails',  'uses' => 'app\controllers\admin\EmailsController@saveemails'));
+
     //User Controllers
     Route::get('users',           array('as' => 'admin.users',     'uses' => 'app\controllers\admin\UsersController@users'));
     Route::get('getusers',        array('as' => 'admin.getusers',  'uses' => 'app\controllers\admin\UsersController@getusers'));
@@ -146,12 +154,14 @@ Route::group(array('before' => 'auth'), function () {
     Route::get('pools',               array('as' => 'pools',               'uses' => 'app\controllers\PoolsController@pools'));
     Route::get('pools/getpools',      array('as' => 'pools.getpools',      'uses' => 'app\controllers\PoolsController@getpools'));
     Route::post('pools',              array('as' => 'pool',                'uses' => 'app\controllers\PoolsController@pools'));
+
     // Statistics of The Server
     Route::get('stats',               array('as' => 'stats',               'uses' => 'app\controllers\StatsController@stats'));
     Route::get('stats/gethoursstas',  array('as' => 'stats.gethoursstas',  'uses' => 'app\controllers\StatsController@gethoursstas'));
     Route::get('stats/insertStats',  array('as' => 'stats.insertStats',  'uses' => 'app\controllers\StatsController@insertStats'));
 
-
+    // Statistics of The Server
+    Route::get('actions',               array('as' => 'actions',               'uses' => 'app\controllers\ActionsController@actions'));
 
 
 

@@ -1,7 +1,7 @@
 <?php namespace Illuminate\Routing;
 
+use Illuminate\Http\Request;
 use InvalidArgumentException;
-use Symfony\Component\HttpFoundation\Request;
 
 class UrlGenerator {
 
@@ -15,9 +15,23 @@ class UrlGenerator {
 	/**
 	 * The request instance.
 	 *
-	 * @var \Symfony\Component\HttpFoundation\Request
+	 * @var \Illuminate\Http\Request
 	 */
 	protected $request;
+
+	/**
+	 * The force URL root.
+	 *
+	 * @var string
+	 */
+	protected $forcedRoot;
+
+	/**
+	 * The forced schema for URLs.
+	 *
+	 * @var string
+	 */
+	protected $forceSchema;
 
 	/**
 	 * Characters that should not be URL encoded.
@@ -86,7 +100,7 @@ class UrlGenerator {
 	 *
 	 * @param  string  $path
 	 * @param  mixed  $extra
-	 * @param  bool  $secure
+	 * @param  bool|null  $secure
 	 * @return string
 	 */
 	public function to($path, $extra = array(), $secure = null)
@@ -126,7 +140,7 @@ class UrlGenerator {
 	 * Generate a URL to an application asset.
 	 *
 	 * @param  string  $path
-	 * @param  bool    $secure
+	 * @param  bool|null  $secure
 	 * @return string
 	 */
 	public function asset($path, $secure = null)
@@ -168,19 +182,28 @@ class UrlGenerator {
 	/**
 	 * Get the scheme for a raw URL.
 	 *
-	 * @param  bool    $secure
+	 * @param  bool|null  $secure
 	 * @return string
 	 */
 	protected function getScheme($secure)
 	{
 		if (is_null($secure))
 		{
-			return $this->request->getScheme().'://';
+			return $this->forceSchema ?: $this->request->getScheme().'://';
 		}
-		else
-		{
-			return $secure ? 'https://' : 'http://';
-		}
+
+		return $secure ? 'https://' : 'http://';
+	}
+
+	/**
+	 * Force the schema for URLs.
+	 *
+	 * @param  string  $schema
+	 * @return void
+	 */
+	public function forceSchema($schema)
+	{
+		$this->forceSchema = $schema.'://';
 	}
 
 	/**
@@ -377,10 +400,8 @@ class UrlGenerator {
 		{
 			return $domain;
 		}
-		else
-		{
-			return $domain .= ':'.$this->request->getPort();
-		}
+
+		return $domain.':'.$this->request->getPort();
 	}
 
 	/**
@@ -411,10 +432,8 @@ class UrlGenerator {
 		{
 			return $this->getScheme(true);
 		}
-		else
-		{
-			return $this->getScheme(null);
-		}
+
+		return $this->getScheme(null);
 	}
 
 	/**
@@ -439,11 +458,25 @@ class UrlGenerator {
 	 */
 	protected function getRootUrl($scheme, $root = null)
 	{
-		$root = $root ?: $this->request->root();
+		if (is_null($root))
+		{
+			$root = $this->forcedRoot ?: $this->request->root();
+		}
 
 		$start = starts_with($root, 'http://') ? 'http://' : 'https://';
 
 		return preg_replace('~'.$start.'~', $scheme, $root, 1);
+	}
+
+	/**
+	 * Set the forced root URL.
+	 *
+	 * @param  string  $root
+	 * @return void
+	 */
+	public function forceRootUrl($root)
+	{
+		$this->forcedRoot = $root;
 	}
 
 	/**
@@ -485,7 +518,7 @@ class UrlGenerator {
 	/**
 	 * Set the current request instance.
 	 *
-	 * @param  \Symfony\Component\HttpFoundation\Request  $request
+	 * @param  \Illuminate\Http\Request  $request
 	 * @return void
 	 */
 	public function setRequest(Request $request)

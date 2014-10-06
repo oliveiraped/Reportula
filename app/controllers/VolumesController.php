@@ -3,7 +3,7 @@
 namespace app\controllers;
 use BaseController, Form, Input, Redirect;
 use Sentry, View, Log, Cache, Config, DB, Request;
-use Date, App, Former, Datatables, Asset, Time,Vd\Vd;
+use Date, App, Former, Datatables, Asset, Time;
 
 // Models
 use app\models\Media;
@@ -106,12 +106,12 @@ class VolumesController extends BaseController
     {
 
 
-      $tjobs = Job::select(array('job.jobid','name','starttime','endtime',
+      $tjobs = Job::select(array($this->tables['job'].'.jobid','name','starttime','endtime',
                                    'level','jobbytes','jobfiles','jobstatus'))
-                  ->join('jobmedia','jobmedia.jobid', '=', 'job.jobid')
-                  ->join('media','media.mediaid', '=', 'jobmedia.mediaid')
-                  ->where('media.mediaid','=', Input::get('Volume'))
-                  ->groupby('job.jobid')
+                  ->join($this->tables['jobmedia'],$this->tables['jobmedia'].'.jobid', '=', $this->tables['job'].'.jobid')
+                  ->join($this->tables['media'],$this->tables['media'].'.mediaid', '=', $this->tables['jobmedia'].'.mediaid')
+                  ->where($this->tables['media'].'.mediaid','=', Input::get('Volume'))
+                  ->groupby($this->tables['job'].'.jobid')
                   ->groupby('starttime')
                   ->groupby('endtime')
                   ->groupby('level')

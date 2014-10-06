@@ -1,7 +1,6 @@
 <?php namespace Illuminate\Session;
 
 use Illuminate\Support\Manager;
-use Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\NullSessionHandler;
 
 class SessionManager extends Manager {
@@ -70,9 +69,9 @@ class SessionManager extends Manager {
 	{
 		$connection = $this->getDatabaseConnection();
 
-		$table = $connection->getTablePrefix().$this->app['config']['session.table'];
+		$table = $this->app['config']['session.table'];
 
-		return $this->buildSession(new PdoSessionHandler($connection->getPdo(), $this->getDatabaseOptions($table)));
+		return $this->buildSession(new DatabaseSessionHandler($connection, $table));
 	}
 
 	/**
@@ -85,18 +84,6 @@ class SessionManager extends Manager {
 		$connection = $this->app['config']['session.connection'];
 
 		return $this->app['db']->connection($connection);
-	}
-
-
-	/**
-	 * Get the database session options.
-	 *
-	 * @param  string $table
-	 * @return array
-	 */
-	protected function getDatabaseOptions($table)
-	{
-		return array('db_table' => $table, 'db_id_col' => 'id', 'db_data_col' => 'payload', 'db_time_col' => 'last_activity');
 	}
 
 	/**
@@ -142,7 +129,6 @@ class SessionManager extends Manager {
 
 		return $this->buildSession($handler);
 	}
-
 
 	/**
 	 * Create an instance of a cache driven driver.

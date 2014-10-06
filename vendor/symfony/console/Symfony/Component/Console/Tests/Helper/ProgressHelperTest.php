@@ -88,8 +88,8 @@ class ProgressHelperTest extends \PHPUnit_Framework_TestCase
 
         rewind($output->getStream());
         $this->assertEquals(
-            $this->generateOutput('  0/50 [>---------------------------]   0%') .
-            $this->generateOutput('  1/50 [>---------------------------]   2%') .
+            $this->generateOutput('  0/50 [>---------------------------]   0%').
+            $this->generateOutput('  1/50 [>---------------------------]   2%').
             $this->generateOutput('  2/50 [=>--------------------------]     '),
             stream_get_contents($output->getStream())
         );
@@ -106,9 +106,9 @@ class ProgressHelperTest extends \PHPUnit_Framework_TestCase
 
         rewind($output->getStream());
         $this->assertEquals(
-            $this->generateOutput('  0/50 [>---------------------------]   0%') .
-            $this->generateOutput('  1/50 [>---------------------------]   2%') .
-            $this->generateOutput(' 15/50 [========>-------------------]  30%') .
+            $this->generateOutput('  0/50 [>---------------------------]   0%').
+            $this->generateOutput('  1/50 [>---------------------------]   2%').
+            $this->generateOutput(' 15/50 [========>-------------------]  30%').
             $this->generateOutput(' 25/50 [==============>-------------]  50%'),
             stream_get_contents($output->getStream())
         );
@@ -175,7 +175,7 @@ class ProgressHelperTest extends \PHPUnit_Framework_TestCase
 
         rewind($output->getStream());
         $this->assertEquals(
-            $this->generateOutput(' 25/50 [==============>-------------]  50%') . $this->generateOutput(''),
+            $this->generateOutput(' 25/50 [==============>-------------]  50%').$this->generateOutput(''),
             stream_get_contents($output->getStream())
         );
     }
@@ -192,9 +192,19 @@ class ProgressHelperTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($this->generateOutput('   0/200 [>---------------------------]   0%').$this->generateOutput(' 199/200 [===========================>]  99%').$this->generateOutput(' 200/200 [============================] 100%'), stream_get_contents($output->getStream()));
     }
 
-    protected function getOutputStream()
+    public function testNonDecoratedOutput()
     {
-        return new StreamOutput(fopen('php://memory', 'r+', false));
+        $progress = new ProgressHelper();
+        $progress->start($output = $this->getOutputStream(false));
+        $progress->advance();
+
+        rewind($output->getStream());
+        $this->assertEquals('', stream_get_contents($output->getStream()));
+    }
+
+    protected function getOutputStream($decorated = true)
+    {
+        return new StreamOutput(fopen('php://memory', 'r+', false), StreamOutput::VERBOSITY_NORMAL, $decorated);
     }
 
     protected $lastMessagesLength;

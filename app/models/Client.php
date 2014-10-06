@@ -8,8 +8,14 @@ use vd\vd, Log;
 class Client extends Eloquent
 {
     protected $guarded = array('id');
-    protected $table =  'client';
+    protected $table =  'Client';
     public $timestamps = false;
+
+    function __construct() {
+      if ( Config::get('database.default')=='pgsql' ) {
+          $this->table = strtolower($table);
+      }
+    }
 
     /* Fill Select Box */
     public static function clientSelectBox($clientsall=null)
@@ -26,7 +32,7 @@ class Client extends Eloquent
             $f_Name = strtolower($f_Name);
             $f_ClientID = strtolower($f_ClientID);
         }
-       
+
 
         //Both Engines :
         $clientsName = array_fetch ($clientsall, $f_Name) ;

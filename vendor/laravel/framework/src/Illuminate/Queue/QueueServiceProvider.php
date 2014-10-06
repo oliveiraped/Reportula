@@ -1,8 +1,10 @@
 <?php namespace Illuminate\Queue;
 
+use IlluminateQueueClosure;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Queue\Console\WorkCommand;
 use Illuminate\Queue\Console\ListenCommand;
+use Illuminate\Queue\Console\RestartCommand;
 use Illuminate\Queue\Connectors\SqsConnector;
 use Illuminate\Queue\Console\SubscribeCommand;
 use Illuminate\Queue\Connectors\SyncConnector;
@@ -36,6 +38,8 @@ class QueueServiceProvider extends ServiceProvider {
 		$this->registerSubscriber();
 
 		$this->registerFailedJobServices();
+
+		$this->registerQueueClosure();
 	}
 
 	/**
@@ -45,16 +49,14 @@ class QueueServiceProvider extends ServiceProvider {
 	 */
 	protected function registerManager()
 	{
-		$me = $this;
-
-		$this->app->bindShared('queue', function($app) use ($me)
+		$this->app->bindShared('queue', function($app)
 		{
 			// Once we have an instance of the queue manager, we will register the various
 			// resolvers for the queue connectors. These connectors are responsible for
 			// creating the classes that accept queue configs and instantiate queues.
 			$manager = new QueueManager($app);
 
-			$me->registerConnectors($manager);
+			$this->registerConnectors($manager);
 
 			return $manager;
 		});
@@ -68,6 +70,8 @@ class QueueServiceProvider extends ServiceProvider {
 	protected function registerWorker()
 	{
 		$this->registerWorkCommand();
+
+		$this->registerRestartCommand();
 
 		$this->app->bindShared('queue.worker', function($app)
 		{
@@ -118,6 +122,21 @@ class QueueServiceProvider extends ServiceProvider {
 		});
 
 		$this->commands('command.queue.listen');
+	}
+
+	/**
+	 * Register the queue restart console command.
+	 *
+	 * @return void
+	 */
+	public function registerRestartCommand()
+	{
+		$this->app->bindShared('command.queue.restart', function($app)
+		{
+			return new RestartCommand;
+		});
+
+		$this->commands('command.queue.restart');
 	}
 
 	/**
@@ -257,6 +276,19 @@ class QueueServiceProvider extends ServiceProvider {
 	}
 
 	/**
+	 * Register the Illuminate queued closure job.
+	 *
+	 * @return void
+	 */
+	protected function registerQueueClosure()
+	{
+		$this->app->bindShared('IlluminateQueueClosure', function($app)
+		{
+			return new IlluminateQueueClosure($app['encrypter']);
+		});
+	}
+
+	/**
 	 * Get the services provided by the provider.
 	 *
 	 * @return array
@@ -265,7 +297,8 @@ class QueueServiceProvider extends ServiceProvider {
 	{
 		return array(
 			'queue', 'queue.worker', 'queue.listener', 'queue.failer',
-			'command.queue.work', 'command.queue.listen', 'command.queue.subscribe'
+			'command.queue.work', 'command.queue.listen', 'command.queue.restart',
+			'command.queue.subscribe',
 		);
 	}
 

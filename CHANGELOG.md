@@ -1,3 +1,29 @@
+2.0.8 - 6 Oct - 2014
+===============================================
+
+Features:
+
+- [add] Added Emails Report Tables on Intall procedure
+- [add] Added Email Report Command to Send Emails
+- [add] Added Report Emails Menu in Administration
+             - Reportula Sends Schedules Backups Emails Reports
+- [add] Added Storage Select Box on Job Cofiguration Editor
+- [add] Added Pools Select Box on Job Cofiguration Editor
+- [add] Added Fileset Select Box on Job Cofiguration Editor
+- [add] Added Schedules Select Box on Job Cofiguration Editor
+
+Bugfixes:
+
+- [fix] Mysql Databases Case Sensitive Bug
+- [fix] BootBox - Downgraded to 3.3.0 Version
+- [fix] BaculaStats Crontab Command - HoursDiff Bug
+
+
+Code Refactor
+
+- [upg] Upgraded Laravel Framework to 4.2.x
+- [upg] Upgraded Composer packages to meet Laravel 4.2.x
+
 2.0.7 - 8 August - 2014
 ===============================================
 

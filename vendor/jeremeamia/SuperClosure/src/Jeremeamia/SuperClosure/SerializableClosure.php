@@ -24,7 +24,7 @@ class SerializableClosure implements \Serializable
     /**
      * @var array The calculated state to serialize
      */
-    protected $state;
+    private $state;
 
     /**
      * @param \Closure $closure
@@ -65,14 +65,20 @@ class SerializableClosure implements \Serializable
     }
 
     /**
-     * Serialize the code and of context of the closure
+     * Uses the closure parser to fetch the closure's code. The code and the closure's context are serialized
      *
      * @return string
      */
     public function serialize()
     {
+        // Prepare the state to serialize using a ClosureParser
         if (!$this->state) {
-            $this->createState();
+            $parser = new ClosureParser($this->getReflection());
+            $this->state = array($parser->getCode());
+            // Add the used variables (context) to the state, but wrap all closures with SerializableClosure
+            $this->state[] = array_map(function ($var) {
+                return ($var instanceof \Closure) ? new self($var) : $var;
+            }, $parser->getUsedVariables());
         }
 
         return serialize($this->state);
@@ -97,18 +103,5 @@ class SerializableClosure implements \Serializable
 
         // Evaluate the code to recreate the Closure
         eval("\$this->closure = {$__code__};");
-    }
-
-    /**
-     * Uses the closure parser to fetch the closure's code and context
-     */
-    protected function createState()
-    {
-        $parser = new ClosureParser($this->getReflection());
-        $this->state = array($parser->getCode());
-        // Add the used variables (context) to the state, but wrap all closures with SerializableClosure
-        $this->state[] = array_map(function ($var) {
-            return ($var instanceof \Closure) ? new self($var) : $var;
-        }, $parser->getUsedVariables());
     }
 }

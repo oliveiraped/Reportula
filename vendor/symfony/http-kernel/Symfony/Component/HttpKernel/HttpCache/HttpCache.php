@@ -152,7 +152,6 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
         return $this->kernel;
     }
 
-
     /**
      * Gets the Esi instance
      *
@@ -522,7 +521,7 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
     protected function lock(Request $request, Response $entry)
     {
         // try to acquire a lock to call the backend
-        $lock = $this->store->lock($request, $entry);
+        $lock = $this->store->lock($request);
 
         // there is already another process calling the backend
         if (true !== $lock) {

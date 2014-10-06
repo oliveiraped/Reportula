@@ -3,7 +3,7 @@
 namespace app\controllers;
 use BaseController, Form, Input, Redirect, Response;
 use Sentry, View, Log, Cache, Config, DB, Url;
-use Date, App, Former, Datatables, Asset, Vd\Vd;
+use Date, App, Former, Datatables, Asset;
 use Command;
 
 // Models
@@ -51,7 +51,7 @@ class StatsController extends BaseController
     {
 
       $stats = Hoursstats::select(array('starttime','endtime','bytes','hoursdiff','hourbytes','timediff'));
-                  
+
 
         return  Datatables::of($stats)
                    /* ->edit_column('volretention','{{ date("d", $volretention)." Days" }}')
@@ -61,7 +61,7 @@ class StatsController extends BaseController
     }
 
 
-    /* Insert Stats on Database */ 
+    /* Insert Stats on Database */
     public function insertStats()
     {
         /* Get Database Size */
@@ -84,16 +84,16 @@ class StatsController extends BaseController
         // Get Number of Files Transfered
         $filesNumber = DB::table('file')->select(DB::raw('count(*) AS filesNumber'))->get();
 
-       
+
 
         // Get Storage Bytes
         $bytesStorage = Media::sum('volbytes');
-       
+
          //* Query For Hour Starts
         $dataInicio = date('Y-m-d', strtotime("-1 days")).(' 18:29');
         $dataFim = date('Y-m-d').(' 18:29');
 
- 
+
         /* Query timediff Stats */
         $timediff = DB::table('job')->select(DB::raw('(max(starttime) - min(starttime)) AS timediff'))
                     ->where('starttime','>=', $dataInicio )
@@ -113,12 +113,12 @@ class StatsController extends BaseController
         $query = DB::table('job')
                     ->where('starttime','>=', $dataInicio )
                     ->where('endtime','<=', $dataFim);
-                   
 
-        $jobbytes  = $query->sum('jobbytes');   
-        $starttime = $query->min('starttime');   
-        $endtime   = $query->max('endtime');       
-           
+
+        $jobbytes  = $query->sum('jobbytes');
+        $starttime = $query->min('starttime');
+        $endtime   = $query->max('endtime');
+
 
         /* Data for Stats to Insert*/
         $daystats = array(
@@ -146,7 +146,7 @@ class StatsController extends BaseController
             $daystats = Daystats::firstOrCreate($daystats);
 
     }
-   
+
 
 
 

@@ -13,7 +13,7 @@ use app\models\Filessearch;
 class FilesController extends BaseController
 {
     public $jobSelectBox = array();
-    
+
     public function __construct()
     {
         parent::__construct();
@@ -58,21 +58,21 @@ class FilesController extends BaseController
 
     public function files($job)
     {
-      
+
        $find = Filessearch::where('jobid', '=', $job)->get();
        $find =  $find->toArray();
 
        if (empty($find)) {
             $filessearch = new Filessearch;
 
-            $files = Files::select(array('path.path','filename.name as filename','jobid'))
-                  ->join('filename','file.filenameid', '=', 'filename.filenameid')
-                  ->join('path','file.pathid', '=', 'path.pathid')
+            $files = Files::select(array($this->tables['path'].'.path', $this->tables['filename'].'.name as filename','jobid'))
+                  ->join($this->tables['filename'],$this->tables['file'].'.filenameid', '=', $this->tables['filename'].'.filenameid')
+                  ->join($this->tables['path'],$this->tables['file'].'.pathid', '=', $this->tables['path'].'.pathid')
                   ->where('jobid','=', $job)->remember(10)->get();
             $files = $files->toArray();
            $t= Filessearch::insert($files);
         }
-       
+
         /* Mostra o log do Job */
         $logs = Logs::select(array('logtext'))->where('jobid','=', $job)->get();
         $logs2="";
@@ -86,7 +86,7 @@ class FilesController extends BaseController
                   ->orderBy('path','asc');
 
         $files=$files->get();//->toArray();
-        
+
         //$files="";
 
         if (empty($files)) {

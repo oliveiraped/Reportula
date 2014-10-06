@@ -15,10 +15,18 @@
 
             {{Former::hidden('id')->id('id')->value($id);}}
             {{Former::text('Name', 'Name')->placeholder('Name')->required()->autofocus()->value($Name);}}
+
             {{Former::select('Client')->label('Selected Client')->fromQuery(app\models\CfgClient::orderBy('Name','ASC')->get(), 'Name', 'Name')->id('Client'); }}
+
             {{Former::text('JobDefs', 'Job Defs')->placeholder('JobDefs')->value($JobDefs);}}
             {{Former::select('FileSet')->label('Selected Fileset')->fromQuery(app\models\CfgFileset::all(), 'Name', 'Name')->id('FileSet'); }}
-            {{Former::text('Schedule', 'Schedule')->placeholder('Schedule')->value($Schedule);}}
+
+
+
+
+            {{Former::select('Schedule')->label('Selected Schedule')->fromQuery(app\models\CfgSchedule::orderBy('Name','ASC')->get(), 'Name', 'Name')->id('Schedule'); }}
+
+
             {{Former::text('WriteBootstrap', 'Write Bootstrap')->placeholder('WriteBootstrap')->value($WriteBootstrap);}}
             {{Former::text('Bootstrap', 'Bootstrap')->placeholder('Bootstrap')->value($Bootstrap);}}
             {{Former::text('Enabled', 'Enabled')->placeholder('Enabled')->value($Enabled);}}
@@ -49,11 +57,13 @@
 
             {{Former::text('Base', 'Base')->placeholder('Base')->value($Base);}}
             {{Former::text('Messages', 'Messages')->placeholder('Messages')->value($Messages);}}
-            {{Former::text('Pool', 'Pool')->placeholder('Pool')->value($Pool);}}
+            {{Former::select('Pool')->label('Selected Pool')->fromQuery(app\models\CfgPool::orderBy('Name','ASC')->get(), 'Name', 'Name')->id('Pool'); }}
             {{Former::text('FullBackupPool', 'FullBackupPool')->placeholder('FullBackupPool')->value($FullBackupPool);}}
             {{Former::text('MaximumBandwidth', 'MaximumBandwidth')->placeholder('MaximumBandwidth')->value($MaximumBandwidth);}}
             {{Former::text('IncrementalBackupPool', 'IncrementalBackupPool')->placeholder('IncrementalBackupPool')->value($IncrementalBackupPool);}}
-            {{Former::text('Storage', 'Storage')->placeholder('Storage')->value($Storage);}}
+
+            {{Former::select('Storage')->label('Selected Storage')->fromQuery(app\models\CfgStorage::orderBy('Name','ASC')->get(), 'Name', 'Name')->id('Storage'); }}
+
             {{Former::text('DifferentialBackupPool', 'DifferentialBackupPool')->placeholder('DifferentialBackupPool')->value($DifferentialBackupPool);}}
 
             {{Former::text('IncrementalMaxRunTime', 'IncrementalMaxRunTime')->placeholder('IncrementalMaxRunTime')->value($IncrementalMaxRunTime);}}
@@ -91,6 +101,9 @@
 $(document).ready(function() {
     $("#Client").select2();
     $("#FileSet").select2();
+    $("#Storage").select2();
+    $("#Pool").select2();
+    $("#Schedule").select2();
 });
 
 </script>

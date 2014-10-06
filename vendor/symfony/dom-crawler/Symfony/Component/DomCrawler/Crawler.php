@@ -14,7 +14,7 @@ namespace Symfony\Component\DomCrawler;
 use Symfony\Component\CssSelector\CssSelector;
 
 /**
- * Crawler eases navigation of a list of \DOMNode objects.
+ * Crawler eases navigation of a list of \DOMElement objects.
  *
  * @author Fabien Potencier <fabien@symfony.com>
  *
@@ -259,7 +259,9 @@ class Crawler extends \SplObjectStorage
     public function addNodeList(\DOMNodeList $nodes)
     {
         foreach ($nodes as $node) {
-            $this->addNode($node);
+            if ($node instanceof \DOMNode) {
+                $this->addNode($node);
+            }
         }
     }
 
@@ -637,9 +639,7 @@ class Crawler extends \SplObjectStorage
     public function filter($selector)
     {
         if (!class_exists('Symfony\\Component\\CssSelector\\CssSelector')) {
-            // @codeCoverageIgnoreStart
             throw new \RuntimeException('Unable to filter with a CSS selector as the Symfony CssSelector is not installed (you can use filterXPath instead).');
-            // @codeCoverageIgnoreEnd
         }
 
         // The CssSelector already prefixes the selector with descendant-or-self::
@@ -871,18 +871,22 @@ class Crawler extends \SplObjectStorage
             // BC for Symfony 2.4 and lower were elements were adding in a fake _root parent
             if (0 === strpos($expression, '/_root/')) {
                 $expression = './'.substr($expression, 7);
+            } elseif (0 === strpos($expression, 'self::*/')) {
+                $expression = './'.substr($expression, 8);
             }
 
             // add prefix before absolute element selector
             if (empty($expression)) {
                 $expression = $nonMatchingExpression;
             } elseif (0 === strpos($expression, '//')) {
-                $expression = 'descendant-or-self::' . substr($expression, 2);
+                $expression = 'descendant-or-self::'.substr($expression, 2);
             } elseif (0 === strpos($expression, './/')) {
-                $expression = 'descendant-or-self::' . substr($expression, 3);
+                $expression = 'descendant-or-self::'.substr($expression, 3);
             } elseif (0 === strpos($expression, './')) {
-                $expression = 'self::' . substr($expression, 2);
-            } elseif ('/' === $expression[0]) {
+                $expression = 'self::'.substr($expression, 2);
+            } elseif (0 === strpos($expression, 'child::')) {
+                $expression = 'self::'.substr($expression, 7);
+            } elseif ('/' === $expression[0] || 0 === strpos($expression, 'self::')) {
                 // the only direct child in Symfony 2.4 and lower is _root, which is already handled previously
                 // so let's drop the expression entirely
                 $expression = $nonMatchingExpression;
@@ -890,9 +894,12 @@ class Crawler extends \SplObjectStorage
                 // '.' is the fake root element in Symfony 2.4 and lower, which is excluded from results
                 $expression = $nonMatchingExpression;
             } elseif (0 === strpos($expression, 'descendant::')) {
-                $expression = 'descendant-or-self::' . substr($expression, strlen('descendant::'));
+                $expression = 'descendant-or-self::'.substr($expression, strlen('descendant::'));
+            } elseif (preg_match('/^(ancestor|ancestor-or-self|attribute|following|following-sibling|namespace|parent|preceding|preceding-sibling)::/', $expression)) {
+                // the fake root has no parent, preceding or following nodes and also no attributes (even no namespace attributes)
+                $expression = $nonMatchingExpression;
             } elseif (0 !== strpos($expression, 'descendant-or-self::')) {
-                $expression = 'self::' .$expression;
+                $expression = 'self::'.$expression;
             }
             $expressions[] = $parenthesis.$expression;
         }
@@ -911,9 +918,7 @@ class Crawler extends \SplObjectStorage
             if ($i == $position) {
                 return $node;
             }
-        // @codeCoverageIgnoreStart
         }
-        // @codeCoverageIgnoreEnd
     }
 
     /**

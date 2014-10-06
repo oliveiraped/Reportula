@@ -502,6 +502,8 @@ class Request
      */
     public function overrideGlobals()
     {
+        $this->server->set('QUERY_STRING', static::normalizeQueryString(http_build_query($this->query->all(), null, '&')));
+
         $_GET = $this->query->all();
         $_POST = $this->request->all();
         $_SERVER = $this->server->all();
@@ -1031,9 +1033,9 @@ class Request
     }
 
     /**
-     * Returns the requested URI.
+     * Returns the requested URI (path and query string).
      *
-     * @return string The raw URI (i.e. not urldecoded)
+     * @return string The raw URI (i.e. not URI decoded)
      *
      * @api
      */
@@ -1060,9 +1062,9 @@ class Request
     }
 
     /**
-     * Generates a normalized URI for the Request.
+     * Generates a normalized URI (URL) for the Request.
      *
-     * @return string A normalized URI for the Request
+     * @return string A normalized URI (URL) for the Request
      *
      * @see getQueryString()
      *
@@ -1170,7 +1172,8 @@ class Request
 
         // as the host can come from the user (HTTP_HOST and depending on the configuration, SERVER_NAME too can come from the user)
         // check that it does not contain forbidden characters (see RFC 952 and RFC 2181)
-        if ($host && !preg_match('/^\[?(?:[a-zA-Z0-9-:\]_]+\.?)+$/', $host)) {
+        // use preg_replace() instead of preg_match() to prevent DoS attacks with long host names
+        if ($host && '' !== preg_replace('/(?:^\[)?[a-zA-Z0-9-:\]_]+\.?/', '', $host)) {
             throw new \UnexpectedValueException(sprintf('Invalid Host "%s"', $host));
         }
 
@@ -1377,6 +1380,16 @@ class Request
         if (null === $this->locale) {
             $this->setPhpDefaultLocale($locale);
         }
+    }
+
+    /**
+     * Get the default locale.
+     *
+     * @return string
+     */
+    public function getDefaultLocale()
+    {
+        return $this->defaultLocale;
     }
 
     /**

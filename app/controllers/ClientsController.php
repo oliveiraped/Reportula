@@ -3,7 +3,7 @@
 namespace app\controllers;
 use BaseController, Form, Input, Redirect;
 use Sentry, View, Log, Cache, Config, DB, Date;
-use App, Former, Datatables, Asset, Time, Vd\Vd;
+use App, Former, Datatables, Asset, Time;
 
 // Models
 use app\models\Client;
@@ -44,8 +44,6 @@ class ClientsController extends BaseController
     public function clients($client=null)
     {
 
-        
-
         $start = Input::get('start', Date::now()->sub('1 day'));
         $end   = Input::get('end',   Date::now());
 
@@ -60,7 +58,7 @@ class ClientsController extends BaseController
             $permissions=unserialize($permissions->clients);
             $clients = Client::wherein('clientid', $permissions)->remember(10)->get();
             $clientSelectBox=Client::clientSelectBox($clients->toArray());
-         } else { 
+         } else {
             $clientSelectBox=Client::clientSelectBox();
         }
         ///// End Permissions
@@ -90,8 +88,8 @@ class ClientsController extends BaseController
             /* Calculate the Retension Period */
             $to =Date::now();
             $text=" Days";
-            
-            /* 86400  -> equal to seconds in i day*/ 
+
+            /* 86400  -> equal to seconds in i day*/
             $fileretension = ($client->fileretention/86400).$text;
 
             if ($fileretension >= 365) {
@@ -99,8 +97,8 @@ class ClientsController extends BaseController
                 $fileretension=intval($fileretension/31536000).$type;
             }
 
-            /* 86400  -> equal to seconds in i day*/ 
-            $jobretension  = ($client->jobretention/86400).$text; 
+            /* 86400  -> equal to seconds in i day*/
+            $jobretension  = ($client->jobretention/86400).$text;
             if ($jobretension >= 365) {
                 $type = ' Year';
                 $jobretension=intval($jobretension/31536000).$type;
@@ -190,22 +188,22 @@ class ClientsController extends BaseController
         }
 
         /* Draws Files Graph */
-        $graphFiles = DB::table('job')
+        $graphFiles = DB::table($this->tables['job'])
                   ->where('clientid','=', $clientselected)
                   ->where('starttime','>=',  $start)
                   ->where('endtime','<=',    $end)
                   ->orderby('starttime', 'asc')
                   ->remember(10)
-                  ->get(array( DB::raw('date(job.starttime) as date'), DB::raw('jobfiles as files') ));
+                  ->get(array( DB::raw('date('.$this->tables['job'].'.starttime) as date'), DB::raw('jobfiles as files') ));
         $graphFiles= json_encode((array) $graphFiles);
 
         /* Draws Bytes Graph */
-        $graphBytes = DB::table('job')->where('clientid','=', $clientselected)
+        $graphBytes = DB::table($this->tables['job'])->where('clientid','=', $clientselected)
                   ->where('starttime','>=',  $start)
                   ->where('endtime','<=',$end)
                   ->orderby('starttime', 'asc')
                   ->remember(10)
-                  ->get(array(DB::raw('date(job.starttime) as date'),DB::raw('jobbytes as bytes')));
+                  ->get(array(DB::raw('date('.$this->tables['job'].'.starttime) as date'),DB::raw('jobbytes as bytes')));
 
         $graphBytes = json_encode((array) $graphBytes);
 

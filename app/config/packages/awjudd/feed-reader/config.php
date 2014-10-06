@@ -50,14 +50,14 @@ return array(
              * 
              * @var boolean
              */
-            'force-feed' => true,
+            'force-feed' => false,
 
             /**
              * Whether or not the RSS feed should have it's output ordered by date.
              * 
              * @var boolean
              */
-            'order-by-date' => true,
+            'order-by-date' => false,
         ),
     ),
 );

@@ -26,7 +26,7 @@ return array(
 	|
 	*/
 
-	'default' => 'pgsql',
+	'default' => 'mysql',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -54,8 +54,8 @@ return array(
 
 		'mysql' => array(
 			'driver'    => 'mysql',
-			'host'      => 'localhost',
-			'database'  => 'reportula4',
+			'host'      => '127.0.0.1',
+			'database'  => 'bacula',
 			'username'  => 'root',
 			'password'  => '',
 			'charset'   => 'utf8',
@@ -66,15 +66,15 @@ return array(
 
 			'pgsql' => array(
 			'driver'   => 'pgsql',
+
 			'host'     => 'localhost',
 			'database' => 'bacula',
-			'username' => '',
+			'username' => 'bacula',
+
 			'password' => '',
 			'charset'  => 'utf8',
 			'prefix'   => '',
 			'schema'   => 'public',
-
-
 
 		),
 

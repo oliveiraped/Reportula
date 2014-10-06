@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Arr;
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\Filesystem\Filesystem;
 
@@ -43,6 +44,8 @@ class Datatables
     protected $mDataSupport;
 
     protected $index_column;
+    protected $row_class_tmpl = null;
+    protected $row_data_tmpls = array();    
 
 
     /**
@@ -73,6 +76,7 @@ class Datatables
             for($i=0;$i<Input::get('iColumns',0);$i++) {
                 $arr = array();
                 $arr['name'] = isset($columns[$i]) ? $columns[$i] : '';
+                $arr['data'] = Input::get('mDataProp_'.$i,'');
                 $arr['searchable'] = Input::get('bSearchable_'.$i,'');
                 $arr['search'] = array();
                 $arr['search']['value'] = Input::get('sSearch_'.$i,'');
@@ -96,11 +100,12 @@ class Datatables
     /**
      * Gets query and returns instance of class
      *
-     * @return null
+     * @return Datatables
      */
-    public static function of($query)
+    public static function of($query, $mDataSupport=null)
     {
         $ins = new static;
+        $ins->mDataSupport = $mDataSupport;
         $ins->save_query($query);
         return $ins;
     }
@@ -108,11 +113,11 @@ class Datatables
     /**
      * Organizes works
      *
-     * @return null
+     * @return array|json
      */
     public function make($mDataSupport=false,$raw=false)
     {
-        $this->mDataSupport = $mDataSupport;
+        if (!isset($this->mDataSupport)) { $this->mDataSupport = $mDataSupport; }
         $this->create_last_columns();
         $this->init();
         $this->get_result();
@@ -141,8 +146,24 @@ class Datatables
                 return (array) $object;
             }, $this->result_object);
         }
-    }
 
+        if ($this->mDataSupport) {
+            $walk = function($value, $key, $prefix = null) use (&$walk, &$result_array) {
+                $key = (!is_null($prefix)) ? ($prefix.".".$key) : $key;
+                if (is_array($value)) {
+                    array_walk($value, $walk, $key);
+                } else {
+                    $result_array = Arr::add($result_array, $key, $value);
+                }
+            };
+
+            $result_array = [];
+            \array_walk($this->result_array, $walk);
+            $this->result_array = $result_array;
+
+        }
+
+    }
     /**
      * Prepares variables according to Datatables parameters
      *
@@ -195,10 +216,10 @@ class Datatables
     }
 
     /**
-    * Adds column filter to filter_columns
-    *
-    * @return $this
-    */
+     * Adds column filter to filter_columns
+     *
+     * @return $this
+     */
     public function filter_column($column,$method)
     {
         $params = func_get_args();
@@ -217,7 +238,31 @@ class Datatables
         $this->index_column = $name;
         return $this;
     }
+    
+    /**
+     * Sets DT_RowClass template
+     * result: <tr class="output_from_your_template">
+     *
+     * @param $content
+     * @return $this
+     */
+    public function set_row_class($content) {
+        $this->row_class_tmpl = $content;
+        return $this;
+    }    
 
+    /**
+     * Sets DT_RowData template for given attribute name
+     * result: Datatables invoking $(row).data(name, output_from_your_template)
+     *
+     * @param $content
+     * @return $this
+     */
+    public function set_row_data($name, $content) {
+        $this->row_data_tmpls[$name] = $content;
+        return $this;
+    }    
+    
     /**
      * Saves given query and determines its type
      *
@@ -227,7 +272,13 @@ class Datatables
     {
         $this->query = $query;
         $this->query_type = $query instanceof \Illuminate\Database\Query\Builder ? 'fluent' : 'eloquent';
-        $this->columns = $this->query_type == 'eloquent' ? $this->query->getQuery()->columns : $this->query->columns;
+        if ($this->mDataSupport) {
+            $this->columns = array_map(function($column) {
+                return $column['data'];
+            }, $this->input['columns']);
+        } else {
+            $this->columns = $this->query_type == 'eloquent' ? ($this->query->getQuery()->columns ?: []) : ($this->query->columns ?: []);
+        }
     }
 
     /**
@@ -242,23 +293,31 @@ class Datatables
             foreach ($this->extra_columns as $key => $value) {
 
                 if (is_string($value['content'])):
-                $value['content'] = $this->blader($value['content'], $rvalue);
+                    $value['content'] = $this->blader($value['content'], $rvalue);
                 elseif (is_callable($value['content'])):
-                $value['content'] = $value['content']($this->result_object[$rkey]);
+                    $value['content'] = $value['content']($this->result_object[$rkey]);
                 endif;
 
-                $rvalue = $this->include_in_array($value,$rvalue);
+                if ($this->mDataSupport) {
+                    Arr::set($rvalue, $value['name'], $value['content']);
+                } else {
+                    $rvalue = $this->include_in_array($value, $rvalue);
+                }
             }
 
             foreach ($this->edit_columns as $key => $value) {
 
                 if (is_string($value['content'])):
-                $value['content'] = $this->blader($value['content'], $rvalue);
+                    $value['content'] = $this->blader($value['content'], $rvalue);
                 elseif (is_callable($value['content'])):
-                $value['content'] = $value['content']($this->result_object[$rkey]);
+                    $value['content'] = $value['content']($this->result_object[$rkey]);
                 endif;
 
-                $rvalue[$value['name']] = $value['content'];
+                if ($this->mDataSupport) {
+                    Arr::set($rvalue, $value['name'], $value['content']);
+                } else {
+                    $rvalue[$value['name']] = $value['content'];
+                }
 
             }
         }
@@ -271,23 +330,48 @@ class Datatables
      */
     protected function regulate_array()
     {
-        if($this->mDataSupport){
-            $this->result_array_r = $this->result_array;
-        }else{
-            foreach ($this->result_array as $key => $value) {
-                foreach ($this->excess_columns as $evalue) {
-                    unset($value[$evalue]);
-                }
-
-                $row = array_values($value);
-                if ($this->index_column) {
-                    if (!array_key_exists($this->index_column, $value)) {
-                        throw new \Exception('Index column set to non-existent column "' . $this->index_column . '"');
-                    }
-                    $row['DT_RowId'] = $value[$this->index_column];
-                }
-                $this->result_array_r[] = $row;
+        foreach ($this->result_array as $key => $value) {
+            foreach ($this->excess_columns as $evalue) {
+                unset($value[$evalue]);
             }
+
+            if ($this->mDataSupport) {
+                $row = $value;
+            } else {
+                $row = array_values($value);
+            }
+
+            if ($this->index_column) {
+                if (!array_key_exists($this->index_column, $value)) {
+                    throw new \Exception('Index column set to non-existent column "' . $this->index_column . '"');
+                }
+                $row['DT_RowId'] = $value[$this->index_column];
+            }
+
+            if($this->row_class_tmpl!==null) {
+                $content = '';
+                if (is_string($this->row_class_tmpl)) {
+                    $content = $this->blader($this->row_class_tmpl, $value);
+                } else if(is_callable($this->row_class_tmpl)) {
+                    $content = $this->row_class_tmpl($this->result_object[$key]);
+                }
+                $row['DT_RowClass'] = $content;
+            }
+
+            if(count($this->row_data_tmpls)) {
+                $row['DT_RowData'] = array();
+                foreach($this->row_data_tmpls as $tkey => $tvalue) {
+                    $content = '';
+                    if (is_string($tvalue)) {
+                        $content = $this->blader($tvalue, $value);
+                    } else if(is_callable($tvalue)) {
+                        $content = $tvalue($this->result_object[$key]);
+                    }
+                    $row['DT_RowData'][$tkey] = $content;
+                }
+            }
+
+            $this->result_array_r[] = $row;
         }
     }
 
@@ -445,7 +529,7 @@ class Datatables
      */
     protected function ordering()
     {
-        if(count($this->input['order'])>0)
+        if(array_key_exists('order', $this->input) && count($this->input['order'])>0)
         {
             $columns = $this->clean_columns( $this->last_columns );
 
@@ -506,47 +590,50 @@ class Datatables
         // global search
         if ($this->input['search']['value'] != '')
         {
-            $copy_this = $this;
+            $_this = $this;
 
-            $this->query->where(function($query) use ($copy_this, $columns_copy, $columns_clean) {
+            $this->query->where(function($query) use (&$_this, $columns_copy, $columns_clean) {
                 
-                $db_prefix = $copy_this->database_prefix();
+                $db_prefix = $_this->database_prefix();
  
-               for ($i=0,$c=count($this->input['columns']);$i<$c;$i++)
+                for ($i=0,$c=count($_this->input['columns']);$i<$c;$i++)
                 {
-                    if (isset($columns_copy[$i]) && $this->input['columns'][$i]['orderable'] == "true")
+                    if (isset($columns_copy[$i]) && $_this->input['columns'][$i]['searchable'] == "true")
                     {
                         // if filter column exists for this columns then use user defined method
-                        if (isset($this->filter_columns[$columns_copy[$i]]))
+                        if (isset($_this->filter_columns[$columns_copy[$i]]))
                         {
                             // check if "or" equivalent exists for given function
                             // and if the number of parameters given is not excess 
                             // than call the "or" equivalent
                             
-                            $method_name = 'or' . ucfirst($this->filter_columns[$columns_copy[$i]]['method']);
+                            $method_name = 'or' . ucfirst($_this->filter_columns[$columns_copy[$i]]['method']);
                             
-                            if ( method_exists($query->getQuery(), $method_name) && count($this->filter_columns[$columns_copy[$i]]['parameters']) <= with(new \ReflectionMethod($query->getQuery(),$method_name))->getNumberOfParameters() )
+                            if (isset($_this->filter_columns[$columns_copy[$i]]['parameters'][1])
+                                && strtoupper(trim($_this->filter_columns[$columns_copy[$i]]['parameters'][1])) == "LIKE") {
+                                $keyword = $this->format_keyword($_this->input['search']['value']);
+                            } else {
+                                $keyword = $_this->input['search']['value'];
+                            }
+
+                            if ( method_exists($query->getQuery(), $method_name) && count($_this->filter_columns[$columns_copy[$i]]['parameters']) <= with(new \ReflectionMethod($query->getQuery(),$method_name))->getNumberOfParameters() )
                             {
                                 call_user_func_array(
                                     array(
                                         $query,
                                         $method_name
                                     ),
-                                    $this->inject_variable(
-                                        $this->filter_columns[$columns_copy[$i]]['parameters'],
-                                        $this->input['search']['value']
+                                    $_this->inject_variable(
+                                        $_this->filter_columns[$columns_copy[$i]]['parameters'],
+                                        $keyword
                                     )
                                 );
                             }
                         } else
                         // otherwise do simple LIKE search                    
                         {
-                        
-                            $keyword = '%'.$this->input['search']['value'].'%';
-                        
-                            if(Config::get('datatables.search.use_wildcards', false)) {
-                                $keyword = $copy_this->wildcard_like_string($this->input['search']['value']);
-                            }
+
+                            $keyword = $this->format_keyword($_this->input['search']['value']);
                         
                             // Check if the database driver is PostgreSQL
                             // If it is, cast the current column to TEXT datatype
@@ -559,7 +646,7 @@ class Datatables
                         
                             $column = $db_prefix . $columns_clean[$i];
                         
-                            if(Config::get('datatables.search.case_insensitive', false)) {
+                            if(Config::get('datatables::search.case_insensitive', false)) {
                                 $query->orwhere(DB::raw('LOWER('.$cast_begin.$column.$cast_end.')'), 'LIKE', strtolower($keyword));
                             } else {
                                 $query->orwhere(DB::raw($cast_begin.$column.$cast_end), 'LIKE', $keyword);
@@ -581,27 +668,32 @@ class Datatables
                 // if filter column exists for this columns then use user defined method
                 if (isset($this->filter_columns[$columns_copy[$i]]))
                 {
+
+                    if (isset($this->filter_columns[$columns_copy[$i]]['parameters'][1]) 
+                        && strtoupper(trim($this->filter_columns[$columns_copy[$i]]['parameters'][1])) == "LIKE") {
+                        $keyword = $this->format_keyword($this->input['columns'][$i]['search']['value']);
+                    } else {
+                        $keyword = $this->input['columns'][$i]['search']['value'];
+                    }
+
+
                     call_user_func_array(
                         array(
                             $this->query,
                             $this->filter_columns[$columns_copy[$i]]['method']
                         ),
-                            $this->inject_variable(
+                        $this->inject_variable(
                             $this->filter_columns[$columns_copy[$i]]['parameters'],
-                            $this->input['columns'][$i]['search']['value']
+                            $keyword
                         )
                     );
                     
                 } else
                 // otherwise do simple LIKE search
-                {                        
-                    $keyword = '%'.$this->input['columns'][$i]['search']['value'].'%';
+                {
+                    $keyword = $this->format_keyword($this->input['columns'][$i]['search']['value']);
                     
-                    if(Config::get('datatables.search.use_wildcards', false)) {
-                        $keyword = $copy_this->wildcard_like_string($this->input['columns'][$i]['search']['value']);
-                    }
-                    
-                    if(Config::get('datatables.search.case_insensitive', false)) {
+                    if(Config::get('datatables::search.case_insensitive', false)) {
                         $column = $db_prefix . $columns_clean[$i];
                         $this->query->where(DB::raw('LOWER('.$column.')'),'LIKE', strtolower($keyword));
                     } else {
@@ -614,22 +706,36 @@ class Datatables
     }
 
     /**
+     * This will format the keyword as needed for "LIKE" based on config settings
+     * If $value already has %, it doesn't motify and just returns the value.
+     * @param string $value
+     * @return string
+     */
+    public function format_keyword($value) {
+        if (strpos($value,'%') !== false ) return $value;
+        
+        if(Config::get('datatables::search.use_wildcards', false)) {
+            $keyword = '%'.$this->wildcard_like_string($value).'%';
+        } else {
+            $keyword = '%'.trim($value).'%';
+        }
+
+        return $keyword;
+    }
+
+    /**
      * Adds % wildcards to the given string
      *
      * @return string
      */
-    public function wildcard_like_string($str, $lowercase = true) {
-        $wild = '%';
-        $length = strlen($str);
-        if($length) {
-            for ($i=0; $i < $length; $i++) {
-                $wild .= $str[$i].'%';
-            }
+    public function wildcard_like_string($str, $lowercase = true)
+    {
+        if ($lowercase) {
+            $str = lowercase($str);
         }
-        if($lowercase) $wild = strtolower($wild);
-        return $wild;
+    
+        return preg_replace('\s+', '%', $str);
     }
-
 
     /**
      * Returns current database prefix
@@ -645,8 +751,8 @@ class Datatables
      * @param string $count variable to store to 'count_all' for iTotalRecords, 'display_all' for iTotalDisplayRecords
      * @return null
      */
-     protected function count($count  = 'count_all')
-     {   
+    protected function count($count  = 'count_all')
+    {
 
         //Get columns to temp var.
         if($this->query_type == 'eloquent') {
@@ -696,15 +802,15 @@ class Datatables
         }
 
         $this->$count = DB::connection($connection)
-        ->table(DB::raw('('.$myQuery->toSql().') AS count_row_table'))
-        ->setBindings($myQuery->getBindings())->remember(1)->count();
+            ->table(DB::raw('('.$myQuery->toSql().') AS count_row_table'))
+            ->setBindings($myQuery->getBindings())->count();
 
     }
 
     /**
      * Returns column name from <table>.<column>
      *
-     * @return null
+     * @return string
      */
     protected function getColumnName($str)
     {
@@ -727,7 +833,7 @@ class Datatables
     /**
      * Prints output
      *
-     * @return null
+     * @return array|json
      */
     protected function output($raw=false)
     {

@@ -1,4 +1,4 @@
-/**
+/**DO NO UPDATE THIS FILE
  * bootbox.js v3.3.0
  *
  * http://bootboxjs.com/license.txt

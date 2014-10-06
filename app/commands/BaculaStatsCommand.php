@@ -12,8 +12,6 @@ use app\models\Client;
 use app\models\Files;
 use app\models\Media;
 
-
-
 class BaculaStatsCommand extends Command {
 
 	/**
@@ -46,7 +44,7 @@ class BaculaStatsCommand extends Command {
 	 * @return mixed
 	 */
 	public function fire(){
-		
+
 
 		 /* Get Database Size */
         if ( Config::get('database.default')=="mysql") {
@@ -68,16 +66,14 @@ class BaculaStatsCommand extends Command {
         // Get Number of Files Transfered
         $filesNumber = DB::table('file')->select(DB::raw('count(*) AS filesNumber'))->get();
 
-       
-
         // Get Storage Bytes
         $bytesStorage = Media::sum('volbytes');
-       
+
          //* Query For Hour Starts
         $dataInicio = date('Y-m-d', strtotime("-1 days")).(' 18:29');
         $dataFim = date('Y-m-d').(' 18:29');
 
- 
+
         /* Query timediff Stats */
         $timediff = DB::table('job')->select(DB::raw('(max(starttime) - min(starttime)) AS timediff'))
                     ->where('starttime','>=', $dataInicio )
@@ -97,12 +93,12 @@ class BaculaStatsCommand extends Command {
         $query = DB::table('job')
                     ->where('starttime','>=', $dataInicio )
                     ->where('endtime','<=', $dataFim);
-                   
 
-        $jobbytes  = $query->sum('jobbytes');   
-        $starttime = $query->min('starttime');   
-        $endtime   = $query->max('endtime');       
-           
+
+        $jobbytes  = $query->sum('jobbytes');
+        $starttime = $query->min('starttime');
+        $endtime   = $query->max('endtime');
+
 
         /* Data for Stats to Insert*/
         $daystats = array(
@@ -122,7 +118,7 @@ class BaculaStatsCommand extends Command {
                 'starttime' => $starttime,
                 'endtime'   => $endtime,
                 'timediff'  => $timediff[0]->timediff,
-                'hoursdiff' => $hoursdiff[0]->hoursdiff,
+                'hoursdiff' => (int)$hoursdiff[0]->hoursdiff,
                 'hourbytes' => $hoursbytes[0]->hoursbytes
         );
 

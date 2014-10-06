@@ -16,35 +16,8 @@ class DashboardController extends BaseController
 		$cpuinfo = file("/proc/cpuinfo");
 		$total_cpu=0;
 
-	//	dd($cpuinfo);
+			//Get the memory info, and grab the cool stuf
 
-/*
-		for ($i = 0; $i <= count($cpuinfo); $i++) {
-
-				list($item, $data) = explode(":", $cpuinfo[$i], 2);
-				$item = chop($item);
-				$data = chop($data);
-
-				if ($item == "processor") {
-						$total_cpu++;
-						$cpu_info = $total_cpu;
-				}
-				if ($item == "vendor_id") { $cpu_info .= $data; }
-				if ($item == "model name") { $cpu_info .= $data; }
-				if ($item == "cpu MHz") {
-						$cpu_info .= " " . floor($data);
-						$found_cpu = "yes";
-				}
-				if ($item == "cache size") { $cache = $data;}
-				if ($item == "bogomips") { $bogomips = $data;}
-
-		}
-		/*
-		if($found_cpu != "yes") { $cpu_info .= " <b>unknown</b>"; }
-		$cpu_info .= " MHz Processor(s)\n";
-
-		//Get the memory info, and grab the cool stuf
-		*/
 		$meminfo = file("/proc/meminfo");
 		for ($i = 0; $i < count($meminfo); $i++) {
 				list($item, $data) = explode(":", $meminfo[$i], 2);

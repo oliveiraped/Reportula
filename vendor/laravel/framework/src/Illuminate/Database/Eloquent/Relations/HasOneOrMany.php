@@ -26,6 +26,7 @@ abstract class HasOneOrMany extends Relation {
 	 * @param  \Illuminate\Database\Eloquent\Builder  $query
 	 * @param  \Illuminate\Database\Eloquent\Model  $parent
 	 * @param  string  $foreignKey
+	 * @param  string  $localKey
 	 * @return void
 	 */
 	public function __construct(Builder $query, Model $parent, $foreignKey, $localKey)
@@ -189,16 +190,12 @@ abstract class HasOneOrMany extends Relation {
 	 */
 	public function create(array $attributes)
 	{
-		$foreign = array(
-			$this->getPlainForeignKey() => $this->getParentKey(),
-		);
-
 		// Here we will set the raw attributes to avoid hitting the "fill" method so
 		// that we do not have to worry about a mass accessor rules blocking sets
 		// on the models. Otherwise, some of these attributes will not get set.
-		$instance = $this->related->newInstance();
+		$instance = $this->related->newInstance($attributes);
 
-		$instance->setRawAttributes(array_merge($attributes, $foreign));
+		$instance->setAttribute($this->getPlainForeignKey(), $this->getParentKey());
 
 		$instance->save();
 
@@ -272,7 +269,7 @@ abstract class HasOneOrMany extends Relation {
 	}
 
 	/**
-	 * Get the key value of the paren's local key.
+	 * Get the key value of the parent's local key.
 	 *
 	 * @return mixed
 	 */

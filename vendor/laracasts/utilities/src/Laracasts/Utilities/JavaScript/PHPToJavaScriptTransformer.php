@@ -22,7 +22,7 @@ class PHPToJavaScriptTransformer {
      * @var array
      */
     protected $types = [
-        'String', 'Array', 'Object', 'Numeric', 'Boolean'
+        'String', 'Array', 'Object', 'Numeric', 'Boolean', 'Null'
     ];
 
     /**
@@ -111,7 +111,7 @@ class PHPToJavaScriptTransformer {
         {
             $js = $this->{"transform{$transformer}"}($value);
 
-            if ($js) return $js;
+            if ( ! is_null($js)) return $js;
         }
     }
 
@@ -172,7 +172,7 @@ class PHPToJavaScriptTransformer {
     {
         if (is_object($value))
         {
-            // If a toJson method exists, we'll assume that
+            // If a toJson() method exists, we'll assume that
             // the object can cast itself automatically
             if (method_exists($value, 'toJson')) return $value;
 
@@ -184,6 +184,18 @@ class PHPToJavaScriptTransformer {
             }
 
             return "'{$value}'";
+        }
+    }
+    
+    /**
+     * @param $value
+     * @return string
+     */
+    protected function transformNull($value)
+    {
+        if (is_null($value))
+        {
+            return 'null';
         }
     }
 

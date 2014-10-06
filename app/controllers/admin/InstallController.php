@@ -551,9 +551,6 @@ class InstallController extends Controller
                 });
             }
 
-
-
-
             /* cfgstorage */
             if (!Schema::hasTable('cfgstorage')) {
 
@@ -621,10 +618,8 @@ class InstallController extends Controller
             } else {
                 $group = Sentry::findGroupByName('Admins');
             }
-
              // Create User
              if (!User::where('email', '=', Input::get('email'))->count()) {
-
                 $user = Sentry::createUser(array(
                      'email'    => Input::get('email'),
                      'password' => Input::get('password'),
@@ -632,12 +627,17 @@ class InstallController extends Controller
                 ));
                 $user->addGroup($group);
             }
-
-
+            /* Emails Tables */
+            if ( Schema::hasTable('emails') == false ) {
+                Schema::create('emails', function ($table) {
+                    $table->increments('id');
+                    $table->text('emails');
+                    $table->text('clients')->nullable();
+                    $table->text('jobs')->nullable();
+                    $table->text('when')->nullable();
+                });
+            }
             echo json_encode(array('location' =>  'install/installSucess'));
-
-
-
         } catch (Sentry\SentryException $e) {
             $errors = new Laravel\Messages();
             Session::flash('status_error', $e->getMessage());

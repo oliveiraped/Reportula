@@ -1,7 +1,7 @@
-Laravel 4 - Feed Reader
+Laravel 4.2 - Feed Reader
 ===============
 
-A simple RSS feed reader for **Laravel 4.1**
+A simple RSS feed reader for **Laravel 4.2**
 
 ## Features
 
@@ -10,10 +10,10 @@ A simple RSS feed reader for **Laravel 4.1**
 
 ## Quick Start
 
-In the `require` key of `composer.json` file add the following
+In the `require` key of `composer.json` file add the following:
 
 ```
-"awjudd/feed-reader": "1.0.*"
+"awjudd/feed-reader": "1.1.*"
 ```
 
 Run the Composer update command

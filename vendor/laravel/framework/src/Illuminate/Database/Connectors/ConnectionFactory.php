@@ -42,10 +42,8 @@ class ConnectionFactory {
 		{
 			return $this->createReadWriteConnection($config);
 		}
-		else
-		{
-			return $this->createSingleConnection($config);
-		}
+
+		return $this->createSingleConnection($config);
 	}
 
 	/**
@@ -116,7 +114,7 @@ class ConnectionFactory {
 	/**
 	 * Get a read / write level configuration.
 	 *
-	 * @param  array  $config
+	 * @param  array   $config
 	 * @param  string  $type
 	 * @return array
 	 */
@@ -126,10 +124,8 @@ class ConnectionFactory {
 		{
 			return $config[$type][array_rand($config[$type])];
 		}
-		else
-		{
-			return $config[$type];
-		}
+
+		return $config[$type];
 	}
 
 	/**
@@ -197,11 +193,11 @@ class ConnectionFactory {
 	/**
 	 * Create a new connection instance.
 	 *
-	 * @param  string  $driver
-	 * @param  PDO     $connection
-	 * @param  string  $database
-	 * @param  string  $prefix
-	 * @param  array   $config
+	 * @param  string   $driver
+	 * @param  \PDO     $connection
+	 * @param  string   $database
+	 * @param  string   $prefix
+	 * @param  array    $config
 	 * @return \Illuminate\Database\Connection
 	 *
 	 * @throws \InvalidArgumentException

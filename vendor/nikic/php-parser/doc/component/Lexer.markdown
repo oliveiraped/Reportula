@@ -1,8 +1,8 @@
 Lexer component documentation
 =============================
 
-The lexer is responsible for providing tokens to the parser. The project comes with two lexers: `PHPParser_Lexer` and
-`PHPParser_Lexer_Emulative`. The latter is an extension of the former, which adds the ability to emulate tokens of
+The lexer is responsible for providing tokens to the parser. The project comes with two lexers: `PhpParser\Lexer` and
+`PhpParser\Lexer\Emulative`. The latter is an extension of the former, which adds the ability to emulate tokens of
 newer PHP versions and thus allows parsing of new code on older versions.
 
 A lexer has to define the following public interface:
@@ -22,7 +22,7 @@ Even though `startLexing` is meant to accept a source code string, you could for
 ```php
 <?php
 
-class FileLexer extends PHPParser_Lexer {
+class FileLexer extends PhpParser\Lexer {
     public function startLexing($fileName) {
         if (!file_exists($fileName)) {
             throw new InvalidArgumentException(sprintf('File "%s" does not exist', $fileName));
@@ -32,7 +32,7 @@ class FileLexer extends PHPParser_Lexer {
     }
 }
 
-$parser = new PHPParser_Parser(new FileLexer);
+$parser = new PhpParser\Parser(new FileLexer);
 
 var_dump($parser->parse('someFile.php'));
 var_dump($parser->parse('someOtherFile.php'));
@@ -42,7 +42,7 @@ getNextToken
 ------------
 
 `getNextToken` returns the ID of the next token and sets some additional information in the three variables which it
-accepts by-ref. If no more tokens are available it has to return `0`, which is the ID of the `EOF` token.
+accepts by-ref. If no more tokens are available it must return `0`, which is the ID of the `EOF` token.
 
 The first by-ref variable `$value` should contain the textual content of the token. It is what will be available as `$1`
 etc in the parser.
@@ -63,7 +63,7 @@ overriding the method:
 ```php
 <?php
 
-class LessAttributesLexer extends PHPParser_Lexer {
+class LessAttributesLexer extends PhpParser\Lexer {
     public function getNextToken(&$value = null, &$startAttributes = null, &$endAttributes = null) {
         $tokenId = parent::getNextToken($value, $startAttributes, $endAttributes);
 
@@ -82,7 +82,7 @@ a `fileName` attribute to all nodes:
 ```php
 <?php
 
-class FileLexer extends PHPParser_Lexer {
+class FileLexer extends PhpParser\Lexer {
     protected $fileName;
 
     public function startLexing($fileName) {
@@ -100,7 +100,7 @@ class FileLexer extends PHPParser_Lexer {
         // we could use either $startAttributes or $endAttributes here, because the fileName is always the same
         // (regardless of whether it is the start or end token). We choose $endAttributes, because it is slightly
         // more efficient (as the parser has to keep a stack for the $startAttributes).
-        $endAttributes['fileName'] = $fileName;
+        $endAttributes['fileName'] = $this->fileName;
 
         return $tokenId;
     }

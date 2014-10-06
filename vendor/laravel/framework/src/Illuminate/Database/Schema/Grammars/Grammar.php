@@ -153,6 +153,7 @@ abstract class Grammar extends BaseGrammar {
 	 * Get the primary key command if it exists on the blueprint.
 	 *
 	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  string  $name
 	 * @return \Illuminate\Support\Fluent|null
 	 */
 	protected function getCommandByName(Blueprint $blueprint, $name)
@@ -243,7 +244,7 @@ abstract class Grammar extends BaseGrammar {
 	{
 		if ($value instanceof Expression) return $value;
 
-		if (is_bool($value)) return "'".intval($value)."'";
+		if (is_bool($value)) return "'".(int) $value."'";
 
 		return "'".strval($value)."'";
 	}

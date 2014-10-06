@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Database;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Connectors\ConnectionFactory;
 
 class DatabaseManager implements ConnectionResolverInterface {
@@ -53,7 +54,7 @@ class DatabaseManager implements ConnectionResolverInterface {
 	 */
 	public function connection($name = null)
 	{
-		$name = $name ?: $this->getDefaultConnection();
+		list($name, $type) = $this->parseConnectionName($name);
 
 		// If we haven't created this connection, we'll create it based on the config
 		// provided in the application. Once we've created the connections we will
@@ -62,6 +63,8 @@ class DatabaseManager implements ConnectionResolverInterface {
 		{
 			$connection = $this->makeConnection($name);
 
+			$this->setPdoForType($connection, $type);
+
 			$this->connections[$name] = $this->prepare($connection);
 		}
 
@@ -69,18 +72,30 @@ class DatabaseManager implements ConnectionResolverInterface {
 	}
 
 	/**
-	 * Reconnect to the given database.
+	 * Parse the connection into an array of the name and read / write type.
 	 *
 	 * @param  string  $name
-	 * @return \Illuminate\Database\Connection
+	 * @return array
 	 */
-	public function reconnect($name = null)
+	protected function parseConnectionName($name)
 	{
 		$name = $name ?: $this->getDefaultConnection();
 
+		return Str::endsWith($name, ['::read', '::write'])
+                            ? explode('::', $name, 2) : [$name, null];
+	}
+
+	/**
+	 * Disconnect from the given database and remove from local cache.
+	 *
+	 * @param  string  $name
+	 * @return void
+	 */
+	public function purge($name = null)
+	{
 		$this->disconnect($name);
 
-		return $this->connection($name);
+		unset($this->connections[$name]);
 	}
 
 	/**
@@ -91,9 +106,43 @@ class DatabaseManager implements ConnectionResolverInterface {
 	 */
 	public function disconnect($name = null)
 	{
-		$name = $name ?: $this->getDefaultConnection();
+		if (isset($this->connections[$name = $name ?: $this->getDefaultConnection()]))
+		{
+			$this->connections[$name]->disconnect();
+		}
+	}
 
-		unset($this->connections[$name]);
+	/**
+	 * Reconnect to the given database.
+	 *
+	 * @param  string  $name
+	 * @return \Illuminate\Database\Connection
+	 */
+	public function reconnect($name = null)
+	{
+		$this->disconnect($name = $name ?: $this->getDefaultConnection());
+
+		if ( ! isset($this->connections[$name]))
+		{
+			return $this->connection($name);
+		}
+
+		return $this->refreshPdoConnections($name);
+	}
+
+	/**
+	 * Refresh the PDO connections on a given connection.
+	 *
+	 * @param  string  $name
+	 * @return \Illuminate\Database\Connection
+	 */
+	protected function refreshPdoConnections($name)
+	{
+		$fresh = $this->makeConnection($name);
+
+		return $this->connections[$name]
+                                ->setPdo($fresh->getPdo())
+                                ->setReadPdo($fresh->getReadPdo());
 	}
 
 	/**
@@ -160,6 +209,35 @@ class DatabaseManager implements ConnectionResolverInterface {
 			return $app['paginator'];
 		});
 
+		// Here we'll set a reconnector callback. This reconnector can be any callable
+		// so we will set a Closure to reconnect from this manager with the name of
+		// the connection, which will allow us to reconnect from the connections.
+		$connection->setReconnector(function($connection)
+		{
+			$this->reconnect($connection->getName());
+		});
+
+		return $connection;
+	}
+
+	/**
+	 * Prepare the read write mode for database connection instance.
+	 *
+	 * @param  \Illuminate\Database\Connection  $connection
+	 * @param  string  $type
+	 * @return \Illuminate\Database\Connection
+	 */
+	protected function setPdoForType(Connection $connection, $type = null)
+	{
+		if ($type == 'read')
+		{
+			$connection->setPdo($connection->getReadPdo());
+		}
+		elseif ($type == 'write')
+		{
+			$connection->setReadPdo($connection->getPdo());
+		}
+
 		return $connection;
 	}
 
@@ -216,7 +294,7 @@ class DatabaseManager implements ConnectionResolverInterface {
 	 * @param  callable  $resolver
 	 * @return void
 	 */
-	public function extend($name, $resolver)
+	public function extend($name, callable $resolver)
 	{
 		$this->extensions[$name] = $resolver;
 	}

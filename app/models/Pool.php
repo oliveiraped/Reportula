@@ -2,12 +2,19 @@
 
 namespace app\models;
 
-use Eloquent;
+use Eloquent, Config;
 
 class Pool extends Eloquent
 {
     public $primaryKey = 'poolid';
-    protected $table =  'pool';
+    protected $table =  'Pool';
+
+    function __construct() {
+      if ( Config::get('database.default')=='pgsql' ) {
+          $this->table = strtolower($table);
+      }
+    }
+
     public $timestamps = false;
 
 }

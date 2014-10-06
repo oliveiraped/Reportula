@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputOption;
 
 class RoutesCommand extends Command {
 
-    	/**
+	/**
 	 * The console command name.
 	 *
 	 * @var string
@@ -35,13 +35,6 @@ class RoutesCommand extends Command {
 	 * @var \Illuminate\Routing\RouteCollection
 	 */
 	protected $routes;
-
-	/**
-	 * The table helper set.
-	 *
-	 * @var \Symfony\Component\Console\Helper\TableHelper
-	 */
-	protected $table;
 
 	/**
 	 * The table headers for the command.
@@ -73,8 +66,6 @@ class RoutesCommand extends Command {
 	 */
 	public function fire()
 	{
-		$this->table = $this->getHelperSet()->get('table');
-
 		if (count($this->routes) == 0)
 		{
 			return $this->error("Your application doesn't have any routes.");
@@ -92,7 +83,7 @@ class RoutesCommand extends Command {
 	{
 		$results = array();
 
-		foreach($this->routes as $route)
+		foreach ($this->routes as $route)
 		{
 			$results[] = $this->getRouteInformation($route);
 		}
@@ -129,9 +120,7 @@ class RoutesCommand extends Command {
 	 */
 	protected function displayRoutes(array $routes)
 	{
-		$this->table->setHeaders($this->headers)->setRows($routes);
-
-		$this->table->render($this->getOutput());
+		$this->table($this->headers, $routes);
 	}
 
 	/**
@@ -187,7 +176,7 @@ class RoutesCommand extends Command {
 	/**
 	 * Get after filters
 	 *
-	 * @param  Route  $route
+	 * @param  \Illuminate\Routing\Route  $route
 	 * @return string
 	 */
 	protected function getAfterFilters($route)
@@ -208,10 +197,8 @@ class RoutesCommand extends Command {
 		{
 			return null;
 		}
-		else
-		{
-			return $route;
-		}
+
+		return $route;
 	}
 
 	/**

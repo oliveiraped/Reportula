@@ -2,12 +2,18 @@
 
 namespace app\models;
 
-use Eloquent;
+use Eloquent, Config;
 
 class Files extends Eloquent
 {
     public $primaryKey = 'fileid';
-    protected $table = 'file';
+    protected $table = 'File';
     public $timestamps = false;
+
+    function __construct() {
+      if ( Config::get('database.default')=='pgsql' ) {
+          $this->table = strtolower($table);
+      }
+    }
 
 }

@@ -4,14 +4,15 @@ return array(
 
     /*
     |--------------------------------------------------------------------------
-    | Filename
+    | Filename & Format
     |--------------------------------------------------------------------------
     |
-    | The default path to the helper file
+    | The default filename (without extension) and the format (php or json)
     |
     */
 
-    'filename' => '_ide_helper.php',
+    'filename'  => '_ide_helper',
+    'format'    => 'php',
 
     /*
     |--------------------------------------------------------------------------
@@ -70,6 +71,20 @@ return array(
             'alert'     => 'Monolog\Logger::addAlert',
             'emergency' => 'Monolog\Logger::addEmergency',
         )
+    ),
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Interface implementations
+    |--------------------------------------------------------------------------
+    |
+    | These interfaces will be replaced with the implementing class. Some interfaces
+    | are detected by the helpers, others can be listed below.
+    |
+    */
+    
+    'interfaces' => array(
+        '\Illuminate\Auth\UserInterface' => '\User',
     )
 
 );

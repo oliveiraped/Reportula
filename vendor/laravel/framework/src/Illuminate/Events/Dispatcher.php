@@ -53,7 +53,7 @@ class Dispatcher {
 	/**
 	 * Register an event listener with the dispatcher.
 	 *
-	 * @param  string|array  $event
+	 * @param  string|array  $events
 	 * @param  mixed   $listener
 	 * @param  int     $priority
 	 * @return void
@@ -64,12 +64,14 @@ class Dispatcher {
 		{
 			if (str_contains($event, '*'))
 			{
-				return $this->setupWildcardListen($event, $listener);
+				$this->setupWildcardListen($event, $listener);
 			}
+			else
+			{
+				$this->listeners[$event][$priority][] = $this->makeListener($listener);
 
-			$this->listeners[$event][$priority][] = $this->makeListener($listener);
-
-			unset($this->sorted[$event]);
+				unset($this->sorted[$event]);
+			}
 		}
 	}
 
@@ -105,11 +107,9 @@ class Dispatcher {
 	 */
 	public function queue($event, $payload = array())
 	{
-		$me = $this;
-
-		$this->listen($event.'_queue', function() use ($me, $event, $payload)
+		$this->listen($event.'_queue', function() use ($event, $payload)
 		{
-			$me->fire($event, $payload);
+			$this->fire($event, $payload);
 		});
 	}
 

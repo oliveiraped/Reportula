@@ -124,7 +124,10 @@ return array(
 		'Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider',
 		'Barryvdh\Debugbar\ServiceProvider',
 		/* RSS READER */
-		 'Awjudd\FeedReader\FeedReaderServiceProvider',
+		 'Awjudd\FeedReader\FeedReaderServiceProvider'
+
+
+
 
 
 
@@ -202,6 +205,7 @@ return array(
 		'Date'            => 'Jenssegers\Date\Date',
 		'Debugbar'        => 'Barryvdh\Debugbar\Facade',
 		'FeedReader'      => 'Awjudd\FeedReader\Facades\FeedReader',
+
 
 
 	),

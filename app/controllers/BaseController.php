@@ -1,12 +1,14 @@
 <?php
 
-
-
 class BaseController extends Controller
 {
+
+    /* Solve the Problem of Names Between Mysql & Postgres*/
+
+    public $tables = array();
+
     public function __construct()
     {
-
         Asset::add('bootstraptheme', 'assets/css/bootstrap-spacelab.css');
         Asset::add('bootstrapresponsive', 'assets/css/bootstrap-responsive.css');
         Asset::add('charisma', 'assets/css/charisma-app.css');
@@ -16,7 +18,6 @@ class BaseController extends Controller
         Asset::add('famfam', 'assets/css/famfam.css');
         Asset::add('jqueryloadermin', 'assets/css/jquery.loader-min.css');
         Asset::add('reportula', 'assets/css/reportula.css');
-        //Asset::add('TableTools.css', 'assets/css/TableTools.css');
 
         Asset::add('jquery', 'assets/js/jquery-2.0.3.min.js');
         Asset::add('datatables', 'assets/js/jquery.dataTables.min.js','jquery');
@@ -24,14 +25,39 @@ class BaseController extends Controller
         Asset::add('main', 'assets/js/main.js', 'TableTools');
         Asset::add('modal', 'assets/js/bootstrap-modal.js', 'jquery');
 
-        //Asset::add('TableTools', 'assets/js/TableTools.min.js','datatables');
-
         /* Get Monolog instance from Laravel */
         $monolog = Log::getMonolog();
         /* Add the FirePHP handler */
         $monolog->pushHandler(new \Monolog\Handler\FirePHPHandler());
         //$this->vd = new VD;
 
+        /* Resolve Database Names Myslq and Postgres */
+        if ( Config::get('database.default')=='mysql' ) {
+          $this->tables = array( 'job' => 'Job',
+                                  'client' => 'Client',
+                                  'files' => 'Files',
+                                  'media' => 'Media',
+                                  'pool' => 'Pool',
+                                  'path' => 'Path',
+                                  'filename' => 'Filename',
+                                  'file' => 'File',
+                                  'jobfiles' => 'JobFiles',
+                                  'jobmedia' => 'JobMedia',
+
+          );
+         } else {
+          $this->tables = array( 'job' => 'job',
+                                  'client' => 'client',
+                                  'files' => 'files',
+                                  'media' => 'media',
+                                  'pool' => 'pool',
+                                  'path' => 'path',
+                                  'filename' => 'filename',
+                                  'file' => 'file',
+                                  'jobfiles' => 'jobfiles',
+                                  'jobmedia' => 'jobmedia'
+          );
+         }
     }
 
     /**
@@ -140,8 +166,82 @@ function MakeMenu($items, $level = 0)
     return($ret);
 }
 
+function htmlTable($array, $table = true)
+{
+    $out = '';
+    foreach ($array as $key => $value) {
+        if (is_array($value)) {
+            if (!isset($tableHeader)) {
+                $tableHeader =
+                    '<tr><th>' .
+                    implode('</th><th>', array_keys($value)) .
+                    '</th></tr>';
+            }
+            array_keys($value);
+            $out .= '<tr>';
+            $out .= $this->htmlTable($value, false);
+            $out .= '</tr>';
+        } else {
+            $out .= "<td>$value</td>";
+        }
+    }
+
+    if ($table) {
+        return '<table>' . $tableHeader . $out . '</table>';
+    } else {
+        return $out;
+    }
+}
 
 
+function array2table($array, $recursive = false, $null = '&nbsp;')
+{
+    // Sanity check
+    if (empty($array) || !is_array($array)) {
+        return false;
+    }
 
+    if (!isset($array[0]) || !is_array($array[0])) {
+        $array = array($array);
+    }
+
+    // Start the table
+    $table = "<table>\n";
+
+    // The header
+    $table .= "\t<tr>";
+    // Take the keys from the first row as the headings
+    foreach (array_keys($array[0]) as $heading) {
+        $table .= '<th>' . $heading . '</th>';
+    }
+    $table .= "</tr>\n";
+
+    // The body
+    foreach ($array as $row) {
+        $table .= "\t<tr>" ;
+        foreach ($row as $cell) {
+            $table .= '<td>';
+
+            // Cast objects
+            if (is_object($cell)) { $cell = (array) $cell; }
+
+            if ($recursive === true && is_array($cell) && !empty($cell)) {
+                // Recursive mode
+                $table .= "\n" . array2table($cell, true, true) . "\n";
+            } else {
+                $table .= (strlen($cell) > 0) ?
+                    htmlspecialchars((string) $cell) :
+                    $null;
+            }
+
+            $table .= '</td>';
+        }
+
+        $table .= "</tr>\n";
+    }
+
+    $table .= '</table>';
+    return $table;
+}
 
 }

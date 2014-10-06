@@ -7,13 +7,22 @@ use Eloquent,Config;
 class Job extends Eloquent
 {
 
-    protected $table =  'job';
+    protected $table =  'Job';
     public $timestamps = false;
+
+
+    function __construct() {
+      if ( Config::get('database.default')=='pgsql' ) {
+          $this->table = strtolower($table);
+      }
+    }
+
+
 
     /* Fill Select Box */
     public static function jobSelectBox($jobsall=null)
     {
-        
+
          // Code to resolve pgsql names
         $f_Name = 'Name';
         $f_JobID = 'JobId';
@@ -29,7 +38,7 @@ class Job extends Eloquent
                 ->orderBy($f_Name, 'asc')->get()->toArray();
         }
 
-      
+
         $jobsName = array_fetch ($jobsall, $f_Name );
         $jobsId = array_fetch ($jobsall,  $f_JobID );
 

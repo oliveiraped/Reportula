@@ -12,3 +12,4 @@
 */
 
 Artisan::add(new BaculaStatsCommand);
+Artisan::add(new EmailReportCommand);

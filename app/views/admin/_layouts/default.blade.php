@@ -16,7 +16,7 @@
                 <style>
                     @section('styles')
                         body {
-                            padding-top: 60px;
+                            padding-top: 40px;
                         }
                     @show
                 </style>
@@ -35,6 +35,9 @@
                                         <a href="{{ URL::route('admin.groups') }}"><i class="icon-fam-group-add"></i> Groups</a></li>
                                     <li>
                                         <a href="{{ URL::route('admin.settings') }}"><i class="icon-fam-cog"></i> Settings</a>
+                                    </li>
+                                     <li>
+                                        <a href="{{ URL::route('admin.emails') }}"><i class="icon-fam-email-go"></i> Emails</a>
                                     </li>
                                     <li>
                                         <a href="{{ URL::route('admin.configurator') }}"><i class="icon-fam-wrench"></i> Configurator</a></li>
@@ -57,7 +60,7 @@
                  @yield('main')
             <hr>
             <footer>
-                <p><center>Reportula V2.0.7 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 - 2014 </center></p>
+                <p><center>Reportula V2.0.8 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 - 2014 </center></p>
             </footer>
 
         </div>

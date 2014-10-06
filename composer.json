@@ -4,20 +4,20 @@
 	"keywords": ["framework", "laravel","bacula","reportula"],
 	"license": "MIT",
 	"require": {
-		"laravel/framework": "4.1.*",
-		"cartalyst/sentry": "2.0.*",
-		"way/generators": "dev-master",
+		"laravel/framework": "4.2.x-dev",
+		"cartalyst/sentry": "2.1.*",
+		"way/generators": "~2.0",
 		"anahkiasen/former": "dev-master",
 		"bllim/datatables": "*",
 		"orchestra/asset": "2.0.*",
 		"jenssegers/date": "*",
 		"barryvdh/laravel-ide-helper": "1.*",
+    "barryvdh/laravel-dompdf": "0.4.*",
 		"adldap/adldap": "4.0.4",
 		"jasonlewis/expressive-date": "1.0.*",
-		"laracasts/utilities": "1.0",
+		"laracasts/utilities": "dev-master",
 		"barryvdh/laravel-debugbar": "1.*",
-		"awjudd/feed-reader": "1.0.*"
-
+		"awjudd/feed-reader": "1.1.*"
 
 	},
 	"repositories" : [
@@ -49,7 +49,9 @@
 			"app/models",
 			"app/database/migrations",
 			"app/database/seeds",
-			"app/tests/TestCase.php"
+			"app/tests/TestCase.php",
+      "app/lib"
+
 		]
 	},
 	"scripts": {

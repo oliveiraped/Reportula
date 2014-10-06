@@ -5,7 +5,7 @@ namespace app\models;
 use Eloquent;
 use DB;
 
- class BaseModel extends Eloquent {
+class BaseModel extends Eloquent {
 
 public function getAllColumnsNames()
     {

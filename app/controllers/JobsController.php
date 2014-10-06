@@ -26,7 +26,6 @@ class JobsController extends BaseController
         Asset::add('amchartsSerial', 'assets/js/serial.js');
 
         Asset::container('footer')->add('select2min', 'assets/js/select2.min.js');
-
         Asset::container('footer')->add('momentmin', 'assets/js/moment.min.js');
 
         /* Html Exports Tables */
@@ -46,7 +45,7 @@ class JobsController extends BaseController
     {
          Asset::container('footer')->add('amcharts', 'assets/js/amcharts.js');
          Asset::container('footer')->add('jobs', 'assets/js/jobs.js');
-         
+
         $start = Input::get('start', Date::now()->sub('1 day'));
         $end   = Input::get('end',   Date::now());
 
@@ -157,25 +156,32 @@ class JobsController extends BaseController
 
         /* Calculate Jobs and Bytes */
         $tjobs=$tjobs->toArray();
-        $nTransFiles = array_sum( array_fetch ($tjobs, 'jobfiles')) ;
-        $nTransBytes = array_sum( array_fetch ($tjobs, 'jobbytes') );
+        if ( Config::get('database.default')=='pgsql' ) {
+          $nTransFiles = array_sum( array_fetch ($tjobs, 'jobfiles')) ;
+          $nTransBytes = array_sum( array_fetch ($tjobs, 'jobbytes') );
+        }else{
+         $nTransFiles = array_sum( array_fetch ($tjobs, 'JobFiles')) ;
+          $nTransBytes = array_sum( array_fetch ($tjobs, 'JobBytes') );
+
+
+        }
 
         /* Draw GRaphs */
-
-        $graphBytes = DB::table('job')->where('name','=', $jobselected )
+        $graphBytes = DB::table($this->tables['job'])->where('name','=', $jobselected )
                   ->where('starttime','>=',  $start)
                   ->where('endtime','<=',    $end )
                   ->orderby('starttime', 'asc')
                   ->remember(10)
-                  ->get(array(DB::raw('date(job.starttime) as date'), DB::raw('jobbytes as bytes')));
+                  ->get(array(DB::raw('date('.$this->tables['job'].'.starttime) as date'), DB::raw('jobbytes as bytes')));
         $graphBytes= json_encode((array) $graphBytes);
 
-        $graphFiles = DB::table('job')->where('name','=', $jobselected)
+        $graphFiles = DB::table($this->tables['job'])->where('name','=', $jobselected)
                   ->where('starttime','>=', $start )
                   ->where('endtime','<=',   $end  )
                   ->orderby('starttime', 'asc')
                   ->remember(10)
-                  ->get(array(DB::raw('date(job.starttime) as date'), DB::raw('jobfiles as files')));
+                  ->get(array(DB::raw('date('.$this->tables['job'].'.starttime) as date'), DB::raw('jobfiles as files')));
+
         $graphFiles = json_encode((array) $graphFiles);
 
        // var_dump($graphFiles);
@@ -217,23 +223,23 @@ class JobsController extends BaseController
         $jobselected = Job::select('name')
                 ->where('jobid','=', Input::get('Job') )->get()->first()->name;
 
-        $tjobs = Job::select(array('media.mediaid','job.jobid','starttime','endtime',
+        $tjobs = Job::select(array($this->tables['media'].'.mediaid',$this->tables['job'].'.jobid','starttime','endtime',
                                    'volumename','level','jobbytes','jobfiles','jobstatus'))
-                  ->join('jobmedia','jobmedia.jobid', '=', 'job.jobid')
-                  ->join('media','media.mediaid', '=', 'jobmedia.mediaid')
+                  ->join($this->tables['jobmedia'],$this->tables['jobmedia'].'.jobid', '=', $this->tables['job'].'.jobid')
+                  ->join($this->tables['media'],$this->tables['media'].'.mediaid', '=', $this->tables['jobmedia'].'.mediaid')
                   ->where('name','=',  $jobselected)
                   ->where('starttime','>=',  $start )
                   ->where('endtime','<=', $end )
-                  ->groupby('job.jobid')
-                  ->groupby('job.name')
-                  ->groupby('job.starttime')
-                  ->groupby('job.endtime')
-                  ->groupby('media.volumename')
-                  ->groupby('media.mediaid')
-                  ->groupby('job.level')
-                  ->groupby('job.jobbytes')
-                  ->groupby('job.jobfiles')
-                  ->groupby('job.jobstatus')
+                  ->groupby($this->tables['job'].'.jobid')
+                  ->groupby($this->tables['job'].'.name')
+                  ->groupby($this->tables['job'].'.starttime')
+                  ->groupby($this->tables['job'].'.endtime')
+                  ->groupby($this->tables['media'].'.volumename')
+                  ->groupby($this->tables['media'].'.mediaid')
+                  ->groupby($this->tables['job'].'.level')
+                  ->groupby($this->tables['job'].'.jobbytes')
+                  ->groupby($this->tables['job'].'.jobfiles')
+                  ->groupby($this->tables['job'].'.jobstatus')
                   ->remember(10);
 
         switch (Input::get('type')) {

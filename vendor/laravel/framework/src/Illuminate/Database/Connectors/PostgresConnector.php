@@ -16,12 +16,11 @@ class PostgresConnector extends Connector implements ConnectorInterface {
 			PDO::ATTR_STRINGIFY_FETCHES => false,
 	);
 
-
 	/**
 	 * Establish a database connection.
 	 *
 	 * @param  array  $config
-	 * @return PDO
+	 * @return \PDO
 	 */
 	public function connect(array $config)
 	{
@@ -74,6 +73,11 @@ class PostgresConnector extends Connector implements ConnectorInterface {
 		if (isset($config['port']))
 		{
 			$dsn .= ";port={$port}";
+		}
+
+		if (isset($config['sslmode']))
+		{
+			$dsn .= ";sslmode={$sslmode}";
 		}
 
 		return $dsn;

@@ -1,5 +1,6 @@
 <?php namespace Illuminate\Foundation\Console;
 
+use Boris\Boris;
 use Illuminate\Console\Command;
 
 class TinkerCommand extends Command {
@@ -46,7 +47,7 @@ class TinkerCommand extends Command {
 	{
 		$this->setupBorisErrorHandling();
 
-		with(new \Boris\Boris('> '))->start();
+		(new Boris('> '))->start();
 	}
 
 	/**

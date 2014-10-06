@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 3.5.0
+
+- Bumped minimum requirement to 5.4
+
+## 3.4.4
+
+- Last release for PHP 5.3
+
 ## 3.4.3
 
 - [add] Added step parameter to `Select::range()` method

@@ -1,8 +1,4 @@
-# PHP Super Closure
-
-[![Latest Stable Version](https://poser.pugx.org/jeremeamia/superclosure/v/stable.png)](https://packagist.org/packages/jeremeamia/superclosure)
-[![Total Downloads](https://poser.pugx.org/jeremeamia/superclosure/downloads.png)](https://packagist.org/packages/jeremeamia/superclosure)
-[![Build Status][1]][2]
+# PHP Super Closure [![Build Status][1]][2]
 
 Have you ever seen this?
 
@@ -58,7 +54,6 @@ generally more robust solution that takes advantage of the fabulous [nikic/php-p
 * Allows you to get the code of a closure
 * Allows you to get the names and values of variables used by a closure
 * Allows you to get an Abstract Syntax Tree (AST) representing the code of a closure
-* Replaces magic constants with their expected values so that the closure behaves as expected after unserialization
 * Uses an accurate parsing method of a context-free grammar via the [nikic/php-parser][6] library
 * PSR-0 compliant and installable via Composer
 
@@ -67,7 +62,7 @@ generally more robust solution that takes advantage of the fabulous [nikic/php-p
 1. For any variables used by reference (e.g., `function () use (&$vars, &$like, &$these) {…}`), the references are not
    maintained after serialization/unserialization. The only exception is when (in PHP 5.4+ only) the used variable is a
    reference to the `SerializableClosure` object being serialized, which is the case with a recursive function. For some
-   reason — *that I actually don't quite understand* — this works.
+   reason — that I actually don't quite understand — this works.
 2. If you have two closures defined on a single line (you shouldn't do this anyway), you will not be able to serialize
    either one since it is ambiguous which closure's code should be parsed.
 3. Because the technique to acquire the code and context of the closure requires reflection and full AST-style parsing,
@@ -83,7 +78,7 @@ config file.
 
     {
         "require": {
-            "jeremeamia/superclosure": "~1.0"
+            "jeremeamia/superclosure": "~0.9.2"
         }
     }
 
@@ -105,12 +100,10 @@ provide closures (or algorithms) as a service through an API.
 
 ## Who Is Using Super Closure?
 
-- [Laravel 4](https://github.com/laravel/framework) - Serializes a closure to potentially push onto a job queue.
+- [Laravel 4](https://github.com/laravel/framework) - Serializes a closure to potentially push onto a job queue
 - [HTTP Mock for PHP](https://github.com/InterNations/http-mock) - Serialize a closure to send to remote server within
-  a test workflow.
-- [Jumper](https://github.com/kakawait/Jumper) - Serialize a closure to run on remote host via SSH.
-- [nicmart/Benchmark](https://github.com/nicmart/Benchmark) - Uses the `ClosureParser` to display a benchmarked
-  Closure's code.
+  a test workflow
+- [Jumper](https://github.com/kakawait/Jumper) - Serialize a closure to run on remote host via SSH
 - Please let me know if and how your project uses Super Closure.
 
 [1]:  https://secure.travis-ci.org/jeremeamia/super_closure.png?branch=master

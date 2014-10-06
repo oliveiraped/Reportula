@@ -33,6 +33,7 @@ class Command
 {
     private $application;
     private $name;
+    private $processTitle;
     private $aliases = array();
     private $definition;
     private $help;
@@ -212,6 +213,16 @@ class Command
      */
     public function run(InputInterface $input, OutputInterface $output)
     {
+        if (null !== $this->processTitle) {
+            if (function_exists('cli_set_process_title')) {
+                cli_set_process_title($this->processTitle);
+            } elseif (function_exists('setproctitle')) {
+                setproctitle($this->processTitle);
+            } elseif (OutputInterface::VERBOSITY_VERY_VERBOSE === $output->getVerbosity()) {
+                $output->writeln('<comment>Install the proctitle PECL to be able to change the process title.</comment>');
+            }
+        }
+
         // force the creation of the synopsis before the merge with the app definition
         $this->getSynopsis();
 
@@ -412,6 +423,25 @@ class Command
     }
 
     /**
+     * Sets the process title of the command.
+     *
+     * This feature should be used only when creating a long process command,
+     * like a daemon.
+     *
+     * PHP 5.5+ or the proctitle PECL library is required
+     *
+     * @param string $title The process title
+     *
+     * @return Command The current instance
+     */
+    public function setProcessTitle($title)
+    {
+        $this->processTitle = $title;
+
+        return $this;
+    }
+
+    /**
      * Returns the command name.
      *
      * @return string The command name
@@ -491,11 +521,11 @@ class Command
 
         $placeholders = array(
             '%command.name%',
-            '%command.full_name%'
+            '%command.full_name%',
         );
         $replacements = array(
             $name,
-            $_SERVER['PHP_SELF'].' '.$name
+            $_SERVER['PHP_SELF'].' '.$name,
         );
 
         return str_replace($placeholders, $replacements, $this->getHelp());
@@ -504,7 +534,7 @@ class Command
     /**
      * Sets the aliases for the command.
      *
-     * @param array $aliases An array of aliases for the command
+     * @param string[] $aliases An array of aliases for the command
      *
      * @return Command The current instance
      *
@@ -514,6 +544,10 @@ class Command
      */
     public function setAliases($aliases)
     {
+        if (!is_array($aliases) && !$aliases instanceof \Traversable) {
+            throw new \InvalidArgumentException('$aliases must be an array or an instance of \Traversable');
+        }
+
         foreach ($aliases as $alias) {
             $this->validateName($alias);
         }

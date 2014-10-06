@@ -3,7 +3,7 @@
 namespace app\controllers;
 use BaseController, Form, Input, Redirect;
 use Sentry, View, Log, Cache, Config, DB;
-use Date, App, Former, Datatables, Asset, Vd\Vd, Schema ;
+use Date, App, Former, Datatables, Asset, Schema ;
 
 // Models
 use app\models\Client;
@@ -11,8 +11,6 @@ use app\models\Media;
 use app\models\Job;
 use app\models\Pool;
 use app\models\Files;
-
-//use \App\lib\vd;
 
 class DashboardController extends BaseController
 {
@@ -26,7 +24,7 @@ class DashboardController extends BaseController
 
         Asset::add('bootstrap-tooltip.js', 'assets/js/bootstrap-tooltip.js');
         Asset::add('bootstrap-dropdown.js', 'assets/js/bootstrap-dropdown.js');
-        
+
         /* Html Exports Tables */
         Asset::add('tableExport.js', 'assets/js/tableExport.js');
         Asset::add('jquery.base64.js', 'assets/js/jquery.base64.js');
@@ -65,109 +63,23 @@ class DashboardController extends BaseController
         Cache::forever('nFiles',  $media->files);
         Cache::forever('nBytes',  $media->bytes);
 
-        
 
-    }
-
-public function makeList($array, $depth=0, $key_map=FALSE)
-{
-    $whitespace = str_repeat("\t", $depth*2);
-    //Base case: an empty array produces no list
-    if (empty($array)) return '';
-    //Recursive Step: make a list with child lists
-    $output = "$whitespace<ul>\n";
-    foreach ($array as $key => $subArray) {
-        $subList = $this->makeList($subArray, $depth+1, $key_map);
-        if($key_map AND $key_map[$key]) $key = $key_map[$key];
-        if($subList) $output .= "$whitespace\t<li>" . $key . "\n" . $subList . "$whitespace\t</li>\n";
-        else $output .= "$whitespace\t<li>" . $key . $subList . "</li>\n";
-    }
-    $output .= "$whitespace</ul>\n";
-
-    return $output;
-}
-
-    public function recursion($multi_dimensional_array)
-    {
-        $m = $multi_dimensional_array;
-
-        $keys = array();
-        foreach ($m as $key=>$value) {
-            $keys[] = $key;
-        }
-
-        $i = 0;
-        $ul='';
-        while ($i < count($multi_dimensional_array)) {
-            $ul.= '<li><a href="#">'.$keys[$i].'</a>';
-            if (is_array($multi_dimensional_array[$keys[$i]])) {
-                $ul.= '<ul>';
-                $ul.= $this->recursion($multi_dimensional_array[$keys[$i]]);
-                $ul.= '</ul>';
-            }
-            $ul.= '</li>';
-            $i++;
-        }
-
-        return $ul;
-    }
-
-    public function test()
-    {
-        $vd = new Vd;
-        $files= Files::select(array('path.path','filename.name'))
-                  ->join('filename','file.filenameid', '=', 'filename.filenameid')
-                  ->join('path','file.pathid', '=', 'path.pathid')
-                  ->where('jobid','=', '172202')
-                // 172202  1990
-                  ->orderBy('path.path','asc');
-
-        $files=$files->get();//->toArray();
-
-        //$vd->dump($files->toArray());
-
-        foreach ($files as $file) {
-            $ficheiro[$file->path.$file->name]='';
-        }
-
-       $tree = $this->explodeTree($ficheiro, "/");
-
-   // $vd->dump($tree);
-
-    $menu = $this->recursion($tree);
-
-        //$menu= $this->MakeMenu($tree);
-
-       //$vd->dump($menu);
-
-        //exit();
-
-       // $this->plotTree($tree);
-       // $key_files = array_combine(array_values($files), array_values($files));
-
-        //$vd->dump($tree);
-
-/*
-        $vd->dump($result);*/
-       // exit();
-        return View::make('teste', array( 'menu' => $menu));
 
     }
 
     public function dashboard($data=null)
     {
-       
         /* Possbilidade de utilizar as datas*/
         $datetype=$data;
 
         if ($data == null || $data == 'day') {
             $datetype='day' ;
             $date=Date::now()->sub('1 day');
-            
+
             //$date = Date::forge('last day')->format('datetime');
             $nameDate = 'Last 24 Hours';
         } elseif ($data == 'week') {
-            
+
             $date = Date::now()->sub('7 day');
             $nameDate =  'Last Week';
         } elseif ($data == 'month') {
@@ -240,12 +152,20 @@ public function makeList($array, $depth=0, $key_map=FALSE)
 
        /* Calculate Jobs and Bytes */
         $tjobs=$tjobs->toArray();
-        $nTransFiles = array_sum( array_fetch ($tjobs, 'jobfiles')) ;
-        $nTransBytes = array_sum( array_fetch ($tjobs, 'jobbytes') );
-        $user = Sentry::getUser();
 
+        $nTransFiles = array_sum( array_fetch ($tjobs, 'JobFiles')) ;
+        $nTransBytes = array_sum( array_fetch ($tjobs, 'JobBytes') );
+
+
+        if ( Config::get('database.default')=='pgsql' ) {
+            $nTransFiles = array_sum( array_fetch ($tjobs, 'jobfiles')) ;
+            $nTransBytes = array_sum( array_fetch ($tjobs, 'jobbytes') );
+        }
+
+        $pools = json_encode((array) DB::table($this->tables['pool'])->select('name','numvols')->orderby('numvols', 'desc')->get());
+
+        $user = Sentry::getUser();
         /* Gets Pools And Convert Objets to Arrays*/
-        $pools = json_encode((array) DB::table('pool')->select('name','numvols')->orderby('numvols', 'desc')->get());
 
         return View::make('dashboard',array(
                                     'username'      => $user->email,
@@ -314,9 +234,9 @@ public function makeList($array, $depth=0, $key_map=FALSE)
           $date = new Date('last '. Input::get('date'));
 
 
-          $volumes = Media::join('pool','media.poolid', '=', 'pool.poolid')
+                $volumes = Media::join($this->tables['pool'], $this->tables['media'].'.poolid', '=', $this->tables['pool'].'.poolid')
                             ->where('lastwritten','>=', (string)  $date )
-                            ->select(array('volumename','slot','volbytes','mediatype','pool.name','lastwritten','volstatus'));
+                            ->select(array('volumename','slot','volbytes','mediatype',$this->tables['pool'].'.name','lastwritten','volstatus'));
 
            return (Datatables::of($volumes)
                            // ->edit_column('pool','{{ HTML::link_to_action("pool@index", $name, array("Job" => $name)) }}')
@@ -328,7 +248,7 @@ public function makeList($array, $depth=0, $key_map=FALSE)
     public function getgraph()
     {
       $pools = Cache::remember('poolsgraph', function () {
-            return DB::table('pool')->order_by('numvols', 'desc')->get(array('name','numvols'));
+            return DB::table($this->tables['pool'])->order_by('numvols', 'desc')->get(array('name','numvols'));
         },15);
       echo json_encode($pools);
     }

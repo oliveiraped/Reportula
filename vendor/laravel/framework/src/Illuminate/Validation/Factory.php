@@ -146,10 +146,8 @@ class Factory {
 		{
 			return new Validator($this->translator, $data, $rules, $messages, $customAttributes);
 		}
-		else
-		{
-			return call_user_func($this->resolver, $this->translator, $data, $rules, $messages, $customAttributes);
-		}
+
+		return call_user_func($this->resolver, $this->translator, $data, $rules, $messages, $customAttributes);
 	}
 
 	/**
@@ -197,7 +195,7 @@ class Factory {
 	/**
 	 * Set the Validator instance resolver.
 	 *
-	 * @param  Closure  $resolver
+	 * @param  \Closure  $resolver
 	 * @return void
 	 */
 	public function resolver(Closure $resolver)

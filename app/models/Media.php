@@ -2,12 +2,17 @@
 
 namespace app\models;
 
-use Eloquent;
+use Eloquent, Config;
 
 class Media extends Eloquent
 {
+    protected $table =  'Media';
+     public $timestamps = false;
 
-    protected $table =  'media';
-    public $timestamps = false;
+    function __construct() {
+      if ( Config::get('database.default')=='pgsql' ) {
+          $this->table = strtolower($table);
+      }
+    }
 
 }
