@@ -46,9 +46,7 @@
                                     <li>
                                         <a href="{{ URL::route('stats') }}"><i class="icon-fam-chart-curve-add"></i> Statistics</a>
                                     </li>
-                                    <li>
-                                        <a href="{{ URL::route('actions') }}"><i class="icon-fam-action"></i> Restore</a>
-                                    </li>
+
                                 </ul>
                                 <ul class="pull-right nav">
                                     <li><a href="{{ URL::route('logout') }}"><i class="icon-fam-house-link"></i> Logout</a>
@@ -65,7 +63,7 @@
             <footer>
                 <?php echo Asset::container('footer')->scripts(); ?>
                 <p>
-                    <center>Reportula V2.0.8 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 - 2014 </center>
+                    <center>Reportula V2.0.9 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 - 2014 </center>
                 </p>
             </footer>
         </div>

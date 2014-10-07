@@ -13,7 +13,7 @@ class Job extends Eloquent
 
     function __construct() {
       if ( Config::get('database.default')=='pgsql' ) {
-          $this->table = strtolower($table);
+          $this->table = strtolower($this->table);
       }
     }
 

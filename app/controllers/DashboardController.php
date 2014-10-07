@@ -153,13 +153,12 @@ class DashboardController extends BaseController
        /* Calculate Jobs and Bytes */
         $tjobs=$tjobs->toArray();
 
-        $nTransFiles = array_sum( array_fetch ($tjobs, 'JobFiles')) ;
-        $nTransBytes = array_sum( array_fetch ($tjobs, 'JobBytes') );
-
-
         if ( Config::get('database.default')=='pgsql' ) {
             $nTransFiles = array_sum( array_fetch ($tjobs, 'jobfiles')) ;
             $nTransBytes = array_sum( array_fetch ($tjobs, 'jobbytes') );
+        } else {
+            $nTransFiles = array_sum( array_fetch ($tjobs, 'JobFiles')) ;
+            $nTransBytes = array_sum( array_fetch ($tjobs, 'JobBytes') );
         }
 
         $pools = json_encode((array) DB::table($this->tables['pool'])->select('name','numvols')->orderby('numvols', 'desc')->get());

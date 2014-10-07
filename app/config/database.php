@@ -26,7 +26,7 @@ return array(
 	|
 	*/
 
-	'default' => 'mysql',
+	'default' => 'pgsql',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -70,8 +70,8 @@ return array(
 			'host'     => 'localhost',
 			'database' => 'bacula',
 			'username' => 'bacula',
-
 			'password' => '',
+
 			'charset'  => 'utf8',
 			'prefix'   => '',
 			'schema'   => 'public',
