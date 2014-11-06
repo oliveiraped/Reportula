@@ -403,8 +403,10 @@ class ConfiguratorController extends BaseController
           }
         }
         $contents .= "}\n\n";
-
-        File::put($directory.'/conf.d/clients/'.$clientname.'.conf', $contents);
+		
+	#tweak filename to remove spaces, they are a bit of a hassle later
+	$clientfname = preg_replace("/\s+/","-",$clientname);
+        File::put($directory.'/conf.d/clients/'.$clientfname.'.conf', $contents);
       }
       ######################################################
 
@@ -468,7 +470,9 @@ class ConfiguratorController extends BaseController
         $contents .= "}\n\n";
 
 
-        File::put($directory.'/conf.d/jobs/'.$jobname.'.conf', $contents);
+	#tweak filename to remove spaces, they are a bit of a hassle later
+	$jobfname = preg_replace("/\s+/","-",$jobname);
+        File::put($directory.'/conf.d/jobs/'.$jobfname.'.conf', $contents);
       }
       ######################################################*/
 
@@ -538,7 +542,10 @@ class ConfiguratorController extends BaseController
           $contents .= "\t\t}\n";
         }
         $contents .= "}\n";
-        File::put($directory.'/conf.d/filesets/'.$filesetname.'.conf', $contents);
+
+	#tweak filename to remove spaces, they are a bit of a hassle later
+	$filesetfname = preg_replace("/\s+/","-",$filesetname);
+        File::put($directory.'/conf.d/filesets/'.$filesetfname.'.conf', $contents);
       }
       ######################################################
 
@@ -866,6 +873,26 @@ class ConfiguratorController extends BaseController
             $config = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
             $filename=$file->getFilename();
 
+	    # strip all comments early, so we needn't be bothered with them later...
+	    foreach ( $config as $linenum => $line ) { 
+		$line = preg_replace("/#.*$/","",$line);
+	    }	
+	    # also, lets convert semicolons to newlines, as they are kinda weird too.
+	    $newconfig = array();
+	    foreach ( $config as $linenum => $line ) { 
+		if ( preg_match("/;/",$line) ) { 
+		      $newlines = preg_split("/;/",$line);
+		      foreach ( $newlines as $num => $newline ) { 
+			array_push( $newconfig, $newline);
+		      }
+		    
+		} else { 
+			array_push( $newconfig, $line);
+		}
+	    }
+	    $config = $newconfig;
+	    
+
             if ( $filename!='bacula-fd.conf' && $filename!='bacula-sd.conf' && $filename!='mtx-changer.conf') {
 
               $i=0;
@@ -995,7 +1022,9 @@ class ConfiguratorController extends BaseController
                           do {
                               $i++;
                               $result = preg_split ('[ = ]', $config[$i]);
-                              $storage[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+			      if ( array_key_exists(1,$result)) { 
+                              	$storage[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+			      }
                           } while (trim($config[$i+1]) != "}");
                           $storagetest = Cfgstorage::where('Name', '=', $storage['Name']);
                           if ($storagetest->count()==0) {
@@ -1089,9 +1118,11 @@ class ConfiguratorController extends BaseController
                         do {
                             $i++;
                             $result = preg_split ('[=]', $config[$i]);
-                            // Se não for comentário adiciona
-                            if (substr(trim($result[0]), 0, 1) != '#')
-                                $job[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+			    if ( array_key_exists(1,$result)) { 
+                            	// Se não for comentário adiciona
+                            	//if (substr(trim($result[0]), 0, 1) != '#')
+                               	$job[preg_replace('/\s*/m', '', $result[0])]= preg_replace('/(\'|")/', '', trim($result[1]));
+			    }
                         } while (trim($config[$i+1]) != "}");
 
                         $jobtest = CfgJob::where('Name', '=', $job['Name']);
