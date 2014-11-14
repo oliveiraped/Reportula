@@ -64,7 +64,7 @@ return array(
 		),
 
 
-			'pgsql' => array(
+		'pgsql' => array(
 			'driver'   => 'pgsql',
 
 			'host'     => 'localhost',

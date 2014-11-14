@@ -65,12 +65,12 @@ if ('Symfony' === $TEST_TYPE) {
     showHelp('Test type must be either "Symfony" or "PHP"!');
 }
 
-require_once dirname(__FILE__) . '/../lib/PhpParser/Autoloader.php';
-PhpParser\Autoloader::register();
+require_once dirname(__FILE__) . '/../lib/PHPParser/Autoloader.php';
+PHPParser_Autoloader::register();
 
-$parser        = new PhpParser\Parser(new PhpParser\Lexer\Emulative);
-$prettyPrinter = new PhpParser\PrettyPrinter\Standard;
-$nodeDumper    = new PhpParser\NodeDumper;
+$parser        = new PHPParser_Parser(new PHPParser_Lexer_Emulative);
+$prettyPrinter = new PHPParser_PrettyPrinter_Default;
+$nodeDumper    = new PHPParser_NodeDumper;
 
 $parseFail = $ppFail = $compareFail = $count = 0;
 
@@ -149,12 +149,12 @@ foreach (new RecursiveIteratorIterator(
 
                 ++$compareFail;
             }
-        } catch (PhpParser\Error $e) {
+        } catch (PHPParser_Error $e) {
             echo $file, ":\n    Parse of pretty print failed with message: {$e->getMessage()}\n";
 
             ++$ppFail;
         }
-    } catch (PhpParser\Error $e) {
+    } catch (PHPParser_Error $e) {
         echo $file, ":\n    Parse failed with message: {$e->getMessage()}\n";
 
         ++$parseFail;

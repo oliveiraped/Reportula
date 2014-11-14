@@ -13,11 +13,10 @@ array(
         byRef: false
         params: array(
             0: Param(
-                type: null
-                byRef: false
-                variadic: false
                 name: a
                 default: null
+                type: null
+                byRef: false
             )
         )
         uses: array(
@@ -33,11 +32,10 @@ array(
         byRef: false
         params: array(
             0: Param(
-                type: null
-                byRef: false
-                variadic: false
                 name: a
                 default: null
+                type: null
+                byRef: false
             )
         )
         uses: array(
@@ -72,11 +70,10 @@ array(
         byRef: true
         params: array(
             0: Param(
-                type: null
-                byRef: false
-                variadic: false
                 name: a
                 default: null
+                type: null
+                byRef: false
             )
         )
         uses: array(

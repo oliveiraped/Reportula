@@ -17,12 +17,8 @@ function a(
 array(
     0: Stmt_Function(
         byRef: false
-        name: a
         params: array(
             0: Param(
-                type: null
-                byRef: false
-                variadic: false
                 name: b
                 default: Expr_ConstFetch(
                     name: Name(
@@ -31,20 +27,18 @@ array(
                         )
                     )
                 )
-            )
-            1: Param(
                 type: null
                 byRef: false
-                variadic: false
+            )
+            1: Param(
                 name: c
                 default: Scalar_String(
                     value: foo
                 )
-            )
-            2: Param(
                 type: null
                 byRef: false
-                variadic: false
+            )
+            2: Param(
                 name: d
                 default: Expr_ClassConstFetch(
                     class: Name(
@@ -54,53 +48,48 @@ array(
                     )
                     name: B
                 )
-            )
-            3: Param(
                 type: null
                 byRef: false
-                variadic: false
+            )
+            3: Param(
                 name: f
                 default: Expr_UnaryPlus(
                     expr: Scalar_LNumber(
                         value: 1
                     )
                 )
-            )
-            4: Param(
                 type: null
                 byRef: false
-                variadic: false
+            )
+            4: Param(
                 name: g
                 default: Expr_UnaryMinus(
                     expr: Scalar_DNumber(
                         value: 1
                     )
                 )
-            )
-            5: Param(
                 type: null
                 byRef: false
-                variadic: false
+            )
+            5: Param(
                 name: h
                 default: Expr_Array(
                     items: array(
                     )
                 )
-            )
-            6: Param(
                 type: null
                 byRef: false
-                variadic: false
+            )
+            6: Param(
                 name: i
                 default: Expr_Array(
                     items: array(
                     )
                 )
-            )
-            7: Param(
                 type: null
                 byRef: false
-                variadic: false
+            )
+            7: Param(
                 name: j
                 default: Expr_Array(
                     items: array(
@@ -113,11 +102,10 @@ array(
                         )
                     )
                 )
-            )
-            8: Param(
                 type: null
                 byRef: false
-                variadic: false
+            )
+            8: Param(
                 name: k
                 default: Expr_Array(
                     items: array(
@@ -139,9 +127,12 @@ array(
                         )
                     )
                 )
+                type: null
+                byRef: false
             )
         )
         stmts: array(
         )
+        name: a
     )
 )

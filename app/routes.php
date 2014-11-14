@@ -72,6 +72,7 @@ Route::group(array('prefix' => 'admin', 'before' => 'auth.admin'), function () {
     Route::get('configurator',  array('as' => 'admin.configurator',  'uses' => 'app\controllers\admin\ConfiguratorController@configurator'));
     Route::get('readbacula',    array('as' => 'admin.readbacula',    'uses' => 'app\controllers\admin\ConfiguratorController@readbacula'));
     Route::get('writebacula',    array('as' => 'admin.writebacula',    'uses' => 'app\controllers\admin\ConfiguratorController@writebacula'));
+    Route::get('restartbacula',    array('as' => 'admin.restartbacula',    'uses' => 'app\controllers\admin\ConfiguratorController@restartbacula'));
     Route::get('gettreedata',   array('as' => 'admin.gettreedata',   'uses' => 'app\controllers\admin\ConfiguratorController@gettreedata'));
     Route::post('getnode',       array('as' => 'admin.getnode',       'uses' => 'app\controllers\admin\ConfiguratorController@getnode'));
     Route::get('getincludes',        array('as' => 'admin.getincludes',       'uses' => 'app\controllers\admin\ConfiguratorController@getincludes'));

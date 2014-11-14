@@ -325,7 +325,7 @@ class Factory {
 
 		foreach ($composers as $callback => $views)
 		{
-			$registered += $this->composer($views, $callback);
+			$registered = array_merge($registered, $this->composer($views, $callback));
 		}
 
 		return $registered;
@@ -454,12 +454,10 @@ class Factory {
 		{
 			return explode('@', $class);
 		}
-		else
-		{
-			$method = str_contains($prefix, 'composing') ? 'compose' : 'create';
 
-			return array($class, $method);
-		}
+		$method = str_contains($prefix, 'composing') ? 'compose' : 'create';
+
+		return array($class, $method);
 	}
 
 	/**

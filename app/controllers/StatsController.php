@@ -84,15 +84,12 @@ class StatsController extends BaseController
         // Get Number of Files Transfered
         $filesNumber = DB::table('file')->select(DB::raw('count(*) AS filesNumber'))->get();
 
-
-
         // Get Storage Bytes
         $bytesStorage = Media::sum('volbytes');
 
          //* Query For Hour Starts
         $dataInicio = date('Y-m-d', strtotime("-1 days")).(' 18:29');
         $dataFim = date('Y-m-d').(' 18:29');
-
 
         /* Query timediff Stats */
         $timediff = DB::table('job')->select(DB::raw('(max(starttime) - min(starttime)) AS timediff'))
@@ -114,7 +111,6 @@ class StatsController extends BaseController
                     ->where('starttime','>=', $dataInicio )
                     ->where('endtime','<=', $dataFim);
 
-
         $jobbytes  = $query->sum('jobbytes');
         $starttime = $query->min('starttime');
         $endtime   = $query->max('endtime');
@@ -129,7 +125,6 @@ class StatsController extends BaseController
             'clients' => $clientsNumber,
             'databasesize' => $dbsize[0]->dbsize
         );
-
 
          $hourstats = array(
                 'data'      => date('Y-m-d') ,

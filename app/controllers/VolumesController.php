@@ -29,7 +29,6 @@ class VolumesController extends BaseController
         Asset::add('jspdf.js', 'assets/js/jspdf.js');
         Asset::add('base64.js', 'assets/js/base64.js');
 
-
         Asset::add('volumes', 'assets/js/volumes.js');
 
         /* Fill Up the Select Box */
@@ -100,11 +99,9 @@ class VolumesController extends BaseController
 
     }
 
-    /*Gets Data from the Jobs */
-
+    /*Gets Data from the Volumes */
     public function getvolumes()
     {
-
 
       $tjobs = Job::select(array($this->tables['job'].'.jobid','name','starttime','endtime',
                                    'level','jobbytes','jobfiles','jobstatus'))

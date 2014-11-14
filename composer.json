@@ -15,7 +15,6 @@
     "barryvdh/laravel-dompdf": "0.4.*",
 		"adldap/adldap": "4.0.4",
 		"jasonlewis/expressive-date": "1.0.*",
-		"laracasts/utilities": "dev-master",
 		"barryvdh/laravel-debugbar": "1.*",
 		"awjudd/feed-reader": "1.1.*"
 

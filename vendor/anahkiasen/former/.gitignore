@@ -1,3 +1,6 @@
+# Development
 .idea
-tests/coverage
+
+# Dependencies
+composer.lock
 vendor

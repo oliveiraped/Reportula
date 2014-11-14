@@ -6,7 +6,6 @@ f();
 f($a);
 f($a, $b);
 f(&$a);
-f($a, ...$b);
 -----
 array(
     0: Expr_FuncCall(
@@ -30,7 +29,6 @@ array(
                     name: a
                 )
                 byRef: false
-                unpack: false
             )
         )
     )
@@ -46,14 +44,12 @@ array(
                     name: a
                 )
                 byRef: false
-                unpack: false
             )
             1: Arg(
                 value: Expr_Variable(
                     name: b
                 )
                 byRef: false
-                unpack: false
             )
         )
     )
@@ -69,30 +65,6 @@ array(
                     name: a
                 )
                 byRef: true
-                unpack: false
-            )
-        )
-    )
-    4: Expr_FuncCall(
-        name: Name(
-            parts: array(
-                0: f
-            )
-        )
-        args: array(
-            0: Arg(
-                value: Expr_Variable(
-                    name: a
-                )
-                byRef: false
-                unpack: false
-            )
-            1: Arg(
-                value: Expr_Variable(
-                    name: b
-                )
-                byRef: false
-                unpack: true
             )
         )
     )

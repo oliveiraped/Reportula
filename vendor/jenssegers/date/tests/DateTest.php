@@ -156,7 +156,7 @@ class DateTest extends \PHPUnit_Framework_TestCase {
 		Date::setLocale('nl');
 
 		$date = Date::parse('-5 years');
-		$this->assertSame("5 jaren geleden", $date->ago());
+		$this->assertSame("5 jaar geleden", $date->ago());
 
 		$date = Date::parse('-5 months');
 		$this->assertSame("5 maanden geleden", $date->ago());
@@ -171,7 +171,7 @@ class DateTest extends \PHPUnit_Framework_TestCase {
 		$this->assertSame("1 dag geleden", $date->ago());
 
 		$date = Date::parse('-3 hours');
-		$this->assertSame("3 uren geleden", $date->ago());
+		$this->assertSame("3 uur geleden", $date->ago());
 
 		$date = Date::parse('-1 hour');
 		$this->assertSame("1 uur geleden", $date->ago());
@@ -183,7 +183,7 @@ class DateTest extends \PHPUnit_Framework_TestCase {
 		$this->assertSame("1 minuut geleden", $date->ago());
 
 		$date = Date::parse('-50 second');
-		$this->assertSame("50 secondes geleden", $date->ago());
+		$this->assertSame("50 seconden geleden", $date->ago());
 
 		$date = Date::parse('-1 second');
 		$this->assertSame("1 seconde geleden", $date->ago());
@@ -211,7 +211,7 @@ class DateTest extends \PHPUnit_Framework_TestCase {
 		$date = new Date(1403619368);
 		$date = $date->sub('-100 days -3 hours -20 minutes');
 
-		$this->assertSame("0 years, 3 months, 1 week, 1 day, 3 hours, 20 minutes, 0 seconds", $date->timespan(1403619368));
+		$this->assertSame("3 months, 1 week, 1 day, 3 hours, 20 minutes", $date->timespan(1403619368));
 	}
 
 	public function testTimespanTranslated()
@@ -221,7 +221,7 @@ class DateTest extends \PHPUnit_Framework_TestCase {
 		$date = new Date(1403619368);
 		$date = $date->sub('-100 days -3 hours -20 minutes');
 
-		$this->assertSame("0 jaren, 3 maanden, 1 week, 1 dag, 3 uren, 20 minuten, 0 secondes", $date->timespan(1403619368));
+		$this->assertSame("3 maanden, 1 week, 1 dag, 3 uur, 20 minuten", $date->timespan(1403619368));
 	}
 
 }

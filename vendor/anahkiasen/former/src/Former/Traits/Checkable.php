@@ -135,7 +135,8 @@ abstract class Checkable extends Field
 		return $this->createCheckable(array(
 			'name'  => $this->name,
 			'label' => $this->text,
-			'value' => $this->value
+			'value' => $this->value,
+			'attributes' => $this->attributes,
 		));
 	}
 
@@ -256,7 +257,7 @@ abstract class Checkable extends Field
 	////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Creates a serie of checkable items
+	 * Creates a series of checkable items
 	 *
 	 * @param array $_items Items to create
 	 */
@@ -323,7 +324,7 @@ abstract class Checkable extends Field
 	 * Renders a checkable
 	 *
 	 * @param string|array $item          A checkable item
-	 * @param integer   $fallbackValue A fallback value if none is set
+	 * @param integer      $fallbackValue A fallback value if none is set
 	 *
 	 * @return string
 	 */
@@ -346,6 +347,10 @@ abstract class Checkable extends Field
 		// If inline items, add class
 		$isInline = $this->inline ? ' '.$this->app['former.framework']->getInlineLabelClass($this) : null;
 
+		// In Bootsrap 3, don't append the the checkable type (radio/checkbox) as a class if
+		// rendering inline.
+		$class = $this->app['former']->framework() == 'TwitterBootstrap3' ? trim($isInline) : $this->checkable.$isInline;
+
 		// Merge custom attributes with global attributes
 		$attributes = array_merge($this->attributes, $attributes);
 		if (!isset($attributes['id'])) {
@@ -367,10 +372,22 @@ abstract class Checkable extends Field
 
 		// If no label to wrap, return plain checkable
 		if (!$label) {
-			return (is_object($field)) ? $field->render() : $field;
+			$element = (is_object($field)) ? $field->render() : $field;
+		} else {
+			$element = Element::create('label', $field.$label)->for($attributes['id'])->class($class)->render();
 		}
 
-		return Element::create('label', $field.$label)->for($attributes['id'])->class($this->checkable.$isInline);
+		// If BS3, if checkables are stacked, wrap them in a div with the checkable type
+		if (!$isInline && $this->app['former']->framework() == 'TwitterBootstrap3') {
+			$wrapper = Element::create('div', $element)->class($this->checkable);
+			if ($this->getAttribute('disabled')) {
+				$wrapper->addClass('disabled');
+			}
+			$element = $wrapper->render();
+		}
+
+		// Return the field
+		return $element;
 	}
 
 	////////////////////////////////////////////////////////////////////
@@ -454,7 +471,7 @@ abstract class Checkable extends Field
 
 			// Search using the bare name, not the individual item name
 			$post   = $this->app['former']->getPost($this->name);
-			$static = $this->app['former']->getValue($this->name);
+			$static = $this->app['former']->getValue($this->bind ?: $this->name);
 
 			if (isset($post[$groupIndex])) {
 				$post = $post[$groupIndex];
@@ -464,7 +481,7 @@ abstract class Checkable extends Field
 			}
 		} else {
 			$post   = $this->app['former']->getPost($name);
-			$static = $this->app['former']->getValue($name);
+			$static = $this->app['former']->getValue($this->bind ?: $name);
 		}
 
 		if (!is_null($post) and $post !== $this->app['former']->getOption('unchecked_value')) {

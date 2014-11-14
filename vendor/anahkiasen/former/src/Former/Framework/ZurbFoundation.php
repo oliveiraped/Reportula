@@ -37,7 +37,7 @@ class ZurbFoundation extends Framework implements FrameworkInterface
 		9  => 'nine',
 		10 => 'ten',
 		11 => 'eleven',
-		12 => 'twelve'
+		12 => 'twelve',
 	);
 
 	/**
@@ -123,7 +123,6 @@ class ZurbFoundation extends Framework implements FrameworkInterface
 	/**
 	 * Add label classes
 	 *
-	 *
 	 * @return string|null An array of attributes with the label class
 	 */
 	public function getLabelClasses()
@@ -136,6 +135,11 @@ class ZurbFoundation extends Framework implements FrameworkInterface
 	}
 
 	public function getUneditableClasses()
+	{
+		return null;
+	}
+
+	public function getPlainTextClasses()
 	{
 		return null;
 	}
@@ -177,6 +181,19 @@ class ZurbFoundation extends Framework implements FrameworkInterface
 		return Input::create('text', $field->getName(), $field->getValue(), $field->getAttributes());
 	}
 
+	/**
+	 * Render a plain text field
+	 * Which fallback to a disabled field
+	 *
+	 * @param Field $field
+	 *
+	 * @return Element
+	 */
+	public function createPlainTextField(Field $field)
+	{
+		return $this->createDisabledField($field);
+	}
+
 	////////////////////////////////////////////////////////////////////
 	//////////////////////////// WRAP BLOCKS ///////////////////////////
 	////////////////////////////////////////////////////////////////////
@@ -185,7 +202,6 @@ class ZurbFoundation extends Framework implements FrameworkInterface
 	 * Wrap an item to be prepended or appended to the current field.
 	 * For Zurb we return the item and handle the wrapping in prependAppend
 	 * as wrapping is dependent on whether we're prepending or appending.
-	 *
 	 *
 	 * @return string A wrapped item
 	 */

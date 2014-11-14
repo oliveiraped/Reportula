@@ -46,7 +46,6 @@ interface FrameworkInterface
 	/**
 	 * Add label classes
 	 *
-	 *
 	 * @return array An array of attributes with the label class
 	 */
 	public function getLabelClasses();
@@ -54,15 +53,21 @@ interface FrameworkInterface
 	/**
 	 * Add uneditable field classes
 	 *
-	 *
 	 * @return array An array of attributes with the uneditable class
 	 */
 	public function getUneditableClasses();
 
 	/**
+	 * Add plain text field classes
+	 *
+	 * @return array An array of attributes with the plain text class
+	 */
+	public function getPlainTextClasses();
+
+	/**
 	 * Add form class
 	 *
-	 * @param  string $type       The type of form to add
+	 * @param  string $type The type of form to add
 	 *
 	 * @return array
 	 */
@@ -70,7 +75,6 @@ interface FrameworkInterface
 
 	/**
 	 * Add actions block class
-	 *
 	 *
 	 * @return array
 	 */
@@ -96,9 +100,18 @@ interface FrameworkInterface
 	public function createDisabledField(Field $field);
 
 	/**
+	 * Render a plain text field
+	 *
+	 * @param Field $field
+	 *
+	 * @return string
+	 */
+	public function createPlainTextField(Field $field);
+
+	/**
 	 * Render an icon
 	 *
-	 * @param array  $attributes Its attributes
+	 * @param array $attributes Its attributes
 	 *
 	 * @return string
 	 */

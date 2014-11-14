@@ -44,10 +44,7 @@ class Debug extends Twig_Extension
     {
         return array(
             new Twig_SimpleFunction(
-                'dump', [$this, 'dump'], array('needs_context' => true, 'needs_environment' => true)
-            ),
-            new Twig_SimpleFunction(
-                'debug', [$this, 'dump'], array('needs_context' => true, 'needs_environment' => true)
+                'debug', [$this, 'debug'], array('needs_context' => true, 'needs_environment' => true)
             ),
         );
     }
@@ -59,7 +56,7 @@ class Debug extends Twig_Extension
      * @param Twig_Environment $env
      * @param $context
      */
-    public function dump(Twig_Environment $env, $context)
+    public function debug(Twig_Environment $env, $context)
     {
         if (!$env->isDebug() || !$this->debugbar) {
             return;

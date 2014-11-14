@@ -1,9 +1,21 @@
+2.0.10 - 9 Nov - 2014
+===============================================
+
+Features:
+- [Add] Bacula reload Configuration Option in Menu Configuration.
+
+Bugfixes:
+
+- [fix] Clicking on a job ID with jobs that have no files processed.
+- [fix] "Comments Read" Configuration files Fix - Thanks to DavidBuzz
+
+
 2.0.9 - 7 Oct - 2014
 ===============================================
 
 Bugfixes:
 
-- [fix] Portgres Bug Fixes missed on 2.0.8 Version
+- [fix] Portgresql Bug Fixes missed on 2.0.8 Version
 
 
 2.0.8 - 6 Oct - 2014
@@ -25,7 +37,6 @@ Bugfixes:
 - [fix] Mysql Databases Case Sensitive Bug
 - [fix] BootBox - Downgraded to 3.3.0 Version
 - [fix] BaculaStats Crontab Command - HoursDiff Bug
-
 
 Code Refactor
 
@@ -76,7 +87,6 @@ Bugfixes:
 Code Refactor
 
 * Configuration Controller - Refactoring the code
-
 
 
 2.0.5 - 7 July - 2014

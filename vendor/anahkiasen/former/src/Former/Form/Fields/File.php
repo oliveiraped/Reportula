@@ -71,7 +71,7 @@ class File extends Field
 			? HtmlInput::hidden('MAX_FILE_SIZE', $this->maxSize)
 			: null;
 
-		return parent::render().$hidden;
+		return $hidden.parent::render();
 	}
 
 	////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ class File extends Field
 
 	/**
 	 * Set which types of files are accepted by the file input
-	 *
+
 	 */
 	public function accept()
 	{

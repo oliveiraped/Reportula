@@ -36,7 +36,7 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
 		'link',
 		'primary',
 		'success',
-		'warning'
+		'warning',
 	);
 
 	/**
@@ -62,7 +62,7 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
 		'span9',
 		'span10',
 		'span11',
-		'span12'
+		'span12',
 	);
 
 	/**
@@ -173,7 +173,6 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
 	/**
 	 * Add label classes
 	 *
-	 *
 	 * @return string An array of attributes with the label class
 	 */
 	public function getLabelClasses()
@@ -184,7 +183,6 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
 	/**
 	 * Add uneditable field classes
 	 *
-	 *
 	 * @return string An array of attributes with the uneditable class
 	 */
 	public function getUneditableClasses()
@@ -192,10 +190,15 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
 		return 'uneditable-input';
 	}
 
+	public function getPlainTextClasses()
+	{
+		return null;
+	}
+
 	/**
 	 * Add form class
 	 *
-	 * @param  string $type       The type of form to add
+	 * @param  string $type The type of form to add
 	 *
 	 * @return string|null
 	 */
@@ -206,7 +209,6 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
 
 	/**
 	 * Add actions block class
-	 *
 	 *
 	 * @return string
 	 */
@@ -258,9 +260,22 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
 	}
 
 	/**
+	 * Render a plain text field
+	 * Which fallback to a disabled field
+	 *
+	 * @param Field $field
+	 *
+	 * @return Element
+	 */
+	public function createPlainTextField(Field $field)
+	{
+		return $this->createDisabledField($field);
+	}
+
+	/**
 	 * Render an icon
 	 *
-	 * @param array  $attributes   Its general attributes
+	 * @param array $attributes Its general attributes
 	 *
 	 * @return string
 	 */

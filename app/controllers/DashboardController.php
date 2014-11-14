@@ -18,10 +18,8 @@ class DashboardController extends BaseController
     {
 
         parent::__construct();
-       // Asset::add('tabletools', 'assets/js/TableTools.min.js');
         Asset::add('amcharts', 'assets/js/amcharts.js');
         Asset::add('amchartsPie', 'assets/js/pie.js');
-
         Asset::add('bootstrap-tooltip.js', 'assets/js/bootstrap-tooltip.js');
         Asset::add('bootstrap-dropdown.js', 'assets/js/bootstrap-dropdown.js');
 
@@ -62,8 +60,6 @@ class DashboardController extends BaseController
 
         Cache::forever('nFiles',  $media->files);
         Cache::forever('nBytes',  $media->bytes);
-
-
 
     }
 

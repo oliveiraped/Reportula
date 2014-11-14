@@ -1,8 +1,15 @@
+/* Write Bacual Configuration */
+function restartBacula()
+{
+    $.ajax({
+            type: "GET",
+            url: "restartbacula",
+        }).done(function( msg ) {
+             bootbox.alert(msg.html);
+        });
+}
 
-
-
-
-/* Disable User */
+/* Write Bacual Configuration */
 function writeBacula(type)
 {
     $.ajax({
@@ -22,7 +29,6 @@ $(document).ready(function() {
        tree.reload();
     });
 
-
     $("#refreshTree").click(function(){
        $("input[name=search]").val("");
        $("span#matches").text("");
@@ -41,9 +47,6 @@ $(document).ready(function() {
         });
     });
 
-
-
-
    var tree = $("#tree").fancytree({
       extensions: ["filter","persist"],
       filter: {
@@ -54,7 +57,6 @@ $(document).ready(function() {
         overrideSource: false, // true: cookie takes precedence over `source` data attributes.
         store: "auto" // 'cookie', 'local': use localStore, 'session': sessionStore
       },
-
 
       source: {
         url: "gettreedata",

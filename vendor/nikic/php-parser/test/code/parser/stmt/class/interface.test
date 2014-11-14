@@ -8,7 +8,6 @@ interface A extends C, D {
 -----
 array(
     0: Stmt_Interface(
-        name: A
         extends: array(
             0: Name(
                 parts: array(
@@ -25,11 +24,12 @@ array(
             0: Stmt_ClassMethod(
                 type: 1
                 byRef: false
-                name: a
                 params: array(
                 )
                 stmts: null
+                name: a
             )
         )
+        name: A
     )
 )

@@ -1153,7 +1153,7 @@ class Validator implements MessageProviderInterface {
 	 * Validate the MIME type of a file upload attribute is in a set of MIME types.
 	 *
 	 * @param  string  $attribute
-	 * @param  array   $value
+	 * @param  mixed  $value
 	 * @param  array   $parameters
 	 * @return bool
 	 */
@@ -1168,7 +1168,7 @@ class Validator implements MessageProviderInterface {
 	}
 
 	/**
-	 * Check that the given value is a valid file instnace.
+	 * Check that the given value is a valid file instance.
 	 *
 	 * @param  mixed  $value
 	 * @return bool
@@ -1689,7 +1689,7 @@ class Validator implements MessageProviderInterface {
 	 */
 	protected function replaceDigitsBetween($message, $attribute, $rule, $parameters)
 	{
-		return str_replace(array(':min', ':max'), $parameters, $message);
+		return $this->replaceBetween($message, $attribute, $rule, $parameters);
 	}
 
 	/**

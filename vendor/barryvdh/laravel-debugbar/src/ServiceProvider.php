@@ -32,7 +32,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                 $this->app['config']->set('laravel-debugbar::config.enabled', false);
             }
         } elseif (!$this->shouldUseMiddleware()) {
-            $app->after(
+            $app['router']->after(
                 function ($request, $response) use ($app) {
                     /** @var LaravelDebugbar $debugbar */
                     $debugbar = $app['debugbar'];
@@ -75,7 +75,8 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     protected function shouldUseMiddleware()
     {
         $app = $this->app;
-        return !$app->runningInConsole() && version_compare($app::VERSION, '4.1', '>=');
+        list($version) = explode('-', $app::VERSION);
+        return !$app->runningInConsole() && version_compare($version, '4.1', '>=') && version_compare($version, '5.0', '<');
     }
 
     /**
@@ -85,6 +86,11 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     public function register()
     {
+        $this->app->alias(
+            'DebugBar\DataFormatter\DataFormatter',
+            'DebugBar\DataFormatter\DataFormatterInterface'
+        );
+        
         $this->app['debugbar'] = $this->app->share(
             function ($app) {
                 $debugbar = new LaravelDebugBar($app);
@@ -114,7 +120,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->commands(array('command.debugbar.publish', 'command.debugbar.clear'));
 
         if ($this->shouldUseMiddleware()) {
-            $this->app->middleware('Barryvdh\Debugbar\Middleware', array($this->app));
+            $this->app->middleware('Barryvdh\Debugbar\Middleware\Stack', array($this->app));
         }
     }
 

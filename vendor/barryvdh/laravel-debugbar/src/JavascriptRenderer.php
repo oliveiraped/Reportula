@@ -9,6 +9,10 @@ use Illuminate\Routing\UrlGenerator;
  */
 class JavascriptRenderer extends BaseJavascriptRenderer
 {
+    // Use XHR handler by default, instead of jQuery
+    protected $ajaxHandlerBindToJquery = false;
+    protected $ajaxHandlerBindToXHR = true;
+    
     /** @var \Illuminate\Routing\UrlGenerator */
     protected $url;
 
@@ -17,15 +21,11 @@ class JavascriptRenderer extends BaseJavascriptRenderer
         'vendor/highlightjs/styles/github.css'
     );
 
-    // Removed 'openhandler.js' until new release is tagged.
-    protected $jsFiles = array('debugbar.js', 'widgets.js');
-
     public function __construct(DebugBar $debugBar, $baseUrl = null, $basePath = null)
     {
         parent::__construct($debugBar, $baseUrl, $basePath);
 
         $this->cssFiles[] = __DIR__ . '/Resources/laravel-debugbar.css';
-        $this->jsFiles[] = __DIR__ . '/Resources/openhandler.js';
         $this->cssVendors[] = __DIR__ . '/Resources/vendor/font-awesome/style.css';
     }
 

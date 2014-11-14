@@ -10,7 +10,6 @@ abstract class A {
 array(
     0: Stmt_Class(
         type: 16
-        name: A
         extends: null
         implements: array(
         )
@@ -18,20 +17,21 @@ array(
             0: Stmt_ClassMethod(
                 type: 1
                 byRef: false
-                name: a
                 params: array(
                 )
                 stmts: array(
                 )
+                name: a
             )
             1: Stmt_ClassMethod(
                 type: 17
                 byRef: false
-                name: b
                 params: array(
                 )
                 stmts: null
+                name: b
             )
         )
+        name: A
     )
 )

@@ -38,12 +38,10 @@ ul.fancytree-container {
                       </ul>
                     </li>
                     <li class="divider"></li>
-                    <li><a href="#" id="readBacula"> <i class="icon-fam-database-save"></i> Read Configuration</a></li>
-                    <li><a href="#" id="testBacula" onClick ="writeBacula('test');"><i class="icon-fam-database-key"></i> Test Configuration </a></li>
-                    <li><a href="#" id="writeBacula" onClick ="writeBacula('write');" ><i class="icon-fam-database-table"></i> Write Configuration</a></li>
-                    <li><a href="#" id="restartBacula"><i class="icon-fam-database-table"></i> Restart Bacula Director </a></li>
-
-
+                    <li><a href="#" id="readBacula"><i class="icon-fam-database-save"></i> Read Configuration</a></li>
+                    <li><a href="#" id="testBacula" onClick ="writeBacula('test');"><i class="icon-fam-database-gear"></i> Test Configuration </a></li>
+                    <li><a href="#" id="writeBacula" onClick ="writeBacula('write');"><i class="icon-fam-database-table"></i> Write Configuration</a></li>
+                    <li><a href="#" id="restartBacula" onClick ="restartBacula();"><i class="icon-fam-arrow-refresh-small"></i> Reload Bacula Configuration </a></li>
                 </ul>
             </div>
         </div>

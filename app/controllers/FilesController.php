@@ -27,34 +27,9 @@ class FilesController extends BaseController
         Asset::add('sprintf.js', 'assets/js/sprintf.js');
         Asset::add('jspdf.js', 'assets/js/jspdf.js');
         Asset::add('base64.js', 'assets/js/base64.js');
-    //    Asset::add('jstree', 'assets/css/jstree.css');
-    //    Asset::add('jstree', 'assets/js/jstree.js');
+
 
     }
-
-  /*  public function recursion($multi_dimensional_array)
-    {
-        $m = $multi_dimensional_array;
-        $keys = array();
-        foreach ($m as $key=>$value) {
-            $keys[] = $key;
-        }
-
-        $i = 0;
-        $ul='';
-        while ($i < count($multi_dimensional_array)) {
-            $ul.= '<li><a href="#">'.$keys[$i].'</a>';
-            if (is_array($multi_dimensional_array[$keys[$i]])) {
-                $ul.= '<ul>';
-                $ul.= $this->recursion($multi_dimensional_array[$keys[$i]]);
-                $ul.= '</ul>';
-            }
-            $ul.= '</li>';
-            $i++;
-        }
-
-        return $ul;
-    }*/
 
     public function files($job)
     {
@@ -69,8 +44,11 @@ class FilesController extends BaseController
                   ->join($this->tables['filename'],$this->tables['file'].'.filenameid', '=', $this->tables['filename'].'.filenameid')
                   ->join($this->tables['path'],$this->tables['file'].'.pathid', '=', $this->tables['path'].'.pathid')
                   ->where('jobid','=', $job)->remember(10)->get();
+
             $files = $files->toArray();
-           $t= Filessearch::insert($files);
+            if (!empty($files)) {
+                $t= Filessearch::insert($files);
+            }
         }
 
         /* Mostra o log do Job */

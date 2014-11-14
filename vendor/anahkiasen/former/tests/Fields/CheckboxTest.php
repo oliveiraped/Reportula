@@ -22,29 +22,53 @@ class CheckboxTest extends FormerTests
 	 *
 	 * @return string
 	 */
-	private function matchCheckbox($name = 'foo', $label = null, $value = 1, $inline = false, $checked = false)
-	{
+	private function matchCheckbox(
+		$name = 'foo',
+		$label = null,
+		$value = 1,
+		$inline = false,
+		$checked = false,
+		$disabled = false
+	) {
 		$checkAttr = array(
-			'id'      => $name,
-			'type'    => 'checkbox',
-			'name'    => $name,
-			'checked' => 'checked',
-			'value'   => $value,
+			'disabled' => 'true',
+			'id'       => $name,
+			'type'     => 'checkbox',
+			'name'     => $name,
+			'checked'  => 'checked',
+			'value'    => $value,
 		);
 		$labelAttr = array(
 			'for'   => $name,
 			'class' => 'checkbox',
 		);
 		if ($inline) {
-			$labelAttr['class'] .= $this->former->framework() === 'TwitterBootstrap3' ? ' checkbox-inline' : ' inline';
+			if ($this->former->framework() === 'TwitterBootstrap3') {
+				$labelAttr['class'] = 'checkbox-inline';
+			} else {
+				$labelAttr['class'] .= ' inline';
+			}
 		}
 		if (!$checked) {
 			unset($checkAttr['checked']);
 		}
+		if (!$disabled) {
+			unset($checkAttr['disabled']);
+		}
 
 		$radio = '<input'.$this->attributes($checkAttr).'>';
 
-		return $label ? '<label'.$this->attributes($labelAttr).'>'.$radio.$label.'</label>' : $radio;
+		if (!$inline && $this->former->framework() === 'TwitterBootstrap3') {
+			unset($labelAttr['class']);
+		}
+
+		$control = $label ? '<label'.$this->attributes($labelAttr).'>'.$radio.$label.'</label>' : $radio;
+
+		if (!$inline && $this->former->framework() === 'TwitterBootstrap3') {
+			$control = '<div class="checkbox'.($disabled ? ' disabled' : null).'">'.$control.'</div>';
+		}
+
+		return $control;
 	}
 
 	/**
@@ -144,6 +168,20 @@ class CheckboxTest extends FormerTests
 		$this->assertEquals($matcher, $checkboxes2);
 	}
 
+	public function testCanCreateStackedCheckboxesTwitterBootstrap3()
+	{
+
+		$this->former->framework('TwitterBootstrap3');
+
+		$checkboxes1 = $this->former->stacked_checkboxes('foo')->checkboxes('foo', 'bar')->__toString();
+		$this->resetLabels();
+		$checkboxes2 = $this->former->checkboxes('foo')->stacked()->checkboxes('foo', 'bar')->__toString();
+		$matcher     = $this->formGroup($this->matchCheckbox('foo_0', 'Foo', 1).$this->matchCheckbox('foo_1', 'Bar', 1));
+
+		$this->assertEquals($matcher, $checkboxes1);
+		$this->assertEquals($matcher, $checkboxes2);
+	}
+
 	public function testCanCreateMultipleCheckboxesViaAnArray()
 	{
 		$this->resetLabels();
@@ -208,9 +246,9 @@ class CheckboxTest extends FormerTests
 	public function testCanCheckMultipleCheckboxesAtOnce()
 	{
 		$checkboxes = $this->former->checkboxes('foo')->checkboxes('foo', 'bar')->check(array(
-				'foo_0' => false,
-				'foo_1' => true
-			))->__toString();
+			'foo_0' => false,
+			'foo_1' => true,
+		))->__toString();
 		$matcher    = $this->controlGroup($this->matchCheckbox('foo_0', 'Foo').$this->matchCheckedCheckbox('foo_1', 'Bar', 1));
 
 		$this->assertEquals($matcher, $checkboxes);
@@ -521,4 +559,54 @@ class CheckboxTest extends FormerTests
 
 		$this->assertInternalType('string', $html);
 	}
+
+	public function testDisabled()
+	{
+		$checkbox = $this->former->checkbox('foo')->disabled()->__toString();
+		$matcher  = $this->controlGroup($this->matchCheckbox('foo', null, 1, false, false, true));
+		$this->assertEquals($matcher, $checkbox);
+	}
+
+	public function testDisabledStackedBS3()
+	{
+		$this->former->framework('TwitterBootstrap3');
+		$checkbox = $this->former->checkbox('foo')->disabled()->__toString();
+		$matcher  = $this->formGroup($this->matchCheckbox('foo', null, 1, false, false, true));
+		$this->assertEquals($matcher, $checkbox);
+	}
+
+	public function testToStringMagicMethodShouldOnlyReturnString()
+	{
+		$this->former->group();
+		$output = $this->former->checkbox('foo')->text('bar').'';
+		$this->former->closeGroup();
+	}
+
+	public function testCanBeManualyDefinied()
+	{
+		$checkbox = $this->former->checkbox('foo', null, 'foo', ['value' => 'bar'])->__toString();
+		$matcher  = $this->controlGroup('<input value="bar" id="foo" type="checkbox" name="foo">');
+
+		$this->assertEquals($matcher, $checkbox);
+	}
+
+	public function testCanBeManualyDefiniedAndRepopulated()
+	{
+		$this->former->populate(array('foo' => 'bar'));
+		$checkbox = $this->former->checkbox('foo', null, 'foo', ['value' => 'bar'])->__toString();
+		$matcher  = $this->controlGroup('<input value="bar" id="foo" type="checkbox" name="foo" checked="checked">');
+
+		$this->assertEquals($matcher, $checkbox);
+	}
+
+	public function testShouldNotBeCheckedIfHisValueIsManualyChanged()
+	{
+		$this->former->populate(array('foo' => 'foo'));
+		$checkbox = $this->former->checkbox('foo', null, 'foo', ['value' => 'bar'])->__toString();
+		$matcher  = $this->controlGroup('<input value="bar" id="foo" type="checkbox" name="foo">');
+
+		$this->assertEquals($matcher, $checkbox);
+	}
+
+
 }

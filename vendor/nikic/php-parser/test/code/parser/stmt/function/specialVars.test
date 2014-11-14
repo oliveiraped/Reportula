@@ -10,7 +10,6 @@ function a() {
 array(
     0: Stmt_Function(
         byRef: false
-        name: a
         params: array(
         )
         stmts: array(
@@ -46,5 +45,6 @@ array(
                 )
             )
         )
+        name: a
     )
 )

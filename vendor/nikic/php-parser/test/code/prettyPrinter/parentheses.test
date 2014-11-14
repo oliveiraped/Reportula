@@ -22,9 +22,6 @@ $a ? $b ? $c : $d : $f;
 
 (1 > 0) > (1 < 0);
 
-$a ** $b ** $c;
-($a ** $b) ** $c;
-
 // this will currently unnecessarily print !($a = $b). This is correct as far as operator precedence is concerned, but
 // the parentheses are not really necessary, because = takes only variables as the left hand side operator.
 !$a = $b;
@@ -43,8 +40,6 @@ $a ? $b : $c ? $d : $e ? $f : $g;
 $a ? $b : ($c ? $d : ($e ? $f : $g));
 $a ? $b ? $c : $d : $f;
 (1 > 0) > (1 < 0);
-$a ** $b ** $c;
-($a ** $b) ** $c;
 // this will currently unnecessarily print !($a = $b). This is correct as far as operator precedence is concerned, but
 // the parentheses are not really necessary, because = takes only variables as the left hand side operator.
 !($a = $b);

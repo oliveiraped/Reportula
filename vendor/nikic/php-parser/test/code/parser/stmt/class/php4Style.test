@@ -10,7 +10,6 @@ class A {
 array(
     0: Stmt_Class(
         type: 0
-        name: A
         extends: null
         implements: array(
         )
@@ -27,12 +26,13 @@ array(
             1: Stmt_ClassMethod(
                 type: 1
                 byRef: false
-                name: bar
                 params: array(
                 )
                 stmts: array(
                 )
+                name: bar
             )
         )
+        name: A
     )
 )
