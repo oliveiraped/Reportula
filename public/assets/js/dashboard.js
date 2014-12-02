@@ -43,7 +43,7 @@ $(document).ready(function() {
     /* Jobs Table */
     var jobsTable = $('#dashboardStatsTable').dataTable({
 
-        "sAjaxSource": "getjobs",
+        "sAjaxSource": myPath+"/dashboard/getjobs",
         "fnServerParams": function ( aoData ) {
              aoData.push( {"name": "date", "value": $("#datetype").val() },
                           {"name": "type", "value": $("#type").val() } );
@@ -80,7 +80,7 @@ $(document).ready(function() {
     /* Volumes Table */
     var volumesTable = $('#dashboardTableVolumes').dataTable({
 
-        "sAjaxSource": "getvolumes",
+        "sAjaxSource": myPath + "/dashboard/getvolumes",
         "fnServerParams": function ( aoData ) {
              aoData.push( {"name": "date", "value": $("#datetype").val() },
                           {"name": "type", "value": $("#type").val() } );
