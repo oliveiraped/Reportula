@@ -908,8 +908,9 @@ class Datatables
         foreach ($joins as $join) {
             $table = preg_split("/ as /i", $join->table);
             $names[] = $table[0];
-            if (isset($table[1]) && !empty($this->databasePrefix()) && strpos($table[1], $this->databasePrefix()) == 0) {
-                $names[] = preg_replace('/^'.$this->databasePrefix().'/', '', $table[1]);
+            $prefix = databasePrefix();
+            if (isset($table[1]) && !empty($prefix) && strpos($table[1], $prefix) == 0) {
+                $names[] = preg_replace('/^'.$prefix.'/', '', $table[1]);
             }
         }
 
