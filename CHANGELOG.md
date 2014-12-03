@@ -1,3 +1,18 @@
+2.1.0 - 8 December - 2014
+===============================================
+
+Features:
+- [Add] Reportula Language Localization Files - Portuguese, English,. 
+
+Bugfixes:
+
+- [fix] Fix loading jobs and volumes on dashboard. Thanks Sergio Cambra
+- [fix] Adding includes or excludes to fileset fails #17. Thanks Sergio Cambra
+- [fix] Loading jobs, volumes, filesets in configurator, or other tables fails. Thanks Sergio Cambra
+
+Code Refactor
+- [upg] Cleaned some unusable code.
+
 2.0.10 - 9 Nov - 2014
 ===============================================
 

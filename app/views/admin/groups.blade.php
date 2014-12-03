@@ -6,11 +6,11 @@
 <div class="row-fluid">
     <div class="span12 box-content">
         <div class="span4">
-            <h3>{{ HTML::image('assets/img/groups.png') }} Groups</h3>
+            <h3>{{ HTML::image('assets/img/groups.png') }} {{ trans('messages.groups') }}</h3>
         </div>
         <div class="pull-right">
             <a href="{{  URL::route('admin.creategroup' )}}" class="btn btn-success">
-                <span class="icon32 icon-color icon-user"></span> <center> New Group </center><a></div>
+                <span class="icon32 icon-color icon-user"></span> <center> {{ trans('messages.creategroup') }} </center><a></div>
         </div>
 </div>
 <div class="row-fluid">
@@ -19,10 +19,10 @@
             <thead>
                 <tr>
                     <th><center> Id </center></th>
-                    <th><center> Name </center></th>
-                    <th><center> Permissions </center></th>
-                    <th><center> Date Created  </center></th>
-                    <th><center> Actions </center></th>
+                    <th><center> {{ trans('messages.name') }} </center></th>
+                    <th><center> {{ trans('messages.permissions') }} </center></th>
+                    <th><center> {{ trans('messages.date') }} </center></th>
+                    <th><center> {{ trans('messages.actions') }} </center></th>
                 </tr>
             </thead>
             <tbody>

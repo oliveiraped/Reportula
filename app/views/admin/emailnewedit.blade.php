@@ -7,12 +7,12 @@
     <div class="span12 box-content">
         <center><div class="response"></div></center>
         <div class="span4">
-            <h3>{{ HTML::image('assets/img/email.jpg') }} New Reporting Email</h3>
+            <h3>{{ HTML::image('assets/img/email.jpg') }} {{ trans('messages.newreportemail') }} </h3>
         </div>
         <div class="span2 pull-right">
-            {{Form::submit( ' Save ', array('class' => 'btn btn-large btn-primary' ));}}
+            {{Form::submit( trans('messages.save') , array('class' => 'btn btn-large btn-primary' ));}}
              <a href="{{ URL::route('admin.emails') }}" class="btn btn-large">
-                <i class="icon-fam-cross"></i>Close
+                <i class="icon-fam-cross"></i>{{ trans('messages.close') }}
             </a>
         </div>
     </div>
@@ -22,12 +22,12 @@
    <div class="span12 box-content">
         <div class="span12 box">
             <div class="box-header well">
-                <h2><i class="icon-mail"></i> Email Report Data</h2>
+                <h2><i class="icon-mail"></i> {{ trans('messages.reportdata') }} </h2>
             </div>
             <div class="box-content">
                 {{Former::hidden('id')->id('id')->value($id);}}
                 {{Former::text('emails', 'Email\'s')->prepend('<i class="icon-fam-email-add"></i>')->placeholder('email@email.com, email2@email.com, email3@email.com')->required()->autofocus()->value($emails);}}
-                {{Former::select('when', 'When')->options($when, $whenSelected)->prepend('<i class="icon-fam-user"></i>');}}
+                {{Former::select('messages.when', 'When')->options($when, $whenSelected)->prepend('<i class="icon-fam-user"></i>');}}
             </div>
         </div>
     </div>
@@ -36,18 +36,18 @@
     <div class="span12 box-content">
         <div class="span6 box">
             <div class="box-header well">
-                <h2><i class="icon-th"></i>Select clients to include on the report</h2>
+                <h2><i class="icon-th"></i> {{ trans('messages.selectclient') }} </h2>
             </div>
             <div class="box-content">
-                {{Former::select('emailsClients[]','Clients')->options($clients, $clientsSelected)->multiple('multiple')->id('emailsclients') }}
+                {{Former::select('emailsClients[]','messages.clients')->options($clients, $clientsSelected)->multiple('multiple')->id('emailsclients') }}
             </div>
         </div>
         <div class="span6 box">
             <div class="box-header well">
-                <h2><i class="icon-th"></i>Select jobs to include on the report</h2>
+                <h2><i class="icon-th"></i> {{ trans('messages.selectjob') }} </h2>
             </div>
             <div class="box-content">
-                {{Former::select('emailsJobs[]','Jobs')->options($jobs, $jobsSelected)->multiple('multiple')->id('emailsjobs') }}
+                {{Former::select('emailsJobs[]','messages.jobs')->options($jobs, $jobsSelected)->multiple('multiple')->id('emailsjobs') }}
             </div>
         </div>
     </div>

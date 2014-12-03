@@ -3,12 +3,16 @@
 class BaseController extends Controller
 {
 
-    /* Solve the Problem of Names Between Mysql & Postgres*/
-
     public $tables = array();
 
     public function __construct()
     {
+        /* Set the Language Based on Agent Browser */
+        $languages = explode(',',$_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        $lang = substr($languages[0], 0, 2);
+        App::setLocale($lang);
+
+        /* Load Assets */
         Asset::add('bootstraptheme', 'assets/css/bootstrap-spacelab.css');
         Asset::add('bootstrapresponsive', 'assets/css/bootstrap-responsive.css');
         Asset::add('charisma', 'assets/css/charisma-app.css');
@@ -29,7 +33,6 @@ class BaseController extends Controller
         $monolog = Log::getMonolog();
         /* Add the FirePHP handler */
         $monolog->pushHandler(new \Monolog\Handler\FirePHPHandler());
-        //$this->vd = new VD;
 
         /* Resolve Database Names Myslq and Postgres */
         if ( Config::get('database.default')=='mysql' ) {
@@ -58,6 +61,9 @@ class BaseController extends Controller
                                   'jobmedia' => 'jobmedia'
           );
          }
+
+
+
     }
 
     /**

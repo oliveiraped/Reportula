@@ -6,11 +6,11 @@
 <div class="row-fluid">
     <div class="span12 box-content">
         <div class="span4">
-            <h3>{{ HTML::image('assets/img/user.png') }} Users</h3>
+            <h3>{{ HTML::image('assets/img/user.png') }} {{ trans('messages.users') }}</h3>
         </div>
         <div class="pull-right">
             <a href="{{  URL::route('admin.createuser' )}}" class="btn btn-success">
-                <span class="icon32 icon-color icon-user"></span> <center> New User </center><a></div>
+                <span class="icon32 icon-color icon-user"></span> <center> {{ trans('messages.createuser') }} </center><a></div>
         </div>
 </div>
 <div class="row-fluid">
@@ -19,11 +19,11 @@
             <thead>
                 <tr>
                     <th><center> Id </center></th>
-                    <th><center> Email </center></th>
-                    <th><center> Permissions </center></th>
-                    <th><center> Last Login </center></th>
-                    <th><center> Date Created  </center></th>
-                    <th><center> Actions </center></th>
+                    <th><center> {{ trans('messages.emails') }} </center></th>
+                    <th><center> {{ trans('messages.permissions') }} </center></th>
+                    <th><center> {{ trans('messages.lastlogin') }} </center></th>
+                    <th><center> {{ trans('messages.date') }}  </center></th>
+                    <th><center> {{ trans('messages.actions') }} </center></th>
                 </tr>
             </thead>
             <tbody>

@@ -42,8 +42,7 @@ $(document).ajaxStart(function(){
 
 // Data Tables Config
 $.extend( $.fn.dataTable.defaults, {
-        
-
+        "language": language,
         "bJquery": true,
         "bStateSave": true,
         "bPaginate": true,

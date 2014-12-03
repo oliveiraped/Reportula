@@ -10,7 +10,7 @@
         </div>
         <div class="pull-right">
             <a href="{{  URL::route('admin.createemails' )}}" class="btn btn-success">
-                <span class="icon32 icon-color icon-user"></span> <center> New E-Mail Report </center><a></div>
+                <span class="icon32 icon-color icon-user"></span> <center> {{ trans('messages.createemail') }} </center><a></div>
         </div>
 </div>
 <div class="row-fluid">
@@ -19,11 +19,11 @@
             <thead>
                 <tr>
                     <th><center> Id </center></th>
-                    <th><center> Emails </center></th>
-                    <th><center> Clients </center></th>
-                    <th><center> Jobs </center></th>
-                    <th><center> When  </center></th>
-                    <th><center> Actions </center></th>
+                    <th><center> {{ trans('messages.emails') }} </center></th>
+                    <th><center> {{ trans('messages.clients') }} </center></th>
+                    <th><center> {{ trans('messages.jobs') }} </center></th>
+                    <th><center> {{ trans('messages.when') }}  </center></th>
+                    <th><center> {{ trans('messages.actions') }} </center></th>
                 </tr>
             </thead>
             <tbody>

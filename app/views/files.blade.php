@@ -9,7 +9,7 @@
             <hr>
             <div class="dropdown btn-group ">
                 <a class="btn dropdown-toggle btn-warning" data-toggle="dropdown" href="#">
-                    <i class="icon-fam-text-indent"></i> Export Table Data <span class="caret"></span>
+                    <i class="icon-fam-text-indent"></i> {{ trans('messages.exporttabledata') }} <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">
                     <li><a href="#" onClick ="$('#filesTable').tableExport({type:'json',escape:'false'});"><i class="icon-fam-page-white-coldfusion"></i> JSON</a></li>

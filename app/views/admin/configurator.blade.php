@@ -10,7 +10,7 @@ ul.fancytree-container {
 <div class="row-fluid">
     <div class="span12 box-content">
         <div class="span3">
-            {{Former::text('search', '')->prepend('<i class="icon-fam-server-add"></i>')->placeholder('Search...')->autofocus();}} &nbsp;
+            {{Former::text('messages.search', '')->prepend('<i class="icon-fam-server-add"></i>')->placeholder('messages.search...')->autofocus();}} &nbsp;
              <a id="refreshTree" class="btn btn-mini">
                 <span class="icon-fam-arrow-rotate-anticlockwise"></span>
             </a>
@@ -45,11 +45,7 @@ ul.fancytree-container {
                 </ul>
             </div>
         </div>
-
-        <div class="span9" id="nodeDetails">
-
-        </div>
-
+        <div class="span9" id="nodeDetails"></div>
     </div>
 </div>
 

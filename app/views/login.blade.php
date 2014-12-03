@@ -12,7 +12,7 @@
             <div class="row-fluid center">
                 <div class="well span5 center login-box">
                     <div class="alert alert-info">
-                        Please login with your Username and Password.
+                        {{ trans('messages.pleaselogin') }}
                     </div>
                     <?php if (!is_null(Session::get('status_error'))) { echo Alert::error(Session::get('status_error')); }?>
                      @if ($errors->has('login'))
@@ -20,13 +20,13 @@
                      @endif
                      <div class="response-login"></div>
                     {{ Former::horizontal_open('login','post',array('class'=>'ajax', 'data-replace' => '.response-login')) }}
-                    {{ Former::text('username', 'Username')->prepend('<i class="icon-fam-user"></i>')->placeholder(('Username'))->autofocus()->required(); }}
-                    {{Former::text('password', 'Password')->prepend('<i class="icon-fam-key"></i>')->placeholder(('Password'))->type('password')->required();}}
-                    {{Form::submit(('Login'), array('class' => 'btn btn-primary'));}}
+                    {{ Former::text('username', 'messages.username')->prepend('<i class="icon-fam-user"></i>')->placeholder(('Username'))->autofocus()->required(); }}
+                    {{Former::text('password', 'messages.password')->prepend('<i class="icon-fam-key"></i>')->placeholder(('Password'))->type('password')->required();}}
+                    {{Form::submit((trans('messages.login')), array('class' => 'btn btn-primary'));}}
                     {{Former::close();}}
                 </div><!--/span-->
             </div><!--/row-->
         </div><!--/fluid-row-->
     </div><!--/.fluid-container-->
-    
+
 @stop
