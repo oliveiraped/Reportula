@@ -312,7 +312,7 @@ class InstallController extends Controller
                 Schema::create('cfgfilesetexclude', function ($table) {
                     $table->increments('id');
                     $table->integer('idfileset')->nullable();
-                    $table->string('File')->nullable();
+                    $table->string('file')->nullable();
 
                 });
             }
@@ -322,7 +322,7 @@ class InstallController extends Controller
                 Schema::create('cfgfilesetinclude', function ($table) {
                     $table->increments('id');
                     $table->integer('idfileset')->nullable();
-                    $table->string('File')->nullable();
+                    $table->string('file')->nullable();
 
                 });
             }
