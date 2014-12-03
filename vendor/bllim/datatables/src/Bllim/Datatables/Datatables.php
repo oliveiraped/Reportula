@@ -905,12 +905,12 @@ class Datatables
 
         $names[] = $query->from;
         $joins = $query->joins?:array();
+        $databasePrefix = databasePrefix();
         foreach ($joins as $join) {
             $table = preg_split("/ as /i", $join->table);
             $names[] = $table[0];
-            $prefix = databasePrefix();
-            if (isset($table[1]) && !empty($prefix) && strpos($table[1], $prefix) == 0) {
-                $names[] = preg_replace('/^'.$prefix.'/', '', $table[1]);
+            if (isset($table[1]) && !empty($databasePrefix) && strpos($table[1], $databasePrefix) == 0) {
+                $names[] = preg_replace('/^'.$databasePrefix.'/', '', $table[1]);
             }
         }
 
