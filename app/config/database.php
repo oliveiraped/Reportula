@@ -67,10 +67,10 @@ return array(
 		'pgsql' => array(
 			'driver'   => 'pgsql',
 
-			'host'     => 'cyclopes.bkp.fccn.pt',
+			'host'     => 'localhost',
 			'database' => 'bacula',
 			'username' => 'bacula',
-			'password' => 'JL7zDTRSI',
+			'password' => '',
 
 			'charset'  => 'utf8',
 			'prefix'   => '',
