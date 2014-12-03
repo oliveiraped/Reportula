@@ -905,7 +905,7 @@ class Datatables
 
         $names[] = $query->from;
         $joins = $query->joins?:array();
-        $databasePrefix = databasePrefix();
+        $databasePrefix = $this->databasePrefix();
         foreach ($joins as $join) {
             $table = preg_split("/ as /i", $join->table);
             $names[] = $table[0];
