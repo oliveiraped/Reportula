@@ -794,7 +794,7 @@ class ConfiguratorController extends BaseController
     public function getincludes()
     {
 
-      return Datatables::of(Cfgfilesetinclude::select(array('id','File'))
+      return Datatables::of(Cfgfilesetinclude::select(array('id','file'))
                             ->where('idfileset','=', Input::get('filesetid'))
                 )->make();
     }
@@ -818,7 +818,7 @@ class ConfiguratorController extends BaseController
     public function getexcludes()
     {
 
-      return Datatables::of(Cfgfilesetexclude::select(array('id','File'))
+      return Datatables::of(Cfgfilesetexclude::select(array('id','file'))
                                     ->where('idfileset','=', Input::get('filesetid'))
                             )->make();
 
