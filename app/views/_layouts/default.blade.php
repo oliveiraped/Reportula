@@ -64,7 +64,7 @@
             <footer>
                 <?php echo Asset::container('footer')->scripts(); ?>
                 <p>
-                    <center>Reportula V2.1.0 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 - 2015 </center>
+                    <center>Reportula V2.1.1 <?php echo HTML::link('http://www.reportula.org', 'wwww.reportula.org'); ?> &copy; Pedro Oliveira 2013 - 2015 </center>
                 </p>
             </footer>
         </div>
