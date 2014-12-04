@@ -6,6 +6,10 @@
         <meta name="description" content="Reportula - Bacula Backups Web Gui">
         <meta name="author" content="Pedro Oliveira">
         <title>Reportula - Bacula Backups Web Gui </title>
+         <script type="text/javascript">
+            var myPath = '{{ URL::to("/") }}';
+            var language = {{ trans('datatables.language') }};
+        </script>
         <?php echo Asset::styles(); ?>
         <?php echo Asset::scripts(); ?>
     </head>

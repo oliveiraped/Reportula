@@ -639,7 +639,7 @@ class InstallController extends Controller
             }
             echo json_encode(array('location' =>  'install/installSucess'));
         } catch (Sentry\SentryException $e) {
-            $errors = new Laravel\Messages();
+           // $errors = new Laravel\Messages();
             Session::flash('status_error', $e->getMessage());
 
             return Redirect::to('install')->with_errors($validation);

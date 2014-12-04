@@ -1,4 +1,14 @@
-2.1.0 - 8 December - 2014
+2.1.1 - 4 December - 2014
+===============================================
+
+Bugfixes:
+- [fix] - Fix Datatables Does not Show in Administration Area
+
+Code Refactor
+- [upg] Cleaned some unusable code.
+
+
+2.1.0 - 3 December - 2014
 ===============================================
 
 Features:

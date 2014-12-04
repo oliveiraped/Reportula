@@ -20,7 +20,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $app['config']->package('barryvdh/laravel-debugbar', __DIR__ . '/config');
 
         if ($app->runningInConsole()) {
-            if ($this->app['config']->get('laravel-debugbar::config.capture_console')) {
+            if ($this->app['config']->get('laravel-debugbar::config.capture_console') && method_exists($app, 'shutdown')) {
                 $app->shutdown(
                     function ($app) {
                         /** @var LaravelDebugbar $debugbar */
@@ -75,8 +75,8 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     protected function shouldUseMiddleware()
     {
         $app = $this->app;
-        list($version) = explode('-', $app::VERSION);
-        return !$app->runningInConsole() && version_compare($version, '4.1', '>=') && version_compare($version, '5.0', '<');
+        $version = $app::VERSION;
+        return !$app->runningInConsole() && version_compare($version, '4.1-dev', '>=') && version_compare($version, '5.0-dev', '<');
     }
 
     /**

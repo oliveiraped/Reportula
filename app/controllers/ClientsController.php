@@ -70,7 +70,6 @@ class ClientsController extends BaseController
             $autoprune="";
             $terminatedJobs="0";
             $cancelJobs="0";
-            $cancelJobs="0";
             $runningJobs="0";
             $wattingJobs="0";
             $errorJobs="0";

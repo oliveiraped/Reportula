@@ -46,8 +46,7 @@ class AuthController extends BaseController
                 if ($valid_login==true) {
                     $user = $adldap->user()->infoCollection(Input::get('username'));
                     $user = Sentry::findUserByLogin($user->mail);
-
-                    $user = Sentry::login($user,false);
+                    Sentry::login($user,false);
                      echo json_encode(array('location' => 'dashboard/day'));
 
                 } else {

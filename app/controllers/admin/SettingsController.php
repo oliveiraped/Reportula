@@ -154,7 +154,6 @@ class SettingsController extends BaseController
     public function syncldap()
     {
 
-      $vd = new VD;
       $ldappost = Input::all();
       /* Rules Edit Form */
       $rules = array(

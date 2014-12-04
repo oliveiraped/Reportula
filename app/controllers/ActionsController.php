@@ -19,11 +19,8 @@ class ActionsController extends BaseController
     {
         parent::__construct();
         Asset::add('daterangepicker', 'assets/css/daterangepicker.css');
-
         Asset::add('momentmin', 'assets/js/moment.min.js');
         Asset::add('daterangepicker', 'assets/js/daterangepicker.js');
-
-
         Asset::container('footer')->add('stats.js', 'assets/js/stats.js');
     }
 

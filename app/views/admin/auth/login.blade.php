@@ -4,9 +4,12 @@
         <div class="row-fluid">
             <div class="row-fluid">
                 <div class="span12 center login-header">
+                    <center>{{ HTML::image("assets/img/logo2.png")  }}</center>
+                    
                     <h2>{{ trans('messages.welcomeadmin') }}</h2>
                 </div><!--/span-->
             </div><!--/row-->
+            <br><br><br><br>
             <div class="row-fluid">
                 <div class="well span5 center login-box">
                     <div class="alert alert-info">

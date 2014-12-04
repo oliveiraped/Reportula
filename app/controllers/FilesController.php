@@ -44,11 +44,14 @@ class FilesController extends BaseController
                   ->join($this->tables['filename'],$this->tables['file'].'.filenameid', '=', $this->tables['filename'].'.filenameid')
                   ->join($this->tables['path'],$this->tables['file'].'.pathid', '=', $this->tables['path'].'.pathid')
                   ->where('jobid','=', $job)->remember(10)->get();
+                 // ->where('jobid','=', $job);
 
             $files = $files->toArray();
             if (!empty($files)) {
                 $t= Filessearch::insert($files);
             }
+            //$filessearch->getConnection()->insert("INSERT INTO ".($filessearch->getTable())." (path, filename, jobid) ".$files->toSql(), array($job));
+
         }
 
         /* Mostra o log do Job */

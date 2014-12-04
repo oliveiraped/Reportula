@@ -108,7 +108,12 @@ class ConfiguratorController extends BaseController
      */
     public function gettreedata()
     {
-        $tree=array();
+        $valuearray  = array();
+        $tree        = array();
+        $values      = array();
+        $conffiles  = array();
+        $schedulerun = array();
+
         $key=2;
         $models=array("Director", "Storage",
                       "Client","Job","Fileset",
@@ -171,7 +176,7 @@ class ConfiguratorController extends BaseController
 
       }
 
-      $success = File::cleanDirectory($directory.'/conf.d');
+      File::cleanDirectory($directory.'/conf.d');
 
       /* Check If Bacula Configuration Folder Exists if Not Create */
       File::makeDirectory($directory.'/conf.d','','',true);
@@ -589,10 +594,10 @@ class ConfiguratorController extends BaseController
       $item->delete();
       /* FileSets delete include exclude and options */
       if ($parent="Fileset") {
-        $affectedRows = Cfgfilesetexclude::where('idfileset', '=',Input::get('id'))->delete();
-        $affectedRows = Cfgfilesetexcludeoptions::where('idfileset', '=',Input::get('id'))->delete();
-        $affectedRows = Cfgfilesetinclude::where('idfileset', '=',Input::get('id'))->delete();
-        $affectedRows = Cfgfilesetincludeoptions::where('idfileset', '=',Input::get('id'))->delete();
+        Cfgfilesetexclude::where('idfileset', '=',Input::get('id'))->delete();
+        Cfgfilesetexcludeoptions::where('idfileset', '=',Input::get('id'))->delete();
+        Cfgfilesetinclude::where('idfileset', '=',Input::get('id'))->delete();
+        Cfgfilesetincludeoptions::where('idfileset', '=',Input::get('id'))->delete();
       }
     }
 
@@ -635,7 +640,7 @@ class ConfiguratorController extends BaseController
           return Response::json(array('html' => '<div class="alert alert-success"> '.$config.' Sucessufull Updated </div>'));
         }
       }else{
-        $user = $classname::create($save);
+        $classname::create($save);
         return Response::json(array('html' => '<div class="alert alert-success"> '.$config.' Sucessufull Created </div>'));
       }
     }
@@ -867,7 +872,7 @@ class ConfiguratorController extends BaseController
          $path = $confdir->confdir;
 
         /* Delete Test Bacula Configuration Teste*/
-        $success = File::cleanDirectory($path.'/reportulateste');
+        File::cleanDirectory($path.'/reportulateste');
 
 
         // Read All Files all Directorys
@@ -928,8 +933,7 @@ class ConfiguratorController extends BaseController
                       } while (trim($config[$i+1]) != "}");
                       $Consoletest = CfgConsole::where('Name', '=', $Console['Name']);
                       if ($Consoletest->count()==0) {
-
-                        $Consolecfg = CfgConsole::create($Console);
+                        CfgConsole::create($Console);
                       };
                   }
               }
@@ -962,7 +966,7 @@ class ConfiguratorController extends BaseController
 
                        $Messagestest = CfgMessage::where('Name', '=', $Messages['Name']);
                         if ($Messagestest->count()==0) {
-                            $Messagescfg = CfgMessage::create($Messages);
+                            CfgMessage::create($Messages);
                         };
 
                     }
